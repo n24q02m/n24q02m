@@ -12,10 +12,6 @@
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | `uvx better-telegram-mcp` |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | `uvx better-code-review-graph` |
 
-## Claude Code
-
-Custom skills, CI/CD templates, and config sync: **[claude-code/](claude-code/)**
-
 ## Libraries
 
 | Package | Description | Install |
