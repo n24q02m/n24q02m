@@ -12,23 +12,6 @@
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | `uvx better-telegram-mcp` |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | `uvx better-code-review-graph` |
 
-### Claude Code
-
-```json
-{
-  "mcpServers": {
-    "wet":      { "command": "uvx", "args": ["wet-mcp"] },
-    "mnemo":    { "command": "uvx", "args": ["mnemo-mcp"] },
-    "notion":   { "command": "npx", "args": ["@n24q02m/better-notion-mcp"], "env": { "NOTION_TOKEN": "..." } },
-    "email":    { "command": "npx", "args": ["@n24q02m/better-email-mcp"], "env": { "EMAIL_CREDENTIALS": "..." } },
-    "godot":    { "command": "npx", "args": ["@n24q02m/better-godot-mcp"] },
-    "telegram": { "command": "uvx", "args": ["better-telegram-mcp"], "env": { "TELEGRAM_BOT_TOKEN": "..." } }
-  }
-}
-```
-
-`better-code-review-graph` is a Claude Code plugin — install via `claude plugin add better-code-review-graph`.
-
 ## Libraries
 
 | Package | Description | Install |
