@@ -21,7 +21,7 @@ project/
 │   │   └── feature_request.md          # Feature request template
 │   ├── PULL_REQUEST_TEMPLATE.md        # PR template (Conventional Commits checklist)
 │   ├── workflows/
-│   │   ├── ci.yml                      # Lint + Test + PR Title Check + AI PR Review + Email Notify
+│   │   ├── ci.yml                      # Lint + Test + AI PR Review + Email Notify
 │   │   └── cd.yml                      # Release + Build + Deploy (workflow_dispatch)
 │   ├── rulesets/                        # Exported rulesets (for reference)
 │   │   └── main.json
@@ -617,7 +617,7 @@ run = [
 
 | Workflow | File | Trigger | Content |
 |----------|------|---------|---------|
-| CI | `ci.yml` | PR, push to main, issue_comment, workflow_dispatch, issues | PR title check, commit message check, lint, test, build, dependency-review, Qodo Merge AI PR Review, email notify |
+| CI | `ci.yml` | PR, push to main, issue_comment, workflow_dispatch, issues | Lint, test, build, dependency-review, Qodo Merge AI PR Review, email notify |
 | CD | `cd.yml` | workflow_dispatch (manual) | PSR version bump, publish, deploy |
 
 > `dependency-review-action` chỉ hoạt động trên **public repos**. Với private repos, thêm `continue-on-error: true`.
@@ -1041,7 +1041,7 @@ project/
 - [ ] Commit enforcement: `scripts/enforce-commit.sh` + `commit-msg` hook (feat/fix only)?
 - [ ] `.github/ISSUE_TEMPLATE/bug_report.md` + `feature_request.md` có mặt?
 - [ ] `.github/PULL_REQUEST_TEMPLATE.md` có mặt (generic, không repo-specific)?
-- [ ] `.github/workflows/ci.yml` cho PR title check + commit message check + lint + test + Qodo Merge AI PR Review + email notify?
+- [ ] `.github/workflows/ci.yml` cho lint + test + Qodo Merge AI PR Review + email notify?
 - [ ] `.github/workflows/cd.yml` với `workflow_dispatch` (beta/stable) + PSR?
 - [ ] Infisical project: `infisical init` đã link repo? `.infisical.json` KHÔNG bị gitignore?
 - [ ] Infisical secrets (prod): `SMTP_USERNAME`, `SMTP_PASSWORD`, `NOTIFY_EMAIL`, `CODECOV_TOKEN`, `GEMINI_API_KEY`, `GH_PAT` (auto-sync → GitHub)?

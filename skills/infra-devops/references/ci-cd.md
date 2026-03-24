@@ -18,16 +18,16 @@
 
 > **Public repos**: CodeQL (miễn phí, bật trong repo Settings → Code security → Code scanning). KHÔNG cần Semgrep.
 > **Private repos**: Semgrep trong CI (CodeQL yêu cầu GitHub Advanced Security — trả phí cho private repos).
-> **Commit Message Check**: ĐÃ XÓA — commit đã push không sửa được, fail CI vô ích. PR Title Check vẫn giữ vì có thể auto-fix.
+> **Commit Message Check**: ĐÃ XÓA — commit đã push không sửa được, fail CI vô ích.
+> **PR Title Check**: ĐÃ XÓA — auto-fix bot PR titles gây nhiễu, không cần thiết.
 
 ### Private Repo (Self-hosted ARM64)
 
 > **Áp dụng cho**: Aiora, KnowledgePrism, QuikShipping (private monorepos trên OCI VM2).
-> **`pull_request_target`**: CẦN cho Qodo/email/pr-title vì jobs này cần secrets (`GEMINI_API_KEY`, `SMTP_*`). `pull_request` từ fork không có secrets.
+> **`pull_request_target`**: KHÔNG CẦN cho private repos (không có fork). Public repos vẫn cần cho Qodo/email vì jobs này cần secrets (`GEMINI_API_KEY`, `SMTP_*`). `pull_request` từ fork không có secrets.
 
 | Job | Runner | harden-runner | Ghi chú |
 |-----|--------|---------------|---------|
-| PR title check | `ubuntu-latest` | YES | Auto-fix bot titles. Trigger: `pull_request` |
 | Semgrep SAST | `ubuntu-latest` (container) | **NO** (container job không tương thích) | Thay thế CodeQL cho private repos. `--exclude-rule` cho false positives |
 | Qodo AI review | `ubuntu-latest` | NO | Trigger: `pull_request`. Chỉ review PR của người khác |
 | Dependency review | `ubuntu-latest` | YES | `continue-on-error: true` ở **step level** (private repos cần vì không có GitHub Advanced Security) |
@@ -346,52 +346,6 @@ Add any other context or screenshots about the feature request here.
 ---
 
 ## Common CI Jobs (cross-language)
-
-### PR Title Check (Conventional Commits)
-
-> **Nguyên tắc**: Squash merge dùng PR title làm commit message. PR title PHẢI tuân thủ Conventional Commits — tương đương `enforce-commit.sh` ở CI level.
-> **Auto-fix**: Thay vì chỉ reject, script tự sửa title không hợp lệ (strip Bolt/Sentinel/Guard/Shield prefix từ bot PRs, auto-categorize feat/fix dựa trên keywords).
-
-```yaml
-  pr-title-check:
-    name: PR Title Check
-    if: >-
-      github.event_name == 'pull_request'
-      && github.event.sender.type != 'Bot'
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
-
-      - name: Validate and auto-fix PR title
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          title=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title -q .title)
-          if [[ "$title" =~ ^(feat|fix)(\(.+\))?:.+ ]] || [[ "$title" =~ ^chore\(release\):.+ ]]; then
-            echo "Title is valid: $title"
-            exit 0
-          fi
-          clean=$(echo "$title" | sed -E 's/^[^a-zA-Z]*//; s/^(Bolt|Sentinel|Guard|Shield): *(\[.*\] *)?//')
-          if echo "$clean" | grep -qiE 'fix|bug|vulnerability|security|patch|resolve|crash|error'; then
-            new_title="fix: $(echo "$clean" | sed 's/^./\L&/')"
-          else
-            new_title="feat: $(echo "$clean" | sed 's/^./\L&/')"
-          fi
-          gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --title "$new_title"
-          echo "Auto-fixed: $title -> $new_title"
-```
-
-> **Auto-fix thay vì reject**: Renovate/bot PRs thường có title như `Bolt: [deps] update X` — script strip prefix và auto-categorize dựa trên keywords (fix/bug/vulnerability → `fix:`, còn lại → `feat:`).
-> **`pull-requests: write`**: Cần write permission để `gh pr edit` sửa title.
-> **`chore(release):` exempt**: PSR tự tạo PR với title `chore(release):` — được pass qua.
-> **Skip bot PRs**: `github.event.sender.type != 'Bot'` — Renovate/Dependabot PRs có `sender.type == 'Bot'`, skip hoàn toàn.
-> **Vị trí**: Đặt **TRƯỚC** `lint-and-test` job trong ci.yml, chạy song song (independent, không blocking).
-
 
 ### Semgrep SAST Scan
 
@@ -828,7 +782,7 @@ on:
     # ... existing steps
 ```
 
-> **Tại sao cần `if:`**: Khi thêm `issues` trigger, TẤT CẢ jobs sẽ chạy khi có issue event. Lint/test/build vô nghĩa cho issues → phải filter. Các job đã có `if:` riêng (dependency-review, qodo, pr-title-check) tự động skip — không cần sửa.
+> **Tại sao cần `if:`**: Khi thêm `issues` trigger, TẤT CẢ jobs sẽ chạy khi có issue event. Lint/test/build vô nghĩa cho issues → phải filter. Các job đã có `if:` riêng (dependency-review, qodo) tự động skip — không cần sửa.
 
 **Email notify job (thêm vào cuối `jobs:`):**
 
