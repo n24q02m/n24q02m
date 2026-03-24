@@ -4,7 +4,7 @@
 #
 # Runner strategy:
 #   - Lint/Test/Build: self-hosted ARM64 on OCI VM2 (NO harden-runner)
-#   - PR Title/Dep Review/Email: ubuntu-latest (with harden-runner)
+#   - Dep Review/Email: ubuntu-latest (with harden-runner)
 #   - Semgrep: ubuntu-latest (container: semgrep/semgrep, NO harden-runner)
 #   - Qodo AI Review: ubuntu-latest (no harden-runner)
 #   - Codecov: os: linux-arm64 (required for self-hosted ARM64)
@@ -45,39 +45,6 @@ permissions:
 jobs:
   # ============================================================================
   # Common CI Jobs (GitHub-hosted, ubuntu-latest)
-  # ============================================================================
-  pr-title-check:
-    name: PR Title Check
-    if: >-
-      github.event_name == 'pull_request'
-      && github.event.sender.type != 'Bot'
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
-
-      - name: Validate and auto-fix PR title
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          title=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json title -q .title)
-          if [[ "$title" =~ ^(feat|fix)(\(.+\))?:.+ ]] || [[ "$title" =~ ^chore\(release\):.+ ]]; then
-            echo "Title is valid: $title"
-            exit 0
-          fi
-          clean=$(echo "$title" | sed -E 's/^[^a-zA-Z]*//; s/^(Bolt|Sentinel|Guard|Shield|Palette): *(\[.*\] *)?//')
-          if echo "$clean" | grep -qiE 'fix|bug|vulnerability|security|patch|resolve|crash|error'; then
-            new_title="fix: $(echo "$clean" | sed 's/^./\L&/')"
-          else
-            new_title="feat: $(echo "$clean" | sed 's/^./\L&/')"
-          fi
-          gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --title "$new_title"
-          echo "Auto-fixed: $title -> $new_title"
-
   # ============================================================================
   # Semgrep SAST (ubuntu-latest, container)
   # ============================================================================
