@@ -12,6 +12,12 @@
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | `uvx better-telegram-mcp` |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | `uvx better-code-review-graph` |
 
+## Tools
+
+| Tool | Description | Install |
+|------|-------------|---------|
+| [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
+
 ## Libraries
 
 | Package | Description | Install |
