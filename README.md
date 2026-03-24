@@ -2,11 +2,11 @@
 
 ## Quick Install (Claude Code)
 
-```
-/plugins add n24q02m/claude-plugins
+```bash
+/plugin marketplace add n24q02m/claude-plugins
 ```
 
-All 7 MCP servers in one marketplace. Select which to install.
+Then `/plugin install <name>@claude-plugins`. All 7 MCP servers in one marketplace.
 
 ## MCP Servers & Plugins
 

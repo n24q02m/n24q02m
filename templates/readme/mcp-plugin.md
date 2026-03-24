@@ -35,8 +35,18 @@ mcp-name: io.github.n24q02m/{repo-name}  <!-- Python repos only, remove for Type
 
 ### Claude Code Plugin (Recommended)
 
+Via marketplace (includes skills: /{skill1}, /{skill2}):
+
 ```bash
-claude plugin add n24q02m/{repo-name}
+/plugin marketplace add n24q02m/claude-plugins
+/plugin install {plugin-name}@claude-plugins
+```
+
+Or install this plugin only:
+
+```bash
+/plugin marketplace add n24q02m/{repo-name}
+/plugin install {plugin-name}
 ```
 
 ### MCP Server
