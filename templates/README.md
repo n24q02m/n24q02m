@@ -14,8 +14,8 @@ This repository contains CI/CD workflow **templates** for n24q02m repos. Templat
 | Template | Repos | Key traits |
 |----------|-------|------------|
 | `private-monorepo.yml` | Aiora, KnowledgePrism, QuikShipping | Self-hosted ARM64 lint/test, path-filtered triggers, `os: linux-arm64` for Codecov, `pull_request` (not `pull_request_target`) |
-| `public-python.yml` | wet-mcp, mnemo-mcp | ubuntu-latest, harden-runner, Python 3.13, uv + ruff + ty |
-| `public-typescript.yml` | better-notion-mcp, better-email-mcp, better-godot-mcp, better-telegram-mcp | ubuntu-latest, harden-runner, bun + biome + vitest |
+| `public-python.yml` | wet-mcp, mnemo-mcp, better-telegram-mcp, better-code-review-graph | ubuntu-latest, harden-runner, Python 3.13, uv + ruff + ty |
+| `public-typescript.yml` | better-notion-mcp, better-email-mcp, better-godot-mcp | ubuntu-latest, harden-runner, bun + biome + vitest |
 | `public-python-lib.yml` | qwen3-embed | Multi-version matrix (3.10-3.14), lint on primary version only |
 | `public-modal.yml` | modalcom-ai-workers | Same as public-python, Python 3.13 pinned |
 
@@ -31,7 +31,7 @@ This repository contains CI/CD workflow **templates** for n24q02m repos. Templat
 
 ### Shared patterns (`templates/shared-jobs.md`)
 
-Documents common job patterns (PR title check, Semgrep, Qodo, email notification, dependency review) and the differences between private and public repos.
+Documents common job patterns (Semgrep, Qodo, email notification, dependency review, Codecov) and the differences between private and public repos.
 
 ## How to use
 

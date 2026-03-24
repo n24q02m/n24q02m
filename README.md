@@ -1,5 +1,13 @@
 # n24q02m
 
+## Quick Install (Claude Code)
+
+```
+/plugins add n24q02m/claude-plugins
+```
+
+All 7 MCP servers in one marketplace. Select which to install.
+
 ## MCP Servers & Plugins
 
 | Server | Description | Runtime |

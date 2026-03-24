@@ -4,13 +4,6 @@ Reference for common jobs shared across all repos. Every job is inlined in ci.ym
 
 ## CI Jobs
 
-### PR Title Check
-
-- **Trigger**: `pull_request` for private repos, `pull_request_target` for public repos (fork PRs need secrets access) + `sender.type != 'Bot'`
-- **Runner**: `ubuntu-latest` (with harden-runner)
-- **Permissions**: `pull-requests: write`
-- **Logic**: Validate Conventional Commits (feat/fix only). Auto-fix bot PR titles (strip Bolt/Sentinel/Guard/Shield/Palette prefix). `chore(release):` exempt for PSR.
-
 ### Semgrep SAST Scan
 
 - **Trigger**: `pull_request` or `push`, skip Dependabot/Renovate
