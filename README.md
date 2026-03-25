@@ -30,5 +30,6 @@ Then `/plugin install <name>@claude-plugins`. All 7 MCP servers in one marketpla
 
 | Package | Description | Install |
 |---------|-------------|---------|
+| [mcp-relay-core](https://github.com/n24q02m/mcp-relay-core) | Cross-language relay infrastructure for MCP servers (ECDH crypto, config storage, relay client) | `npm i @n24q02m/mcp-relay-core` / `pip install mcp-relay-core` |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Lightweight ONNX inference for Qwen3 embedding and reranking models | `pip install qwen3-embed` |
 | [modalcom-ai-workers](https://github.com/n24q02m/modalcom-ai-workers) | GPU-serverless AI workers on Modal.com (embedding, reranking, OCR, ASR) | -- |
