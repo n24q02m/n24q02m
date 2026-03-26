@@ -33,7 +33,7 @@ cp claude-code/settings.json ~/.claude/settings.json
 
 File này chứa:
 - **Plugins**: Danh sách plugins được bật (official + marketplace)
-- **Marketplaces**: claude-plugins (n24q02m — 7 MCP servers), cc-marketplace (kenryu42)
+- **Marketplaces**: n24q02m-plugins (n24q02m — 7 MCP servers), cc-marketplace (kenryu42)
 - **Env vars**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
 - **Permissions**: `auto` mode (tự động approve action an toàn, hỏi xác nhận cho action nguy hiểm)
 - **Effort**: `high` (reasoning effort mặc định)
@@ -45,7 +45,7 @@ Plugins bao gồm:
 - **Development**: feature-dev, frontend-design, superpowers, claude-md-management
 - **LSP**: gopls, typescript, pyright, rust-analyzer
 - **Browser**: playwright (Microsoft), chrome-devtools-mcp (browser automation, devtools)
-- **Marketplaces**: claude-plugins (n24q02m/claude-plugins — 7 MCP plugins), cc-marketplace (kenryu42)
+- **Marketplaces**: n24q02m-plugins (n24q02m/n24q02m-plugins — 7 MCP plugins), cc-marketplace (kenryu42)
 
 ## Bước 4: Cài đặt skills
 
