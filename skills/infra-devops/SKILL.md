@@ -58,7 +58,7 @@ Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, Infisical, Doppler
 - `references/observability.md` -- Grafana Selfhost, Alloy, Vector, Loki, MLflow tracing/tracking, LiteLLM Proxy, alerting
 - `references/security.md` -- Secrets management (Doppler/Infisical), Docker security, dependency scanning, auth, rate limiting
 - `references/repo-structure.md` -- Repository standards, mise tasks, pre-commit, Git branching, README format, Renovate, Docker build
-- `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), Semgrep, Qodo Merge, email notify
+- `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), PR title check, Semgrep, Qodo Merge, email notify
 - `references/semantic-release.md` -- PSR v10 config (Python/TS/Rust/Go), monorepo, beta/stable, troubleshooting
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
