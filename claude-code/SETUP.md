@@ -35,16 +35,18 @@ File này chứa:
 - **Plugins**: Danh sách plugins được bật (official + marketplace)
 - **Marketplaces**: Các marketplace bên thứ ba (cc-marketplace, code-review-graph)
 - **Env vars**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
-- **Permissions**: `bypassPermissions` mode
+- **Permissions**: `auto` mode (tự động approve action an toàn, hỏi xác nhận cho action nguy hiểm)
+- **Effort**: `high` (reasoning effort mặc định)
 
 Sau khi copy, khởi động Claude Code để plugins tự động cài đặt.
 
 Plugins bao gồm:
-- **Code quality**: security-guidance, pr-review-toolkit, code-review-graph, safety-net
+- **Code quality**: security-guidance, pr-review-toolkit, code-review-graph
 - **Development**: feature-dev, frontend-design, superpowers, claude-md-management
 - **LSP**: gopls, typescript, pyright, rust-analyzer
 - **Browser**: playwright (Microsoft), chrome-devtools-mcp (browser automation, devtools)
-- **Marketplaces**: cc-marketplace (kenryu42), code-review-graph (tirth8205)
+- **MCP plugins**: wet-mcp, mnemo-mcp, better-notion-mcp, better-code-review-graph, better-email-mcp, better-godot-mcp, better-telegram-mcp (n24q02m)
+- **Marketplaces**: cc-marketplace (kenryu42)
 
 ## Bước 4: Cài đặt skills
 
