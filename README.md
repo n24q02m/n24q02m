@@ -6,7 +6,7 @@
 /plugin marketplace add n24q02m/claude-plugins
 ```
 
-Then `/plugin install <name>@claude-plugins`. All 7 MCP servers in one marketplace.
+Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketplace.
 
 ## MCP Servers & Plugins
 
