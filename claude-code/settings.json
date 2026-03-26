@@ -7,25 +7,25 @@
     "defaultMode": "auto"
   },
   "enabledPlugins": {
-    "security-guidance@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "chrome-devtools-mcp@claude-plugins-official": true,
-    "wet-mcp@claude-plugins": true,
-    "mnemo-mcp@claude-plugins": true,
-    "better-notion-mcp@claude-plugins": true,
-    "better-code-review-graph@claude-plugins": true,
-    "better-email-mcp@claude-plugins": true,
-    "better-godot-mcp@claude-plugins": true,
-    "better-telegram-mcp@claude-plugins": true
+    "security-guidance@n24q02m-plugins-official": true,
+    "frontend-design@n24q02m-plugins-official": true,
+    "feature-dev@n24q02m-plugins-official": true,
+    "superpowers@n24q02m-plugins-official": true,
+    "pr-review-toolkit@n24q02m-plugins-official": true,
+    "gopls-lsp@n24q02m-plugins-official": true,
+    "typescript-lsp@n24q02m-plugins-official": true,
+    "pyright-lsp@n24q02m-plugins-official": true,
+    "claude-md-management@n24q02m-plugins-official": true,
+    "rust-analyzer-lsp@n24q02m-plugins-official": true,
+    "playwright@n24q02m-plugins-official": true,
+    "chrome-devtools-mcp@n24q02m-plugins-official": true,
+    "wet-mcp@n24q02m-plugins": true,
+    "mnemo-mcp@n24q02m-plugins": true,
+    "better-notion-mcp@n24q02m-plugins": true,
+    "better-code-review-graph@n24q02m-plugins": true,
+    "better-email-mcp@n24q02m-plugins": true,
+    "better-godot-mcp@n24q02m-plugins": true,
+    "better-telegram-mcp@n24q02m-plugins": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {
@@ -34,7 +34,7 @@
         "repo": "kenryu42/cc-marketplace"
       }
     },
-    "claude-plugins": {
+    "n24q02m-plugins": {
       "source": {
         "source": "github",
         "repo": "n24q02m/claude-plugins"
