@@ -38,14 +38,18 @@ File này chứa:
 - **Permissions**: `auto` mode (tự động approve action an toàn, hỏi xác nhận cho action nguy hiểm)
 - **Effort**: `high` (reasoning effort mặc định)
 
-Sau khi copy, khởi động Claude Code để plugins tự động cài đặt.
+Sau khi copy, cần đăng ký marketplace thủ công (`extraKnownMarketplaces` chỉ khai báo source, không auto-clone):
+
+```bash
+claude plugin marketplace add n24q02m/claude-plugins
+```
 
 Plugins bao gồm:
 - **Code quality**: security-guidance, pr-review-toolkit, code-review-graph
 - **Development**: feature-dev, frontend-design, superpowers, claude-md-management
 - **LSP**: gopls, typescript, pyright, rust-analyzer
 - **Browser**: playwright (Microsoft), chrome-devtools-mcp (browser automation, devtools)
-- **Marketplaces**: n24q02m-plugins (n24q02m/n24q02m-plugins — 7 MCP plugins), cc-marketplace (kenryu42)
+- **Marketplaces**: n24q02m-plugins (n24q02m/claude-plugins — 7 MCP plugins), cc-marketplace (kenryu42)
 
 ## Bước 4: Cài đặt skills
 
