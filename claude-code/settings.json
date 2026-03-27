@@ -4,7 +4,7 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
   },
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "bypassPermissions"
   },
   "enabledPlugins": {
     "security-guidance@claude-plugins-official": true,
