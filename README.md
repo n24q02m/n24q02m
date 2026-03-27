@@ -26,6 +26,12 @@ Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketpl
 |------|-------------|---------|
 | [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
 
+## Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Remote Desktop](remote-desktop/) | Self-hosted RustDesk + Tailscale for multi-machine remote desktop. No ports exposed. |
+
 ## Libraries
 
 | Package | Description | Install |
