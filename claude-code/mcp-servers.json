@@ -1,5 +1,5 @@
 {
-  "$schema": "MCP servers config template. Replace <PLACEHOLDER> values with real credentials.",
+  "$schema": "MCP servers config template. Replace <PLACEHOLDER> values with real credentials. Servers provided by n24q02m-plugins are NOT listed here — they are managed via the plugin marketplace.",
   "mcpServers": {
     "sequential-thinking": {
       "command": "bun",
@@ -10,43 +10,6 @@
       "url": "https://stitch.googleapis.com/mcp",
       "headers": {
         "X-Goog-Api-Key": "<STITCH_API_KEY>"
-      }
-    },
-    "better-godot": {
-      "command": "bun",
-      "args": ["x", "@n24q02m/better-godot-mcp@latest"]
-    },
-    "better-email": {
-      "command": "bun",
-      "args": ["x", "@n24q02m/better-email-mcp@latest"],
-      "env": {
-        "EMAIL_CREDENTIALS": "<email1:app_password1,email2:app_password2>"
-      }
-    },
-    "better-telegram": {
-      "command": "uvx",
-      "args": ["--python", "3.13", "better-telegram-mcp"],
-      "env": {
-        "TELEGRAM_API_ID": "<TELEGRAM_API_ID>",
-        "TELEGRAM_API_HASH": "<TELEGRAM_API_HASH>",
-        "TELEGRAM_PHONE": "<TELEGRAM_PHONE>"
-      }
-    },
-    "mnemo": {
-      "command": "uvx",
-      "args": ["--python", "3.13", "mnemo-mcp@latest"],
-      "env": {
-        "API_KEYS": "GOOGLE_API_KEY:<GOOGLE_API_KEY>,COHERE_API_KEY:<COHERE_API_KEY>",
-        "SYNC_ENABLED": "true"
-      }
-    },
-    "wet": {
-      "command": "uvx",
-      "args": ["--python", "3.13", "wet-mcp@latest"],
-      "env": {
-        "API_KEYS": "GOOGLE_API_KEY:<GOOGLE_API_KEY>,COHERE_API_KEY:<COHERE_API_KEY>",
-        "GITHUB_TOKEN": "<GITHUB_TOKEN>",
-        "SYNC_ENABLED": "true"
       }
     },
     "grafana": {

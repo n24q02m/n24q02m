@@ -35,7 +35,7 @@ File này chứa:
 - **Plugins**: Danh sách plugins được bật (official + marketplace)
 - **Marketplaces**: n24q02m-plugins (n24q02m — 7 MCP servers), cc-marketplace (kenryu42)
 - **Env vars**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
-- **Permissions**: `auto` mode (tự động approve action an toàn, hỏi xác nhận cho action nguy hiểm)
+- **Permissions**: `bypassPermissions` mode (bỏ qua xác nhận cho mọi action)
 - **Effort**: `high` (reasoning effort mặc định)
 
 Sau khi copy, cần đăng ký marketplace thủ công (`extraKnownMarketplaces` chỉ khai báo source, không auto-clone):
@@ -45,11 +45,12 @@ claude plugin marketplace add n24q02m/claude-plugins
 ```
 
 Plugins bao gồm:
-- **Code quality**: security-guidance, pr-review-toolkit, code-review-graph
+- **Code quality**: security-guidance, pr-review-toolkit, better-code-review-graph
 - **Development**: feature-dev, frontend-design, superpowers, claude-md-management
 - **LSP**: gopls, typescript, pyright, rust-analyzer
 - **Browser**: playwright (Microsoft), chrome-devtools-mcp (browser automation, devtools)
-- **Marketplaces**: n24q02m-plugins (n24q02m/claude-plugins — 7 MCP plugins), cc-marketplace (kenryu42)
+- **MCP servers (n24q02m-plugins)**: wet-mcp, mnemo-mcp, better-notion-mcp, better-email-mcp, better-godot-mcp, better-telegram-mcp, better-code-review-graph
+- **Marketplaces**: n24q02m-plugins (n24q02m/claude-plugins), cc-marketplace (kenryu42)
 
 ## Bước 4: Cài đặt skills
 
@@ -83,17 +84,12 @@ cd ~/.claude/skills && git clone https://github.com/anthropics/claude-bug-bounty
 
 ## Bước 5: Cấu hình MCP Servers
 
-MCP servers được cấu hình trong `~/.claude.json` (mục `mcpServers`). File `claude-code/mcp-servers.json` chứa template với placeholders.
+MCP servers chia 2 nguồn:
+- **Plugin MCP** (7 servers): Quản lý bởi `n24q02m-plugins` marketplace — tự động cài khi bật plugin trong `settings.json`. Credentials cấu hình qua `setup`/`config` tools của từng plugin.
+- **Direct MCP** (3 servers): Cấu hình trong `~/.claude.json` (mục `mcpServers`). File `claude-code/mcp-servers.json` chứa template với placeholders.
 
 ```bash
-# Xem template
-cat claude-code/mcp-servers.json
-```
-
-Sau đó dùng Claude Code để thêm từng server:
-
-```bash
-# Hoặc copy trực tiếp vào ~/.claude.json (cần jq)
+# Merge direct MCP servers vào ~/.claude.json (cần jq)
 jq -s '.[0] * {"mcpServers": .[1].mcpServers}' ~/.claude.json claude-code/mcp-servers.json > /tmp/claude-merged.json
 mv /tmp/claude-merged.json ~/.claude.json
 ```
@@ -103,12 +99,6 @@ Thay thế các `<PLACEHOLDER>` bằng credentials thật:
 | Placeholder | Mô tả | Nguồn |
 |-------------|-------|-------|
 | `<STITCH_API_KEY>` | Google Stitch API key | Google AI Studio |
-| `<TELEGRAM_API_ID>` | Telegram API ID | my.telegram.org |
-| `<TELEGRAM_API_HASH>` | Telegram API hash | my.telegram.org |
-| `<TELEGRAM_PHONE>` | Số điện thoại Telegram | -- |
-| `<GOOGLE_API_KEY>` | Google AI API key | Google AI Studio |
-| `<COHERE_API_KEY>` | Cohere API key | dashboard.cohere.com |
-| `<GITHUB_TOKEN>` | GitHub PAT (fine-grained) | GitHub Settings |
 | `<GRAFANA_URL>` | Grafana URL | Self-hosted |
 | `<GRAFANA_TOKEN>` | Grafana service account token | Grafana Admin |
 
