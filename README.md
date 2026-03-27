@@ -20,22 +20,16 @@ Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketpl
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | `uvx better-telegram-mcp` |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | `uvx better-code-review-graph` |
 
-## Tools
-
-| Tool | Description | Install |
-|------|-------------|---------|
-| [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
-
-## Guides
-
-| Guide | Description |
-|-------|-------------|
-| [Remote Desktop](remote-desktop/) | Self-hosted RustDesk + Tailscale for multi-machine remote desktop. No ports exposed. |
-
 ## Libraries
 
 | Package | Description | Install |
 |---------|-------------|---------|
 | [mcp-relay-core](https://github.com/n24q02m/mcp-relay-core) | Cross-language relay infrastructure for MCP servers (ECDH crypto, config storage, relay client) | `npm i @n24q02m/mcp-relay-core` / `pip install mcp-relay-core` |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Lightweight ONNX inference for Qwen3 embedding and reranking models | `pip install qwen3-embed` |
+
+## Tools
+
+| Tool | Description | Install |
+|------|-------------|---------|
+| [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
 | [modalcom-ai-workers](https://github.com/n24q02m/modalcom-ai-workers) | GPU-serverless AI workers on Modal.com (embedding, reranking, OCR, ASR) | -- |
