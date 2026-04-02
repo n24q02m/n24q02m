@@ -17,7 +17,10 @@ applyTo: '**'
 
 ## 2. CHUẨN MỰC CODE
 - **KHÔNG** dùng emoji trong code/tài liệu kỹ thuật.
-- **Commits**: Conventional Commits. **API**: REST + OpenAPI (Orval). **Test Coverage**: ≥ 95%.
+<important if="committing code or creating commits">
+- **Commits**: CHỈ dùng `fix:` và `feat:` prefix. **KHÔNG BAO GIỜ** dùng `chore:`, `docs:`, `refactor:`, `ci:`, `build:`, `style:`, `perf:`, `test:` hay bất kỳ type nào khác. **KHÔNG BAO GIỜ** dùng `!` (breaking change indicator). **KHÔNG BAO GIỜ** skip pre-commit hooks (`--no-verify`, `--no-gpg-sign`).
+</important>
+- **API**: REST + OpenAPI (Orval). **Test Coverage**: ≥ 95%.
 - **Type-Safe SQL**: Python (SQLModel + Alembic), Go (sqlc + golang-migrate), TS (Drizzle).
 - **DataFrames**: `polars` only. **Data Files**: JSONL format bắt buộc.
 - **Security**: **KHÔNG BAO GIỜ** commit real credentials (phone, API keys, tokens, passwords). Luôn dùng placeholders. Dùng Doppler/Infisical.

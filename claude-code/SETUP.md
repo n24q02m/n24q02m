@@ -69,7 +69,7 @@ done
 
 ```bash
 # gstack (QA, browse, review, ship, retro, plan-review)
-cd ~/.claude/skills && git clone https://github.com/gstack-so/gstack.git
+cd ~/.claude/skills && git clone https://github.com/garrytan/gstack.git
 cd gstack && bun install
 
 # Tạo symlinks cho sub-skills
@@ -79,7 +79,7 @@ for skill in browse gstack-upgrade plan-ceo-review plan-eng-review qa qa-only re
 done
 
 # claude-bug-bounty
-cd ~/.claude/skills && git clone https://github.com/anthropics/claude-bug-bounty.git
+cd ~/.claude/skills && git clone https://github.com/shuvonsec/claude-bug-bounty.git
 ```
 
 ## Bước 5: Cấu hình MCP Servers
