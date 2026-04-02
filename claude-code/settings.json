@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c \"import json,sys,os,datetime; d=json.load(sys.stdin); f=open(os.path.expanduser('~/.claude/skill-usage.log'),'a'); f.write(f\\\"{datetime.datetime.now().isoformat()} {d.get('tool_input',{}).get('skill','unknown')}\\\\n\\\"); f.close()\""
+            "command": "python ~/.claude/scripts/hook-skill-track.py"
           }
         ]
       }
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c \"import json,sys,os,datetime; d=json.load(sys.stdin); tool=d.get('tool_name',''); result=str(d.get('tool_result',{}).get('content',''))[:200]; log=os.path.expanduser('~/.claude/instinct.log'); f=open(log,'a'); f.write(f\\\"{datetime.datetime.now().isoformat()} {tool} {result[:100]}\\\\n\\\"); f.close()\" 2>/dev/null"
+            "command": "python ~/.claude/scripts/hook-instinct.py"
           }
         ]
       }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c \"import json,sys,os,urllib.request; d=json.load(sys.stdin); token=os.environ.get('VC_SECRETARY_BOT_TOKEN',''); chat=os.environ.get('VC_OWNER_CHAT_ID','7305908576'); msg=f'Claude Code session ended: {d.get(\\\"session_id\\\",\\\"unknown\\\")[:8]}'; token and urllib.request.urlopen(urllib.request.Request(f'https://api.telegram.org/bot{token}/sendMessage',data=json.dumps({\\\"chat_id\\\":chat,\\\"text\\\":msg}).encode(),headers={\\\"Content-Type\\\":\\\"application/json\\\"}))\" 2>/dev/null"
+            "command": "python ~/.claude/scripts/hook-stop-notify.py"
           }
         ]
       }
