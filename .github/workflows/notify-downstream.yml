@@ -87,8 +87,8 @@ jobs:
 
             # Add labels after creation (gh create --label may not work with App tokens)
             ISSUE_NUM=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
-            gh issue edit "$ISSUE_NUM" --repo "n24q02m/${REPO}" \
-              --add-label "dependencies" --add-label "core-update" || echo "WARN: failed to add labels to ${REPO}#${ISSUE_NUM}"
+            gh api "repos/n24q02m/${REPO}/issues/${ISSUE_NUM}/labels" \
+              -f "labels[]=dependencies" -f "labels[]=core-update" || echo "WARN: failed to add labels to ${REPO}#${ISSUE_NUM}"
 
             echo "CREATED: ${REPO}#${ISSUE_NUM} -- ${TITLE}"
           done
