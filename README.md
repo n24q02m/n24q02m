@@ -16,7 +16,7 @@ Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketpl
 | [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Persistent AI memory with hybrid search and cross-machine sync | `uvx mnemo-mcp` |
 | [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Markdown-first Notion API with 9 composite tools | `npx @n24q02m/better-notion-mcp` |
 | [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) with multi-account and auto-discovery | `npx @n24q02m/better-email-mcp` |
-| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine 4.x with 18 tools for scenes, scripts, and shaders | `npx @n24q02m/better-godot-mcp` |
+| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine 4.x with 17 composite tools for scenes, scripts, and shaders | `npx @n24q02m/better-godot-mcp` |
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | `uvx better-telegram-mcp` |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | `uvx better-code-review-graph` |
 
