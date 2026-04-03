@@ -1,0 +1,44 @@
+# Core library -> downstream repos that need update issues on stable release.
+# Edit this file to add/remove downstream repos. Core repos need no changes.
+cores:
+  qwen3-embed:
+    package: qwen3-embed
+    downstream:
+      - repo: wet-mcp
+        field: pyproject.toml
+      - repo: mnemo-mcp
+        field: pyproject.toml
+      - repo: better-code-review-graph
+        field: pyproject.toml
+
+  web-core:
+    package: n24q02m-web-core
+    downstream:
+      - repo: wet-mcp
+        field: pyproject.toml
+      - repo: knowledge-core
+        field: pyproject.toml
+
+  mcp-relay-core:
+    package: mcp-relay-core
+    downstream:
+      - repo: wet-mcp
+        field: pyproject.toml
+      - repo: mnemo-mcp
+        field: pyproject.toml
+      - repo: better-telegram-mcp
+        field: pyproject.toml
+      - repo: better-code-review-graph
+        field: pyproject.toml
+      - repo: better-email-mcp
+        field: package.json
+      - repo: better-notion-mcp
+        field: package.json
+
+  knowledge-core:
+    package: knowledge-core
+    downstream:
+      - repo: KnowledgePrism
+        field: apps/ai-worker/pyproject.toml
+      - repo: Aiora
+        field: apps/ai-worker/pyproject.toml
