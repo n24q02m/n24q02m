@@ -70,10 +70,8 @@ jobs:
               continue
             fi
 
-            gh issue create --repo "n24q02m/${REPO}" \
+            ISSUE_URL=$(gh issue create --repo "n24q02m/${REPO}" \
               --title "${TITLE}" \
-              --label "dependencies" \
-              --label "core-update" \
               --body "## Core Library Update
 
           **${PACKAGE}** has released **${VERSION}**.
@@ -85,7 +83,12 @@ jobs:
           - [ ] Review release notes for breaking changes
           - [ ] Update version constraint in \`${FIELD}\`
           - [ ] Run tests locally
-          - [ ] Create PR with the update"
+          - [ ] Create PR with the update")
 
-            echo "CREATED: ${REPO} -- ${TITLE}"
+            # Add labels after creation (gh create --label may not work with App tokens)
+            ISSUE_NUM=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
+            gh issue edit "$ISSUE_NUM" --repo "n24q02m/${REPO}" \
+              --add-label "dependencies" --add-label "core-update" 2>/dev/null || true
+
+            echo "CREATED: ${REPO}#${ISSUE_NUM} -- ${TITLE}"
           done
