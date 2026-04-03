@@ -207,7 +207,7 @@ repo/
 ├── .claude-plugin/                # Layer 4a: Claude Code plugin manifest
 │   ├── plugin.json
 │   └── marketplace.json
-└── gemini-extension.json          # Layer 4b: Gemini CLI extension (optional)
+└── (gemini-extension.json removed — Gemini CLI deprecated 04/2026)
 ```
 
 #### Layer 1: Context Files (ship ca hai)
@@ -1107,3 +1107,84 @@ await client.close()
 - **MCP transport parse JSON**: `json.dumps()` string có thể bị parse lại thành dict — dùng list/dict trực tiếp
 - **Network tests**: Dùng `skip()` thay vì `fail()` khi network unavailable
 - **Fake tokens**: Server cần token để start → dùng fake token, test help/error paths offline
+
+---
+
+## Design Philosophies (Production MCP Ecosystem)
+
+8 nguyen tac thiet ke da duoc ap dung nhat quan trong ecosystem 7 MCP servers + relay.
+
+### 1. Zero-Knowledge Relay
+
+Relay server KHONG BAO GIO thay plaintext credentials. E2E encryption: ECDH P-256 key exchange + AES-256-GCM. URL fragment (`#k=...&p=...`) chua secrets — theo RFC 3986, fragment KHONG gui toi server.
+
+- Config luu local: `~/.config/mcp/config.enc` (machine-bound AES-256-GCM, PBKDF2 machine-id+username)
+- Session TTL 10 phut, one-shot consumption (409 neu submit lai)
+- 4-word Diceware passphrase (~52 bits entropy)
+
+### 2. Composite/Mega Tool Pattern
+
+1 tool per domain, action param dispatch via `switch(input.action)`. Giam tu 50+ tools xuong 5-9 tools.
+
+- Token savings: LLM chi thay 5-9 tool definitions thay vi 50+
+- Context bundling: actions cung domain share IMAP connection pool, DB session, etc.
+- Vi du: `messages` tool co 9 actions (search, read, mark_read, mark_unread, flag, unflag, move, archive, trash)
+
+### 3. 3-Tier Token Optimization
+
+| Tier | Content | Token Cost | Khi nao load |
+|------|---------|------------|-------------|
+| 1 | Compact tool descriptions | ~50 tokens/tool | Luon (tool registration) |
+| 2 | Help tool full docs | ~500 tokens/topic | Khi LLM goi `help` |
+| 3 | MCP Resources (markdown) | ~2000 tokens/doc | Khi LLM doc resource |
+
+Giam ~77% token overhead so voi nhet tat ca docs vao tool descriptions.
+
+### 4. Tool Annotations
+
+Metadata cho LLM biet tool behavior truoc khi goi:
+- `readOnlyHint`: KHONG thay doi state
+- `destructiveHint`: Co the mat du lieu vinh vien
+- `idempotentHint`: Goi nhieu lan ket qua giong nhau
+- `openWorldHint`: Xu ly noi dung tu nguon khong tin cay (web, email)
+
+### 5. Security Defense-in-Depth
+
+**SSRF Prevention**: Validate URL scheme, block RFC 1918/loopback/link-local, DNS resolve check.
+**Path Traversal**: `resolve()` + allowed_dir containment + block dotfiles + symlink check.
+**Prompt Injection (XPIA)**: `<untrusted_{source}_content>` XML boundary tags, sanitize closing tags.
+**Error Sanitization**: KHONG BAO GIO lo credentials trong error messages.
+**Rate Limiting**: 120 req/min MCP, 20 req/min auth endpoints, per IP.
+
+### 6. Multi-User HTTP Mode
+
+Stdio = single-user (process isolation). HTTP = multi-user (per-user sessions).
+
+- **DCR** (Dynamic Client Registration): Stateless HMAC-SHA256 — survive cold starts, no database
+- **Per-user isolation**: ContextVar (Python) / Map<userId, config> (TypeScript)
+- **Session ownership**: Verify bearer token matches session owner, 403 on mismatch
+- **Credential encryption**: AES-256-GCM at rest, PBKDF2 key derivation
+- **OAuth 2.1 + PKCE S256**: Notion, Email (Outlook Device Code Flow)
+
+### 7. Degraded Mode
+
+Server LUON start duoc, ke ca KHONG co credentials. Help + config tools hoat dong. Data tools tra ve setup instructions.
+
+- Resolution order: ENV > config.enc > saved sessions > relay setup > degraded mode
+- User thay "Please configure via relay setup" thay vi crash
+- Cho phep relay-first onboarding flow
+
+### 8. Zero-Config Relay Setup
+
+Auto-open browser → user nhap credentials → server tu nhan config → connect.
+
+- `webbrowser.open()` khi can relay setup
+- Poll relay server cho credential submission (1-2s backoff, 120-300s timeout)
+- Sau khi nhan: encrypt + save to config.enc → khong can nhap lai lan sau
+
+### User-Facing Docs Pattern
+
+Moi repo co 2 file setup guide:
+- `docs/setup-with-agent.md`: User copy prompt + raw URL → paste cho AI agent → agent tu setup
+- `docs/setup-manual.md`: User tay setup theo huong dan
+- README chi chua features + 2 links (khong wall-of-text setup instructions)
