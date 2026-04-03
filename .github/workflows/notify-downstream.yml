@@ -1,0 +1,90 @@
+name: Notify Downstream
+
+on:
+  repository_dispatch:
+    types: [core-update]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Create Update Issues
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+        with:
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_KEY }}
+          owner: n24q02m
+
+      - name: Create issues in downstream repos
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          CORE: ${{ github.event.client_payload.core }}
+          VERSION: ${{ github.event.client_payload.version }}
+          TAG: ${{ github.event.client_payload.tag }}
+          RELEASE_URL: ${{ github.event.client_payload.release_url }}
+        run: |
+          set -euo pipefail
+
+          # Parse dependency map with python (available on ubuntu-latest)
+          read -r PACKAGE DOWNSTREAM <<< "$(python3 -c "
+          import yaml, json, sys
+          with open('dependency-map.yml') as f:
+              data = yaml.safe_load(f)
+          core = data['cores'].get('${CORE}')
+          if not core:
+              print('null null')
+              sys.exit(0)
+          print(core['package'], json.dumps(core['downstream']))
+          ")"
+
+          if [ "$PACKAGE" = "null" ] || [ "$DOWNSTREAM" = "null" ]; then
+            echo "No downstream repos found for core: ${CORE}"
+            exit 0
+          fi
+
+          TITLE="Update ${PACKAGE} to ${VERSION}"
+
+          echo "$DOWNSTREAM" | jq -c '.[]' | while read -r entry; do
+            REPO=$(echo "$entry" | jq -r '.repo')
+            FIELD=$(echo "$entry" | jq -r '.field')
+
+            # Dedup: skip if open issue with same title exists
+            EXISTING=$(gh issue list --repo "n24q02m/${REPO}" \
+              --search "${TITLE} in:title" \
+              --state open --json number --jq 'length' 2>/dev/null || echo "0")
+
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "SKIP: ${REPO} -- issue already exists"
+              continue
+            fi
+
+            gh issue create --repo "n24q02m/${REPO}" \
+              --title "${TITLE}" \
+              --label "dependencies,core-update" \
+              --body "## Core Library Update
+
+          **${PACKAGE}** has released **${VERSION}**.
+
+          - Release: ${RELEASE_URL}
+
+          ## Action Required
+
+          - [ ] Review release notes for breaking changes
+          - [ ] Update version constraint in \`${FIELD}\`
+          - [ ] Run tests locally
+          - [ ] Create PR with the update"
+
+            echo "CREATED: ${REPO} -- ${TITLE}"
+          done
