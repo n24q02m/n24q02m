@@ -1,6 +1,8 @@
 # n24q02m
 
-## Quick Install (Claude Code)
+## MCP Servers & Plugins
+
+### Quick Install (Claude Code)
 
 ```bash
 /plugin marketplace add n24q02m/claude-plugins
@@ -8,7 +10,7 @@
 
 Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketplace.
 
-## MCP Servers & Plugins
+### Servers
 
 | Server | Description | Agent Setup | Runtime |
 |--------|-------------|-------------|---------|
@@ -48,3 +50,11 @@ These 8 principles are applied consistently across all 7 MCP servers and the rel
 |------|-------------|---------|
 | [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
 | [modalcom-ai-workers](https://github.com/n24q02m/modalcom-ai-workers) | GPU-serverless AI workers on Modal.com (embedding, reranking, OCR, ASR) | -- |
+
+## Long-term Direction
+
+**Current** -- [KnowledgePrism](https://klprism.com): Knowledge intelligence platform with multi-model orchestration, RAG pipeline, and knowledge graph-assisted quality assurance across multilingual content.
+
+**Next** -- [Aiora](https://getaiora.com): Health and environmental intelligence platform with deterministic rules, AQI pattern prediction, and real-time sensor data.
+
+**Vision (2027-2028)** -- Graph World Model (Akasha): A paradigm shift from LLM-first to graph-first AI. The knowledge graph becomes the reasoning engine (symbolic rules + GNN inference), with the LLM reduced to a natural language translator. Four model tiers evolve progressively: Echo (LLM + RAG) -> Aura (enhanced graph reasoning) -> Nexus (hybrid symbolic + LLM) -> Akasha (full GWM, minimal LLM). Target: 10-25x cost reduction with full explainability and editability.
