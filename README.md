@@ -29,7 +29,7 @@ Then `/plugin install <name>@n24q02m-plugins`. All 7 MCP servers in one marketpl
 These 8 principles are applied consistently across all 7 MCP servers and the relay infrastructure:
 
 1. **Zero-Knowledge Relay** -- E2E encryption (ECDH P-256 + AES-256-GCM). Relay server never sees plaintext credentials. URL fragment secrets stay client-side per RFC 3986.
-2. **Composite Tool Pattern** -- One tool per domain with action dispatch. 5-9 tools instead of 50+, saving LLM context tokens.
+2. **Composite Tool Pattern** -- One tool per domain with action dispatch. 5-17 tools per server instead of 50+, saving LLM context tokens.
 3. **3-Tier Token Optimization** -- Compact descriptions (always loaded), help docs (on demand), MCP resources (deep reference). ~77% token overhead reduction.
 4. **Tool Annotations** -- `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` metadata so the LLM knows tool behavior before calling.
 5. **Security Defense-in-Depth** -- SSRF prevention, path traversal containment, XPIA boundary tags, error sanitization, rate limiting.
