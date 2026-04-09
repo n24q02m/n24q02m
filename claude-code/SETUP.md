@@ -182,3 +182,56 @@ Trên máy khác, pull và chạy lại Bước 2-4.
 - **KHÔNG** commit `~/.claude/projects/` (project-level memory, auto-generated)
 - Plugins tự động cài đặt khi khởi động Claude Code nếu đã khai báo trong `settings.json`
 - External skills (gstack, claude-bug-bounty) cần cập nhật bằng `git pull` trong thư mục tương ứng
+
+## Phụ lục: Thiết lập GitHub Copilot VS Code đồng bộ 100%
+
+Để Copilot VSC có thể "tương tự và đầy đủ" sức mạnh và bối cảnh (context) giống như Claude Code, bạn cần áp dụng các thay đổi sau vào VS Code.
+
+### Đồng bộ System Prompts
+Trong `~/.config/Code - Insiders/User/prompts/` (hoặc `Code/User/prompts/`), hãy tạo file `AGENTS.instructions.md` với cùng nội dung:
+
+```bash
+mkdir -p "$HOME/.config/Code - Insiders/User/prompts/"
+cp claude-code/CLAUDE.md "$HOME/.config/Code - Insiders/User/prompts/AGENTS.instructions.md"
+```
+
+### Đồng bộ Skills
+Sao chép lại mô hình Skills và các thư viện external (Gstack) cho Copilot bằng cách đưa vào thư mục Prompts:
+
+```bash
+# 1. Custom skills
+mkdir -p "$HOME/.config/Code - Insiders/User/prompts/skills"
+for skill in ai-ml fullstack-dev infra-devops product-growth; do
+  cp -r skills/$skill "$HOME/.config/Code - Insiders/User/prompts/skills/$skill"
+done
+
+# 2. External skills
+cd "$HOME/.config/Code - Insiders/User/prompts/skills"
+git clone https://github.com/garrytan/gstack.git
+(cd gstack && bun install)
+
+for skill in browse gstack-upgrade plan-ceo-review plan-eng-review qa qa-only retro review setup-browser-cookies ship; do
+  ln -sf gstack/$skill $skill
+done
+
+git clone https://github.com/shuvonsec/claude-bug-bounty.git
+```
+
+### Đồng bộ MCP Servers & Permission
+Sử dụng `settings.json` của VS Code (`~/.config/Code - Insiders/User/settings.json`) để thêm cấu hình bypass và định nghĩa list MCP servers:
+
+```json
+  "github.copilot.chat.mcp.enabled": true,
+  "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true,
+  "github.copilot.chat.mcp.servers": {
+    "wet": {"command": "uvx", "args": ["--python", "3.13", "wet-mcp@latest"]},
+    "mnemo": {"command": "uvx", "args": ["--python", "3.13", "mnemo-mcp@latest"]},
+    "better-notion": {"command": "bun", "args": ["x", "@n24q02m/better-notion-mcp@latest"]},
+    "better-email": {"command": "bun", "args": ["x", "@n24q02m/better-email-mcp@latest"]},
+    "better-godot": {"command": "bun", "args": ["x", "@n24q02m/better-godot-mcp@latest"]},
+    "better-telegram": {"command": "uvx", "args": ["--python", "3.13", "better-telegram-mcp@latest"]},
+    "better-code-review-graph": {"command": "uvx", "args": ["--python", "3.13", "better-code-review-graph@latest"]}
+  }
+```
+*Ghi chú: Thêm các biến môi trường env/API KEY nếu cần thiết (tương tự như `~/.claude.json`).*
+

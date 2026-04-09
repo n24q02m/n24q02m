@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python ~/.claude/scripts/hook-skill-track.py"
+            "command": "python3 ~/.claude/scripts/hook-skill-track.py"
           }
         ]
       }
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python ~/.claude/scripts/hook-instinct.py"
+            "command": "python3 ~/.claude/scripts/hook-instinct.py"
           }
         ]
       }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python ~/.claude/scripts/hook-stop-notify.py"
+            "command": "python3 ~/.claude/scripts/hook-stop-notify.py"
           }
         ]
       }
