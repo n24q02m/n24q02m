@@ -41,7 +41,7 @@ These 8 principles are applied consistently across all 7 MCP servers and the rel
 
 | Package | Description | Install |
 |---------|-------------|---------|
-| [mcp-relay-core](https://github.com/n24q02m/mcp-relay-core) | Cross-language relay infrastructure for MCP servers (ECDH crypto, config storage, relay client) | `npm i @n24q02m/mcp-relay-core` / `pip install mcp-relay-core` |
+| [mcp-core](https://github.com/n24q02m/mcp-core) | Unified MCP Streamable HTTP 2025-11-25 transport, OAuth 2.1 AS, lifecycle, install automation, shared embedding daemon | `npm i @n24q02m/mcp-core` / `pip install n24q02m-mcp-core` |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Lightweight ONNX inference for Qwen3 embedding and reranking models | `pip install qwen3-embed` |
 
 ## Tools
