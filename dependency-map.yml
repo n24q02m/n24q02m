@@ -19,8 +19,8 @@ cores:
       - repo: knowledge-core
         field: pyproject.toml
 
-  mcp-relay-core:
-    package: mcp-relay-core
+  mcp-core:
+    package: n24q02m-mcp-core
     downstream:
       - repo: wet-mcp
         field: pyproject.toml
