@@ -6,7 +6,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
