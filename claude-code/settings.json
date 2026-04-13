@@ -6,41 +6,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "enabledPlugins": {
-    "security-guidance@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "chrome-devtools-mcp@claude-plugins-official": true,
-    "wet-mcp@n24q02m-plugins": true,
-    "mnemo-mcp@n24q02m-plugins": true,
-    "better-notion-mcp@n24q02m-plugins": true,
-    "better-code-review-graph@n24q02m-plugins": true,
-    "better-email-mcp@n24q02m-plugins": true,
-    "better-godot-mcp@n24q02m-plugins": true,
-    "better-telegram-mcp@n24q02m-plugins": true
-  },
-  "extraKnownMarketplaces": {
-    "cc-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "kenryu42/cc-marketplace"
-      }
-    },
-    "n24q02m-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "n24q02m/claude-plugins"
-      }
-    }
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -75,6 +40,41 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "better-godot-mcp@n24q02m-plugins": true,
+    "wet-mcp@n24q02m-plugins": true,
+    "mnemo-mcp@n24q02m-plugins": true,
+    "better-telegram-mcp@n24q02m-plugins": true,
+    "better-code-review-graph@n24q02m-plugins": true,
+    "better-email-mcp@n24q02m-plugins": true,
+    "better-notion-mcp@n24q02m-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "cc-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "kenryu42/cc-marketplace"
+      }
+    },
+    "n24q02m-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "n24q02m/claude-plugins"
+      }
+    }
   },
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true

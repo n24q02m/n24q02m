@@ -12,7 +12,6 @@ description: "Infrastructure, DevOps, CI/CD, security. OCI VM, Docker, Caddy, mo
 - Allocate resources (Dragonfly DB, Qdrant collection, FalkorDB)
 - Monitoring: Grafana Selfhost, Alloy, Loki, Vector, Node Exporter
 - MLflow tracing (AI/LLM) va experiment tracking
-- LiteLLM Proxy: virtual keys, model routing, cost tracking
 - Secrets management: Doppler (infra), Infisical (app)
 - Docker security: multi-stage build, BuildKit cache, non-root user
 - Dependency scanning: Semgrep, Renovate, Trivy
@@ -55,10 +54,24 @@ Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, Infisical, Doppler
 ## References (doc on demand)
 
 - `references/oci-vm.md` -- VM architecture, deploy workflow, memory limits, resource allocation scripts, backup
-- `references/observability.md` -- Grafana Selfhost, Alloy, Vector, Loki, MLflow tracing/tracking, LiteLLM Proxy, alerting
+- `references/observability.md` -- Grafana Selfhost, Alloy, Vector, Loki, MLflow tracing/tracking, alerting
 - `references/security.md` -- Secrets management (Doppler/Infisical), Docker security, dependency scanning, auth, rate limiting
 - `references/repo-structure.md` -- Repository standards, mise tasks, pre-commit, Git branching, README format, Renovate, Docker build
 - `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), PR title check, Semgrep, Qodo Merge, email notify
 - `references/semantic-release.md` -- PSR v10 config (Python/TS/Rust/Go), monorepo, beta/stable, troubleshooting
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
+
+## Spec / Plan / Migration / Architecture writeup
+
+**BAT BUOC**: Khi user yeu cau viet spec/plan/roadmap cho bat ky infra/devops task nao (VM deploy plan, CI/CD redesign, monitoring rollout, secrets migration, disaster recovery, PSR config, GCP/AWS migration plan, cost optimization plan), invoke `Skill` tool voi `superpowers:writing-plans` (hoac `superpowers:brainstorming` cho ideation, `superpowers:executing-plans` cho execution) TRUOC KHI viet noi dung. KHONG freehand. Skill enforce verify-before-claim, test-first, bite-sized tasks, review checkpoint. Xem global rule `~/.claude/CLAUDE.md` section 1 va memory `feedback_spec_plan_superpower.md`.
+
+**FEEDBACK → SPEC + PLAN**: Khi user dua feedback thay doi scope/requirements/decisions, PHAI cap nhat spec + plan document TRUOC, KHONG chi ghi memory. Memory la ghi chu bo sung, spec + plan la source of truth. Thu tu: feedback → (1) update spec/plan → (2) ghi memory → (3) implement.
+
+**Public-ready artifacts**: Khi viet docs/plans/terraform modules/dockerfiles voi kha nang release public (OS repo, blog post, conference talk), BAT BUOC:
+- Khong hardcode hostname noi bo (`infra-vnic`, `prod-vnic`, tailscale IPs) — dung placeholder `<infra-host>`, `<prod-host>`
+- Khong expose Infisical project ID (`53c9e228`), Doppler config names, CF account ID
+- Khong leak secret paths hay API key format tu environment
+- Terraform/Dockerfile: tach module public-safe voi module co secrets
+- License: Apache-2.0 mac dinh cho code + docs
+- README phai co quick-start KHONG can credentials noi bo
