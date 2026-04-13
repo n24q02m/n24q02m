@@ -34,6 +34,45 @@
 | Lint/Test/Build | `[self-hosted, linux, arm64]` | **NO** | **KHÔNG** dùng harden-runner trên self-hosted |
 | Codecov upload | (cùng lint job) | — | **PHẢI** có `os: linux-arm64` |
 
+### Concurrency Group (BẮT BUỘC cho self-hosted runners)
+
+Self-hosted runners chỉ có 1 instance mỗi VM. Bot-generated PRs (Jules, Qodo-Merge, Dependabot, Renovate, Copilot SWE) có thể tạo 20+ PR cùng lúc, clog hết queue và block user work trong nhiều giờ.
+
+**Pattern bắt buộc**: Bot PRs dùng shared serial group → chỉ 1 bot job chạy tại 1 thời điểm. User work (push main, PR người thường) có group riêng per-ref/per-PR, không bị block.
+
+```yaml
+concurrency:
+  # Bot/automated PRs (Jules, Qodo, Dependabot, Renovate, Copilot) share a single
+  # serial group so only 1 bot job ever runs at a time on the self-hosted runner.
+  # Real user work (push to main, non-bot PRs) gets its own group per-ref/per-PR.
+  group: >-
+    ${{
+      (
+        github.actor == 'dependabot[bot]'
+        || github.actor == 'renovate[bot]'
+        || github.actor == 'copilot-swe-agent[bot]'
+        || github.actor == 'qodo-merge-pro[bot]'
+        || (github.event_name == 'pull_request'
+            && (contains(github.event.pull_request.body, 'created automatically by Jules')
+                || contains(github.event.pull_request.body, 'created by Qodo')))
+      )
+      && 'ci-bot-serial'
+      || format('ci-{0}-{1}', github.workflow, github.event.pull_request.number || github.ref)
+    }}
+  cancel-in-progress: true
+```
+
+**Nhận diện bot PRs**:
+- `github.actor`: `dependabot[bot]`, `renovate[bot]`, `copilot-swe-agent[bot]`, `qodo-merge-pro[bot]`
+- Jules PRs: actor là owner nhưng `pull_request.body` chứa `"created automatically by Jules"`
+- Qodo fix PRs: `pull_request.body` chứa `"created by Qodo"`
+
+**Hiệu ứng**:
+- Bot group `ci-bot-serial` + `cancel-in-progress: true` → bot mới push sẽ cancel bot cũ, chỉ 1 bot job chạy
+- User group `ci-{workflow}-{ref}` → mỗi branch/PR có lane riêng, không bị ảnh hưởng bởi bot
+
+**CHỈ áp dụng cho private repos với self-hosted runner** (Aiora, KnowledgePrism, knowledge-core, QuikShipping). Public repos dùng GitHub-hosted runners unlimited, không cần pattern này.
+
 ### Python
 
 ```yaml
