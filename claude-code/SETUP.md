@@ -72,10 +72,18 @@ done
 cd ~/.claude/skills && git clone https://github.com/garrytan/gstack.git
 cd gstack && bun install
 
-# Tạo symlinks cho sub-skills
+# Tạo symlinks/junctions cho sub-skills
+# Trên macOS/Linux: dùng symlink
 cd ~/.claude/skills
 for skill in browse gstack-upgrade plan-ceo-review plan-eng-review qa qa-only retro review setup-browser-cookies ship; do
   ln -sf gstack/$skill $skill
+done
+
+# Trên Windows (Git Bash): dùng Windows junction (mklink /J)
+# Symlink không hoạt động đúng trên Windows — git clone sẽ tạo copy thay vì link
+cd ~/.claude/skills
+for skill in browse gstack-upgrade plan-ceo-review plan-eng-review qa qa-only retro review setup-browser-cookies ship; do
+  cmd //c "mklink /J C:\\Users\\$USER\\.claude\\skills\\$skill C:\\Users\\$USER\\.claude\\skills\\gstack\\$skill"
 done
 
 # claude-bug-bounty
@@ -101,6 +109,30 @@ Thay thế các `<PLACEHOLDER>` bằng credentials thật:
 | `<STITCH_API_KEY>` | Google Stitch API key | Google AI Studio |
 | `<GRAFANA_URL>` | Grafana URL | Self-hosted |
 | `<GRAFANA_TOKEN>` | Grafana service account token | Grafana Admin |
+
+## Bước 5.5: Novita AI (external models qua Claude Code — tùy chọn)
+
+Claude Code có thể dùng open-source models (GLM-5.1, MiniMax M2.7, v.v.) qua Novita AI's Anthropic SDK-compatible API. Chỉ dùng khi muốn giảm chi phí hoặc A/B test — không thay thế Claude mặc định.
+
+```bash
+# Shell profile (~/.bashrc / ~/.zshrc)
+export ANTHROPIC_BASE_URL=https://api.novita.ai/anthropic
+export ANTHROPIC_AUTH_TOKEN=<NOVITA_API_KEY>
+export ANTHROPIC_MODEL=glm-5.1
+export ANTHROPIC_SMALL_FAST_MODEL=minimax-m2.7
+```
+
+Quay lại Claude (default Anthropic):
+
+```bash
+unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL ANTHROPIC_SMALL_FAST_MODEL
+```
+
+Pricing tham khảo (xem novita.ai/pricing để cập nhật):
+- GLM-5.1: $1.40/M input / $4.40/M output (cached input $0.26/M)
+- MiniMax M2.7: $0.30/M / $1.20/M (cached $0.06/M)
+
+`ANTHROPIC_AUTH_TOKEN` KHÔNG commit — giữ trong env var hoặc Infisical.
 
 ## Bước 6: Cấu hình settings.local.json (tùy chọn)
 
@@ -168,8 +200,8 @@ for skill in ai-ml fullstack-dev infra-devops product-growth; do
   cp -r ~/.claude/skills/$skill skills/$skill
 done
 
-# Commit và push
-git add -A && git commit -m "chore: sync claude code config" && git push
+# Commit và push (chỉ dùng fix:/feat: prefix)
+git add -A && git commit -m "feat: sync claude code config" && git push
 ```
 
 Trên máy khác, pull và chạy lại Bước 2-4.

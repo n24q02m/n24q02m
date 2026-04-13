@@ -45,11 +45,25 @@ description: "AI/ML: RAG pipeline, embeddings, reranking, vector search (Qdrant)
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 
+## Spec / Plan / Training Roadmap
+
+**BAT BUOC**: Khi user yeu cau viet spec/plan/roadmap cho bat ky AI/ML task nao (training pipeline, eval suite, RAG redesign, model finetune, data pipeline), invoke `Skill` tool voi `superpowers:writing-plans` (hoac `superpowers:brainstorming` cho ideation stage, `superpowers:executing-plans` cho execution) TRUOC KHI viet noi dung. KHONG freehand. Skill enforce verify-before-claim, test-first, bite-sized tasks, review checkpoint. Xem global rule `~/.claude/CLAUDE.md` section 1 va memory `feedback_spec_plan_superpower.md`.
+
+**FEEDBACK → SPEC + PLAN**: Khi user dua feedback thay doi scope/requirements/decisions, PHAI cap nhat spec + plan document TRUOC, KHONG chi ghi memory. Memory la ghi chu bo sung, spec + plan la source of truth. Thu tu: feedback → (1) update spec/plan → (2) ghi memory → (3) implement.
+
+**Public release readiness**: Moi training run / model checkpoint / eval report viet voi gia dinh se push len HuggingFace Hub public. Bat buoc:
+- Model card theo HF template (task, intended use, training data, eval, limitations, license, citation)
+- Dataset card neu release data (source attribution, license, stats, language distribution, PII scrubbing proof)
+- Eval tren public benchmarks reproducible (BEIR, MMEB, MIRACL, MMDocIR, ViDoRe, AudioCaps, CMTEB)
+- License: Apache-2.0 cho code + weights, CC-BY-4.0 hoac ODC-BY cho datasets
+- KHONG hardcode Infisical project ID, Modal workspace name, internal MLflow URL, personal email vao artifact
+
 ## Quy tac chung
 
 - **DataFrames**: `polars` only (KHONG pandas).
-- **LLM calls**: Qua LiteLLM Proxy ONLY (KHONG direct API keys).
+- **LLM calls**: Direct SDK (OpenAI, Cohere, google-genai) voi per-app Bearer token tu Infisical. KHONG proxy middleware.
 - **Comments/docstrings**: Tieng Viet.
 - **Test Coverage**: >= 95%.
-- **Reproducibility**: Set explicit random seeds.
-- **Output format**: safetensors cho model checkpoints.
+- **Reproducibility**: Set explicit random seeds, log hyperparameters + git commit hash vao MLflow.
+- **Output format**: safetensors cho model checkpoints, JSONL cho datasets.
+- **Experiment tracking**: MLflow tren infra-vnic (noi bo). Eval results copy sang HF model card khi release public.
