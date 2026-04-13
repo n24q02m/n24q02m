@@ -66,4 +66,4 @@ Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 - **Test Coverage**: >= 95%.
 - **Reproducibility**: Set explicit random seeds, log hyperparameters + git commit hash vao MLflow.
 - **Output format**: safetensors cho model checkpoints, JSONL cho datasets.
-- **Experiment tracking**: MLflow tren infra-vnic (noi bo). Eval results copy sang HF model card khi release public.
+- **Experiment tracking**: MLflow self-hosted noi bo. Eval results copy sang HF model card khi release public.

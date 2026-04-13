@@ -69,8 +69,8 @@ Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 **FEEDBACK → SPEC + PLAN**: Khi user dua feedback thay doi scope/requirements/decisions, PHAI cap nhat spec + plan document TRUOC, KHONG chi ghi memory. Memory la ghi chu bo sung, spec + plan la source of truth. Thu tu: feedback → (1) update spec/plan → (2) ghi memory → (3) implement.
 
 **Public-ready artifacts**: Khi viet docs/plans/terraform modules/dockerfiles voi kha nang release public (OS repo, blog post, conference talk), BAT BUOC:
-- Khong hardcode hostname noi bo (`infra-vnic`, `prod-vnic`, tailscale IPs) — dung placeholder `<infra-host>`, `<prod-host>`
-- Khong expose Infisical project ID (`53c9e228`), Doppler config names, CF account ID
+- Khong hardcode hostname noi bo hay tailscale IPs — dung placeholder `<infra-host>`, `<prod-host>`
+- Khong expose Infisical project ID, Doppler config names, CF account ID
 - Khong leak secret paths hay API key format tu environment
 - Terraform/Dockerfile: tach module public-safe voi module co secrets
 - License: Apache-2.0 mac dinh cho code + docs

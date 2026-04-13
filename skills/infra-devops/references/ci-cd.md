@@ -23,56 +23,16 @@
 ### Private Repo (Self-hosted ARM64)
 
 > **Áp dụng cho**: Aiora, KnowledgePrism, QuikShipping (private monorepos trên OCI VM2).
-> **`pull_request_target`**: CẦN cho Qodo/email/pr-title vì jobs này cần secrets (`GEMINI_API_KEY`, `SMTP_*`). `pull_request` từ fork không có secrets.
 
 | Job | Runner | harden-runner | Ghi chú |
 |-----|--------|---------------|---------|
 | PR title check | `ubuntu-latest` | YES | Auto-fix bot titles. Trigger: `pull_request` |
 | Semgrep SAST | `ubuntu-latest` (container) | **NO** (container job không tương thích) | Thay thế CodeQL cho private repos. `--exclude-rule` cho false positives |
-| Qodo AI review | `ubuntu-latest` | NO | Trigger: `pull_request`. Chỉ review PR của người khác |
+| Qodo AI review | `ubuntu-latest` | NO | Trigger: `pull_request` + `issue_comment`. Skip owner + bots. Auth: WIF → Vertex AI |
 | Dependency review | `ubuntu-latest` | YES | `continue-on-error: true` ở **step level** (private repos cần vì không có GitHub Advanced Security) |
 | Email notify | `ubuntu-latest` | YES | Trigger: `pull_request`. Skip owner + bots |
 | Lint/Test/Build | `[self-hosted, linux, arm64]` | **NO** | **KHÔNG** dùng harden-runner trên self-hosted |
 | Codecov upload | (cùng lint job) | — | **PHẢI** có `os: linux-arm64` |
-
-### Concurrency Group (BẮT BUỘC cho self-hosted runners)
-
-Self-hosted runners chỉ có 1 instance mỗi VM. Bot-generated PRs (Jules, Qodo-Merge, Dependabot, Renovate, Copilot SWE) có thể tạo 20+ PR cùng lúc, clog hết queue và block user work trong nhiều giờ.
-
-**Pattern bắt buộc**: Bot PRs dùng shared serial group → chỉ 1 bot job chạy tại 1 thời điểm. User work (push main, PR người thường) có group riêng per-ref/per-PR, không bị block.
-
-```yaml
-concurrency:
-  # Bot/automated PRs (Jules, Qodo, Dependabot, Renovate, Copilot) share a single
-  # serial group so only 1 bot job ever runs at a time on the self-hosted runner.
-  # Real user work (push to main, non-bot PRs) gets its own group per-ref/per-PR.
-  group: >-
-    ${{
-      (
-        github.actor == 'dependabot[bot]'
-        || github.actor == 'renovate[bot]'
-        || github.actor == 'copilot-swe-agent[bot]'
-        || github.actor == 'qodo-merge-pro[bot]'
-        || (github.event_name == 'pull_request'
-            && (contains(github.event.pull_request.body, 'created automatically by Jules')
-                || contains(github.event.pull_request.body, 'created by Qodo')))
-      )
-      && 'ci-bot-serial'
-      || format('ci-{0}-{1}', github.workflow, github.event.pull_request.number || github.ref)
-    }}
-  cancel-in-progress: true
-```
-
-**Nhận diện bot PRs**:
-- `github.actor`: `dependabot[bot]`, `renovate[bot]`, `copilot-swe-agent[bot]`, `qodo-merge-pro[bot]`
-- Jules PRs: actor là owner (n24q02m) nhưng `pull_request.body` chứa `"created automatically by Jules"`
-- Qodo fix PRs: `pull_request.body` chứa `"created by Qodo"`
-
-**Hiệu ứng**:
-- Bot group `ci-bot-serial` + `cancel-in-progress: true` → bot mới push sẽ cancel bot cũ, chỉ 1 bot job chạy
-- User group `ci-{workflow}-{ref}` → mỗi branch/PR có lane riêng, không bị ảnh hưởng bởi bot
-
-**CHỈ áp dụng cho private repos với self-hosted runner** (Aiora, KnowledgePrism, knowledge-core, QuikShipping). Public repos dùng GitHub-hosted runners unlimited, không cần pattern này.
 
 ### Python
 
@@ -449,7 +409,38 @@ Add any other context or screenshots about the feature request here.
         run: semgrep scan --config auto --error --verbose
 ```
 
-### AI PR Review (Qodo Merge)
+### AI PR Review
+
+**Public repos**: Dùng **CodeRabbit GitHub App** — không cần job trong CI. Cấu hình qua `.coderabbit.yaml` ở root repo.
+
+```yaml
+# .coderabbit.yaml
+language: "en-US"
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_usernames:
+      - "n24q02m"
+      - "dependabot[bot]"
+      - "renovate[bot]"
+      - "github-actions[bot]"
+      - "devin-ai-integration[bot]"
+      - "google-labs-jules[bot]"
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  auto_incremental_review: true
+issue_enrichment:
+  auto_enrich:
+    enabled: true
+  planning:
+    enabled: true
+chat:
+  auto_reply: false
+```
+
+**Private repos**: Dùng **Qodo Merge (qodo-ai/pr-agent)** qua GitHub Actions + Vertex AI WIF.
 
 ```yaml
   ai_pr_review:
@@ -458,6 +449,7 @@ Add any other context or screenshots about the feature request here.
       (
         github.event_name == 'issue_comment'
         && github.event.sender.type != 'Bot'
+        && github.event.sender.login != 'n24q02m'
       ) || (
         github.event_name == 'pull_request'
         && github.event.sender.type != 'Bot'
@@ -468,6 +460,7 @@ Add any other context or screenshots about the feature request here.
       issues: write
       pull-requests: write
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout repo
@@ -483,23 +476,29 @@ Add any other context or screenshots about the feature request here.
             echo "$RANDOM_EOF" >> "$GITHUB_ENV"
           fi
 
+      - name: Authenticate to GCP (Vertex AI)
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.VERTEX_WIF_PROVIDER }}
+          service_account: ${{ vars.VERTEX_SERVICE_ACCOUNT }}
+
       - name: PR Agent action step
         uses: qodo-ai/pr-agent@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VERTEXAI_PROJECT: ${{ vars.VERTEX_PROJECT }}
+          VERTEXAI_LOCATION: global
           PR_REVIEWER__EXTRA_INSTRUCTIONS: ${{ env.CUSTOM_INSTRUCTIONS }}
           PR_CODE_SUGGESTIONS__EXTRA_INSTRUCTIONS: ${{ env.CUSTOM_INSTRUCTIONS }}
           PR_DESCRIPTION__EXTRA_INSTRUCTIONS: ${{ env.CUSTOM_INSTRUCTIONS }}
           GITHUB_ACTION_CONFIG__AUTO_REVIEW: "true"
           GITHUB_ACTION_CONFIG__AUTO_DESCRIBE: "true"
           GITHUB_ACTION_CONFIG__AUTO_IMPROVE: "true"
+          GITHUB_ACTION_CONFIG__HANDLE_PR_ACTIONS: '["opened", "reopened", "ready_for_review", "synchronize"]'
 ```
 
-> **Bot filtering**: 3 lop bao ve:
-> 1. **CI level (issue_comment)**: `github.event.sender.type != 'Bot'` — chan bots khoi trigger qua comments
-> 2. **CI level (pull_request)**: `github.event.sender.type != 'Bot'` + `github.event.pull_request.user.login != 'n24q02m'` — skip AI review cho PRs cua chinh minh (tiet kiem runner minutes, chi review PRs cua nguoi khac/bots)
-> 3. **Qodo level**: `.pr_agent.toml` voi `ignore_pr_authors = ["^(?!n24q02m$)"]` — negative lookahead chi cho phep PR tu `n24q02m`, chan bot co `sender.type == 'User'` (vd: Jules)
+> **if: condition**: Cả 2 nhánh (`issue_comment` và `pull_request`) đều phải filter bot VÀ owner. `issue_comment` dùng `sender.login`, `pull_request` dùng `pull_request.user.login`.
+> **Auth**: Vertex AI qua WIF — không cần `GEMINI_API_KEY`. Vars `VERTEX_WIF_PROVIDER`, `VERTEX_SERVICE_ACCOUNT`, `VERTEX_PROJECT` là repo vars (không phải secrets).
 
 ---
 
