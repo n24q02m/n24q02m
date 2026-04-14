@@ -1,24 +1,15 @@
-name: CD
+name: Notify Downstream
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "17 */6 * * *"
   repository_dispatch:
-    types: [core-update, plugin-sync]
+    types: [core-update]
 
 permissions:
-  contents: write
-  issues: write
-
-concurrency:
-  group: notify-downstream-and-sync
-  cancel-in-progress: true
+  contents: read
 
 jobs:
   notify:
     name: Create Update Issues
-    if: github.event_name == 'repository_dispatch' && github.event.action == 'core-update'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -98,35 +89,3 @@ jobs:
 
             echo "CREATED: ${REPO} -- ${TITLE}"
           done
-
-  sync-readme-versions:
-    name: Sync README MCP/plugin versions
-    if: github.event_name != 'repository_dispatch' || github.event.action == 'plugin-sync'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Sync versions from claude-plugins
-        run: python3 scripts/sync_mcp_plugin_versions.py
-
-      - name: Commit and push
-        run: |
-          set -euo pipefail
-
-          if git diff --quiet -- README.md; then
-            echo "README.md already up to date"
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add README.md
-          git commit -m "fix: sync MCP/plugin versions from claude-plugins"
-          git push
