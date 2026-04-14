@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-readme-plugin-versions:
+    name: Validate README MCP/plugin versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Sync README version table (check)
+        run: python3 scripts/sync_mcp_plugin_versions.py
+
+      - name: Ensure no drift
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet -- README.md; then
+            echo "README.md MCP/plugin versions are out of sync with n24q02m/claude-plugins."
+            echo "Run: python3 scripts/sync_mcp_plugin_versions.py"
+            git --no-pager diff -- README.md
+            exit 1
+          fi
