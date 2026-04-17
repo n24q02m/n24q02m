@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/scripts/hook-skill-track.py"
+            "command": "python3 -c \"import os,runpy; runpy.run_path(os.path.expanduser('~/.claude/scripts/hook-skill-track.py'))\""
           }
         ]
       }
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/scripts/hook-instinct.py"
+            "command": "python3 -c \"import os,runpy; runpy.run_path(os.path.expanduser('~/.claude/scripts/hook-instinct.py'))\""
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/scripts/hook-stop-notify.py"
+            "command": "python3 -c \"import os,runpy; runpy.run_path(os.path.expanduser('~/.claude/scripts/hook-stop-notify.py'))\""
           }
         ]
       }
