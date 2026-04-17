@@ -110,29 +110,52 @@ Thay thế các `<PLACEHOLDER>` bằng credentials thật:
 | `<GRAFANA_URL>` | Grafana URL | Self-hosted |
 | `<GRAFANA_TOKEN>` | Grafana service account token | Grafana Admin |
 
-## Bước 5.5: Novita AI (external models qua Claude Code — tùy chọn)
+## Bước 5.5: LLM setup — VS Code Claude Agent + Copilot subscription (2026-04-17 pivot v2)
 
-Claude Code có thể dùng open-source models (GLM-5.1, MiniMax M2.7, v.v.) qua Novita AI's Anthropic SDK-compatible API. Chỉ dùng khi muốn giảm chi phí hoặc A/B test — không thay thế Claude mặc định.
+Claude Code local dev → **VS Code Claude Agent preview** (Anthropic Claude Agent SDK, billing qua GitHub Copilot subscription). **Không dùng** Anthropic API key riêng, không dùng Novita (đã deprecate do rate limit + balance issues).
 
-```bash
-# Shell profile (~/.bashrc / ~/.zshrc)
-export ANTHROPIC_BASE_URL=https://api.novita.ai/anthropic
-export ANTHROPIC_AUTH_TOKEN=<NOVITA_API_KEY>
-export ANTHROPIC_MODEL=glm-5.1
-export ANTHROPIC_SMALL_FAST_MODEL=minimax-m2.7
+### Bước 5.5.1: GitHub Copilot subscription
+
+Enroll theo tier phù hợp (monthly only, **không có annual discount**, verified 17/04/2026):
+
+| Tier | Giá | Model catalog | Premium req/mo |
+|------|-----|---------------|----------------|
+| Student | Free (verified student) | **Haiku 4.5 only** | 300 |
+| Pro | $10/mo | + Sonnet 4.5/4.6, Opus 4.5/4.6, Gemini 2.5 Pro, GPT-5.2/5.4 | 300 |
+| Pro+ | $39/mo | + Opus 4.7, tất cả models | 1,500 |
+
+Upgrade trigger: khi cần Sonnet/Opus cho refactor lớn hoặc deep reasoning, lên Pro ngay.
+
+### Bước 5.5.2: Enable VS Code Claude Agent preview
+
+Sửa `~/.config/Code - Insiders/User/settings.json` (hoặc `C:/Users/<you>/AppData/Roaming/Code - Insiders/User/settings.json` trên Windows):
+
+```json
+{
+  "github.copilot.chat.claudeAgent.enabled": true,
+  "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true
+}
 ```
 
-Quay lại Claude (default Anthropic):
+Reload window → Copilot Chat → "New Chat" → chọn "Claude (Session Type)".
+
+### Bước 5.5.3: Paperclip Hermes (infra-vnic) — Gemini 3 Flash
+
+Paperclip VC agents dùng Gemini 3 Flash qua Google AI Studio paid Tier 1 (không phải Copilot).
+- Model: `gemini-3-flash` (arena rank #11)
+- Pricing: $0.50 input / $3.00 output per 1M
+- Rate limit Tier 1: 1K RPM / 2M TPM / 10K RPD
+- API key → **Doppler** (projects: `virtual-company`, `oci-vm-infra`), **không Infisical**
+
+### Bước 5.5.4: Clean old Novita env
+
+Nếu máy cũ từng set Novita env, xoá:
 
 ```bash
-unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL ANTHROPIC_SMALL_FAST_MODEL
+unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_DEFAULT_OPUS_MODEL \
+      ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL CLAUDE_CODE_SUBAGENT_MODEL
+# Và remove các key tương ứng trong ~/.claude/settings.json env block
 ```
-
-Pricing tham khảo (xem novita.ai/pricing để cập nhật):
-- GLM-5.1: $1.40/M input / $4.40/M output (cached input $0.26/M)
-- MiniMax M2.7: $0.30/M / $1.20/M (cached $0.06/M)
-
-`ANTHROPIC_AUTH_TOKEN` KHÔNG commit — giữ trong env var hoặc Infisical.
 
 ## Bước 6: Cấu hình settings.local.json (tùy chọn)
 

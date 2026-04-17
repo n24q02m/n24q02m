@@ -23,6 +23,17 @@ applyTo: '**'
 <important if="producing spec, plan, model artifact, dataset, eval result, or any deliverable that might be released publicly">
 - **PROD-LEVEL / INDUSTRY-LEVEL / PUBLIC-READY**: Mọi deliverable viết từ đầu với giả định sẽ release public (HuggingFace Hub, GitHub, arXiv) — industry best practice, fully consolidated, reproducible. **KHÔNG** expose: Infisical project ID, Modal workspace name, personal email, internal infra hostnames, API keys, MLflow internal URLs, private CF Tunnel hostnames. Luôn dùng placeholder `<workspace>`, `<project-id>`, `<your-email>`. License clear (MIT/Apache-2.0 cho code, CC-BY-4.0/ODC-BY cho datasets). Model card + dataset card theo HF template. Eval phải reproducible với public benchmarks (BEIR, MMEB, MIRACL, MMDocIR, ViDoRe, AudioCaps, CMTEB). Không bao giờ hardcode secrets vào spec/plan/artifact.
 </important>
+<important if="reading screenshots, dashboard images, rate limit tables, pricing tables, leaderboard images, or any dense-text image from user">
+- **IMAGE → OCR, KHÔNG raw vision**: Claude vision tệ với dense text/tables/số liệu. BẮT BUỘC chạy OCR (`tesseract` sau khi upscale 3x LANCZOS + grayscale) trước khi claim bất kỳ số/text nào từ ảnh. Nếu chưa cài: `winget install UB-Mannheim.TesseractOCR` (Windows) hoặc `apt install tesseract-ocr` (Linux). Khi `imagine-mcp` (WS-7) ready → ưu tiên dùng (Gemini/OpenAI/Grok vision mạnh hơn). Chỉ bỏ OCR khi ảnh đơn giản 1-2 elements UI. Xem memory `feedback_image_ocr_vision.md`.
+</important>
+<important if="dispatching subagent, Agent tool, Task tool sub-invocation, or executing plan via superpowers:subagent-driven-development">
+- **VERIFY SUBAGENT OUTPUT**: Subagent summary là INTENT không phải RESULT. BẮT BUỘC verify thực tế trước khi mark task completed hoặc báo user: (1) Read lại file cho code edits (git diff so pre-dispatch), (2) Chạy lại test command trong session chính (không trust "tests pass" từ subagent), (3) `git log -1 --stat` confirm commit SHA + prefix `fix:`/`feat:` + file list, (4) `curl` endpoint + check logs cho deploy, (5) Spot-check citations cho research agent. Nếu verify fail → dispatch lại với corrective prompt, KHÔNG skip. Xem memory `feedback_verify_subagent_output.md`.
+</important>
+
+## 1.5. NGUYÊN TẮC CODING (KARPATHY)
+- **Surface assumptions, KHÔNG pick silently**: Trước khi code, state assumption; nếu có nhiều interpretation, liệt kê tất cả và hỏi, KHÔNG tự chọn một hướng rồi code 200 dòng.
+- **Surgical diff**: Mỗi dòng thay đổi PHẢI trace trực tiếp về yêu cầu user. KHÔNG drive-by refactor (đổi quote style, thêm type hint, reformat, "improve" comment adjacent). Match existing style của file kể cả khi muốn khác. Dead code pre-existing: mention, đừng xoá.
+- **Simplicity before speculation**: KHÔNG abstraction cho single-use, KHÔNG "flexibility/configurability" chưa được yêu cầu, KHÔNG error handling cho kịch bản bất khả thi. "Production-grade" != "over-engineered upfront" — scalable khi requirement thật sự xuất hiện, không phải preemptive Strategy pattern. Nguồn: https://github.com/forrestchang/andrej-karpathy-skills
 
 ## 2. CHUẨN MỰC CODE
 - **KHÔNG** dùng emoji trong code/tài liệu kỹ thuật.
@@ -47,5 +58,7 @@ applyTo: '**'
 - **Trực tiếp 1-1**: Làm trực tiếp với user, KHÔNG chạy background rồi báo kết quả.
 - **KHÔNG** dùng `/reload-plugins` để test — không liên quan đến MCP server testing.
 
-## 4. CHI TIẾT
-Xem skills `fullstack-dev`, `infra-devops`, `ai-ml`, `product-growth` cho tech stack, models, infrastructure, và quy trình cụ thể.
+- **Quy tắc bỏ qua AI Traces (.jules & superpower)**:
+  - **Repo PUBLIC** (trong list https://github.com/stars/n24q02m/lists/productions): BẮT BUỘC liệt kê `.jules`, `.Jules`, `.superpower`, `superpowers`, `docs/superpowers` vào `.gitignore`. TUYỆT ĐỐI KHÔNG TẠO/TRACK CÁC THƯ MỤC NÀY TRONG REPO PUBLIC.
+  - **Repo PRIVATE**: `.jules` vẫn phải liệt kê vào `.gitignore`. TUY NHIÊN, `superpower` (ví dụ `docs/superpowers`) ĐƯỢC PHÉP tồn tại và theo dõi trên repo.
+  - Kế hoạch lưu trữ **Superpower** dài hạn nếu thực sự cần cho repo public: tạo/viết và commit vào trong các repo private như `oci-vm-infra`, `oci-vm-prod`, `virtual-company` HOẶC commit vào một repo riêng `n24q02m/.superpower`.
