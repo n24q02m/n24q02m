@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate profile repo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Verify dependency-map.yml is valid YAML
+        run: python3 -c "import yaml; yaml.safe_load(open('dependency-map.yml'))"
+
+      - name: Verify README is non-empty
+        run: |
+          set -euo pipefail
+          test -s README.md
+          echo "README.md OK ($(wc -l < README.md) lines)"
