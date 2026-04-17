@@ -60,7 +60,8 @@
     "better-telegram-mcp@n24q02m-plugins": true,
     "better-code-review-graph@n24q02m-plugins": true,
     "better-email-mcp@n24q02m-plugins": true,
-    "better-notion-mcp@n24q02m-plugins": true
+    "better-notion-mcp@n24q02m-plugins": true,
+    "ralph-loop@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "cc-marketplace": {
