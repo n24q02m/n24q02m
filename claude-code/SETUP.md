@@ -110,29 +110,44 @@ Thay thế các `<PLACEHOLDER>` bằng credentials thật:
 | `<GRAFANA_URL>` | Grafana URL | Self-hosted |
 | `<GRAFANA_TOKEN>` | Grafana service account token | Grafana Admin |
 
-## Bước 5.5: Novita AI (external models qua Claude Code — tùy chọn)
+## Bước 5.5: VS Code Claude Agent + Gemini 3 Flash (2026 pivot)
 
-Claude Code có thể dùng open-source models (GLM-5.1, MiniMax M2.7, v.v.) qua Novita AI's Anthropic SDK-compatible API. Chỉ dùng khi muốn giảm chi phí hoặc A/B test — không thay thế Claude mặc định.
+GitHub Copilot tích hợp Claude Agent vào VS Code. Cấu hình để dùng Claude (Anthropic) hoặc Gemini 3 Flash (Google) tùy task.
 
-```bash
-# Shell profile (~/.bashrc / ~/.zshrc)
-export ANTHROPIC_BASE_URL=https://api.novita.ai/anthropic
-export ANTHROPIC_AUTH_TOKEN=<NOVITA_API_KEY>
-export ANTHROPIC_MODEL=glm-5.1
-export ANTHROPIC_SMALL_FAST_MODEL=minimax-m2.7
+### VS Code Settings
+
+Thêm vào `settings.json` (Ctrl+Shift+P → "Open User Settings (JSON)"):
+
+```json
+{
+  "github.copilot.chat.models": {
+    "claude-3.5-sonnet": {
+      "provider": "anthropic",
+      "model": "claude-3.5-sonnet"
+    },
+    "claude-3.5-haiku": {
+      "provider": "anthropic",
+      "model": "claude-3.5-haiku"
+    }
+  }
+}
 ```
 
-Quay lại Claude (default Anthropic):
+### Smoke Test
 
-```bash
-unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_MODEL ANTHROPIC_SMALL_FAST_MODEL
-```
+1. Mở VS Code Command Palette → "GitHub Copilot: Open Chat"
+2. Chọn model `claude-3.5-haiku` (Student tier: unlimited, 0x premium requests)
+3. Gửi prompt đơn giản: "Write a hello world in Python"
+4. Verify response từ Haiku (không phải GPT-4o)
 
-Pricing tham khảo (xem novita.ai/pricing để cập nhật):
-- GLM-5.1: $1.40/M input / $4.40/M output (cached input $0.26/M)
-- MiniMax M2.7: $0.30/M / $1.20/M (cached $0.06/M)
+### Gemini 3 Flash cho Paperclip VC
 
-`ANTHROPIC_AUTH_TOKEN` KHÔNG commit — giữ trong env var hoặc Infisical.
+Paperclip Virtual Company trên infra-vnic dùng Gemini 3 Flash qua Hermes agent:
+- API key: `GOOGLE_AI_STUDIO_API_KEY` (Doppler: virtual-company/dev)
+- Model: `gemini-3.1-flash` (poor tier), `gemini-3.1-pro` (rich tier)
+- Arena rank: #11 (tốt cho general tasks, giá rẻ)
+
+Xem `virtual-company/settings.yaml` để config model routing.
 
 ## Bước 6: Cấu hình settings.local.json (tùy chọn)
 
