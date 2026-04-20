@@ -36,7 +36,7 @@ sudo tailscale up
 # Open the URL in browser to authenticate
 ```
 
-Note the Tailscale IP (e.g. `100.117.11.62`).
+Note the Tailscale IP (e.g. `<VPS_TAILSCALE_IP>`, a `100.x.y.z` address).
 
 ### 1.2 Deploy RustDesk Server
 
@@ -151,7 +151,7 @@ Open RustDesk GUI > **Settings** > **Network** > **ID/Relay server**:
 
 | Field | Value |
 |-------|-------|
-| ID Server | `<VPS_TAILSCALE_IP>` (e.g. `100.117.11.62`) |
+| ID Server | `<VPS_TAILSCALE_IP>` (a `100.x.y.z` Tailscale address) |
 | Relay Server | `<VPS_TAILSCALE_IP>` |
 | API Server | (leave empty) |
 | Key | `<YOUR_PUBLIC_KEY>` from Step 1.3 |
