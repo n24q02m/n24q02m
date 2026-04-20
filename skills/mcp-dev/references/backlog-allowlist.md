@@ -36,6 +36,13 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | mcp-core | #58 | chore(deps): update @types/node to v25 | long-running | HOLD — major devDep, defer post-E2E | 2026-04-20 | 2026-07-20 |
 | mcp-core | #62 | chore(deps): update typescript to v6 | long-running | HOLD — major devDep, defer post-E2E downstream | 2026-04-20 | 2026-07-20 |
 | better-godot-mcp | #525 | Bolt: scene-parser regex→string | long-running | HOLD — needs benchmark evidence + edge case verify | 2026-04-20 | 2026-07-20 |
+| mcp-core | #57 | chore(deps): update non-major dependencies | long-running | Pending Renovate rebase after conflict; will auto-update | 2026-04-20 | 2026-04-27 |
+| better-code-review-graph | #315 | Auto-truncate impact output to avoid token-limit overflow | long-running | External FR from @hoiung, covered by epic #324 Closes #315 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #316 | Auto-resolve single-candidate File+Function ambiguity | long-running | External FR from @hoiung, covered by epic #324 Closes #316 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #317 | Warn at search when embeddings_count=0 AND query not literal | long-running | External FR from @hoiung, covered by epic #324 Closes #317 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #318 | Add spot_check action — source snippets for N random callsites | long-running | External FR from @hoiung, covered by epic #324 Closes #318 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #319 | Auto-include stage-mapped recipe hints in help output | long-running | External FR from @hoiung, covered by epic #324 Closes #319 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #320 | Add renamed_in_diff query for base-ref line tracking | long-running | External FR from @hoiung, covered by epic #326 Closes #320 | 2026-04-20 | 2026-07-20 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
