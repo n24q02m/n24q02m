@@ -20,8 +20,22 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 
 | Repo | # | Title | Type | Reason | Added | Review-by |
 |---|---|---|---|---|---|---|
-
-_(rows populated per cascade session when user approves specific long-running issues)_
+| wet-mcp | #915 | [Epic] Phase 3 v2.0.0 — extract(agent/interact) + media analyze removal | roadmap | Breaking release tracker | 2026-04-20 | 2026-07-20 |
+| wet-mcp | #914 | [Epic] Phase 2 — Context7-level docs search | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
+| wet-mcp | #913 | [Epic] Phase 1 — web-core migration + search polish | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
+| wet-mcp | #849 | feat: upgrade to qwen3-embed v2.0.0 — tiny local models | upstream-blocked | Blocked on qwen3-embed#495 training | 2026-04-20 | 2026-07-20 |
+| mnemo-mcp | #474 | Phase 3 v2.0.0 — temporal KG + entity resolution | roadmap | Breaking release tracker | 2026-04-20 | 2026-07-20 |
+| mnemo-mcp | #473 | Phase 2 — LLM compression + S3 passport + E2E encryption | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
+| mnemo-mcp | #472 | Phase 1 — smart capture + retrieval polish + hygiene | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
+| mnemo-mcp | #433 | feat: upgrade to qwen3-embed v2.0.0 | upstream-blocked | Blocked on qwen3-embed#495 | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #326 | [Epic] Phase 3 v2.0.0 — Security-aware nodes + Temporal tracking | roadmap | Breaking release tracker | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #325 | [Epic] Phase 2 v1.7.x — Cross-repo federation | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #324 | [Epic] Phase 1 v1.6.x — LLM summaries + graph export | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #266 | feat: upgrade to qwen3-embed v2.0.0 | upstream-blocked | Blocked on qwen3-embed#495 | 2026-04-20 | 2026-07-20 |
+| qwen3-embed | #495 | feat: v2.0.0 — tiny-embed + tiny-reranker models | long-running | Training run (distillation) | 2026-04-20 | 2026-07-20 |
+| mcp-core | #58 | chore(deps): update @types/node to v25 | long-running | HOLD — major devDep, defer post-E2E | 2026-04-20 | 2026-07-20 |
+| mcp-core | #62 | chore(deps): update typescript to v6 | long-running | HOLD — major devDep, defer post-E2E downstream | 2026-04-20 | 2026-07-20 |
+| better-godot-mcp | #525 | Bolt: scene-parser regex→string | long-running | HOLD — needs benchmark evidence + edge case verify | 2026-04-20 | 2026-07-20 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
