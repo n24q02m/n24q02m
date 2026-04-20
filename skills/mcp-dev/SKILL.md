@@ -1,0 +1,114 @@
+---
+name: mcp-dev
+description: Canonical skill for MCP server stack work (12 repos). Use when editing/auditing/testing/releasing ANY of mcp-core, 7 better-*/wet/mnemo MCP servers, qwen3-embed, web-core, claude-plugins, n24q02m profile — OR running multi-repo backlog + E2E + release cascade. Enforces mode matrix, tool layout N+2, config parity, relay flow parity, reuse mcp-core primitives, clean-state E2E, full matrix testing (20 MCP + 4 non-MCP configs), empty-backlog gate before release, PSR dispatch order, downstream auto-issue verify.
+---
+
+# MCP Dev Skill
+
+Canonical workflow for the 12-repo MCP stack. Invoke this BEFORE any edit, audit, test, or release on any listed repo.
+
+## When to invoke
+
+Trigger keywords: "MCP server", "mcp-core", "better-notion", "better-email", "better-telegram", "wet-mcp", "mnemo", "code-review-graph", "godot-mcp", "qwen3-embed", "web-core", "claude-plugins", "12 repos", "release cascade", "backlog clear", "full matrix E2E", "ship MCP stack", "audit all repos", "verify parity".
+
+## Task type detection
+
+**Branch A — single-repo dev/audit:** load `references/mode-matrix.md` + `references/tool-layout.md` + `references/config-parity.md` + `references/relay-flow.md` + `references/reuse-mcp-core.md`.
+
+**Branch B — multi-repo cascade:** follow Phase 0-5 below.
+
+## Flow (release cascade)
+
+```
+Phase 0: Backlog audit (references/audit-commands.md)
+  |
+  v
+  EMPTY BACKLOG gate:
+    - open PRs = 0
+    - open issues subset-of allowlist (references/backlog-allowlist.md)
+    - dependabot + codeql + secret-scanning = 0
+  |
+  v (fail)
+Phase 1: Backlog clear (references/backlog-clearance.md) — interactive per-PR
+  |
+  +---> loop back to Phase 0 re-audit
+  |
+  v (pass)
+Phase 2: Clean state per server (references/clean-state.md)
+  |
+  v
+Phase 3: E2E full matrix (references/e2e-full-matrix.md) — 24 configs (20 MCP + 4 non-MCP)
+  |
+  v
+  ALL GREEN (24/24)?
+  |
+  +---> any fail: back to Phase 1
+  |
+  v
+Phase 4: Release dispatch (references/release-cascade.md) — mcp-core -> 7 MCP -> downstream
+  |
+  v
+Phase 5: Verify (auto-issues, PSR version, downstream pin bump PRs)
+  |
+  v
+Done
+```
+
+## Invariants
+
+1. **Scope** = 12 repos default (see `references/scope-and-repos.md`); explicit override required for subset.
+2. **EMPTY BACKLOG gate strict** — see `references/backlog-allowlist.md` for allowed exceptions: Renovate Dashboard auto-allowed (1/repo), explicit long-running with review-by date. Security alerts (dependabot/codeql/secret) are strict zero, no allowlist.
+3. **Clean state per server before E2E** — no skip, even if "already configured".
+4. **Full matrix (24 configs), not default-only.**
+5. **Release only at Phase 4** — no mid-session release, no incremental per-repo release.
+6. **Phase 5 must verify downstream auto-issue PRs** exist for core releases (mcp-core release triggers tracking issues in all 7 MCP + 3 consumer repos).
+
+## Red flags (STOP immediately)
+
+- "Test chỉ default mode" → violates invariant 4.
+- "Already configured, skip clean state" → violates invariant 3 + `feedback_e2e_clean_state_all_servers.md`.
+- "Release this repo now while I clean the others" → violates invariant 5 + `feedback_work_order_fix_test_release.md`.
+- "Bulk close PRs to reach gate faster" → violates `feedback_pr_review_must_be_real.md` + `feedback_never_bulk_close.md`.
+- "Inject env var so E2E can skip relay" → violates `feedback_full_live_test.md`.
+- "Guess data store / env var / relay field" → violates `feedback_data_store_no_guessing.md` + see `references/mode-matrix.md` for truth.
+- "Let me add a new mode for X" → violates mode matrix fixed set; each server has fixed default + fixed list of supported alternates.
+- "Dual codepath — local form AND remote relay URL simultaneously" → user confusion, violates `feedback_relay_mode_ui_parity.md`.
+
+## References (load as needed)
+
+- `references/scope-and-repos.md` — 12 repos canonical list + vocab
+- `references/mode-matrix.md` — 7 servers × modes + mode definitions + anti-patterns
+- `references/tool-layout.md` — N+2 standard (domain + config + help) + Python/TS templates
+- `references/config-parity.md` — category parity rules
+- `references/relay-flow.md` — local ≡ remote UI parity + credential state machine
+- `references/reuse-mcp-core.md` — primitives to reuse (storage/relay/OAuth AS/browser/lock/state)
+- `references/audit-commands.md` — gh CLI commands with `--limit 1000`
+- `references/backlog-allowlist.md` — auto-allowed + explicit long-running
+- `references/backlog-clearance.md` — priority order + per-PR review protocol
+- `references/clean-state.md` — per-server clean paths (config.enc, token cache, session lock)
+- `references/e2e-full-matrix.md` — 24 configs table + uniform 9-step procedure
+- `references/release-cascade.md` — PSR dispatch order + downstream auto-issue verify
+- `references/non-mcp-repos.md` — qwen3-embed / web-core / claude-plugins / n24q02m checks
+
+## Memory (incident log — why history)
+
+Canonical "how to apply" = reference files above. For incident history (violations + why rules exist), see memory:
+
+- `feedback_work_order_fix_test_release.md` — FIX → TEST → RELEASE order + EMPTY BACKLOG gate
+- `feedback_mcp_mode_matrix.md` — mode matrix history (E2E flipped default→full 2026-04-20)
+- `feedback_mcp_config_parity.md` — category parity violations
+- `feedback_relay_mode_ui_parity.md` — local ≡ remote UI parity violations
+- `feedback_e2e_clean_state_all_servers.md` — clean state before E2E
+- `feedback_full_live_test.md` — relay flow thật, no env inject
+- `feedback_pr_review_must_be_real.md` — full diff review (Jules PR case)
+- `feedback_data_store_no_guessing.md` — data store attributes per server
+- `feedback_core_release_auto_issue.md` — downstream tracking issue on core release
+- `feedback_psr_auto_version.md` — never manual version pick
+- `feedback_test_before_release.md` — merge → E2E on main → release last (private repos)
+- `scope-12-repos.md` — 12 repo canonical list
+- `mcp-server-data-stores.md` — per-server data store truth table
+- `feedback_mcp_dev_skill.md` — this skill trigger memory (invocation criteria)
+
+## Skill versioning
+
+Skill version is implicit in profile repo commit SHA. To find canonical: `git log -1 --format=%H -- ~/.claude/skills/mcp-dev/SKILL.md` in `n24q02m/n24q02m` public repo clone.

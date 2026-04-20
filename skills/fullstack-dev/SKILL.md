@@ -12,7 +12,7 @@ description: "Full-stack development: Next.js 16, Expo, Tauri, FastAPI, Echo, MC
 - Desktop app (Tauri 2, Rust + React)
 - Go API (Echo + sqlc + pgx/v5)
 - Python API (FastAPI + SQLModel + Alembic)
-- MCP server (Python FastMCP / TypeScript SDK, 7-phase workflow including plugin packaging)
+- MCP server: **KHÔNG còn xử lý trong skill này** — invoke `Skill mcp-dev` (canonical, since 2026-04-20)
 - Testing (TDD, Playwright E2E, MCP live test)
 - Frontend design (Anti-AI aesthetics, shadcn/ui, a11y)
 - Game development (Godot 4.x + Rust gdext)
@@ -65,10 +65,11 @@ project/
 - `references/desktop-tauri.md` -- Tauri 2 IPC, auto-update, capabilities, CI/CD matrix
 - `references/api-go-echo.md` -- Echo handlers, sqlc, golang-migrate, Firebase Auth Go
 - `references/api-python.md` -- FastAPI lifespan, LiteLLM proxy, health probe, OpenAPI gen
-- `references/mcp-server.md` -- 5-phase MCP workflow, mega-tool pattern, registries, live test protocol
+- `references/mcp-server.md` -- **DEPRECATED 2026-04-20**, pointer redirect to `Skill mcp-dev`
 - `references/testing.md` -- TDD, Playwright E2E, factory functions, Page Objects, Go/Rust/Python testing
 - `references/frontend-design.md` -- Anti-AI aesthetics, shadcn/ui, a11y, touch targets, animations
 - `references/game-godot.md` -- Godot 4.x + Rust gdext, better-godot-mcp, scene design
+- `references/docs-site.md` -- Astro Starlight standard cho mọi docs site (Pagefind built-in, multi-project, CF Pages static)
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 
