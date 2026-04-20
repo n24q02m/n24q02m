@@ -210,14 +210,33 @@ repo/
 └── (gemini-extension.json removed — Gemini CLI deprecated 04/2026)
 ```
 
-#### Layer 1: Context Files (ship ca hai)
+#### Layer 1: Context Files (ship ca hai, noi dung DONG BO)
 
 | File | Agents doc duoc |
 |------|----------------|
 | `CLAUDE.md` | Claude Code (primary), Copilot CLI, OpenCode, Cline, Antigravity, Amp (fallback) |
 | `AGENTS.md` | Codex (primary), Amp (primary), Antigravity (v1.20.3+), Gemini CLI (via `.agents/`) |
 
-Noi dung giong nhau, ten khac. Neu repo da co `CLAUDE.md`, chi can copy thanh `AGENTS.md`.
+> **BAT BUOC IDENTICAL CONTENT**: `CLAUDE.md` va `AGENTS.md` PHAI CHINH XAC GIONG NHAU tren tung byte (cho phep khac dong dau frontmatter `applyTo: '**'` cua Copilot neu can). Khi update 1 file, PHAI sync file con lai cung commit. Ly do: dung repository-level rule cho agent dang develop repo — neu drift, agent khac se thay behavior khac → bug.
+>
+> **Cach sync**: (a) viet 1 file, `cp CLAUDE.md AGENTS.md` (hoac ngug lai), commit chung; (b) pre-commit hook check `diff CLAUDE.md AGENTS.md` fail neu khac; (c) symlink KHONG duoc (Windows khong support tot + GitHub render hai file rieng); (d) CI job `docs-sync-check` compare 2 file, fail PR neu drift.
+>
+> **Noi dung cho 2 file**: kien truc repo, command thuong dung, pytest marker, env var, gotchas, known bugs. **KHONG phai** setup guide cho end-user MCP server — do la doc/setup-*.md (xem muc "Layer 5: docs/ directory" ben duoi).
+
+#### Layer 5: `docs/` directory (user-facing, 2 audience DIFFERENT files)
+
+Tach rieng theo AUDIENCE, KHONG consolidate:
+
+| File | Audience | Content | Voice |
+|------|----------|---------|-------|
+| `docs/setup-manual.md` | **Human** (developer tu cai dat) | Step-by-step with CLI commands, screenshots allowed, troubleshooting section, env var table | 2nd person ("open your terminal", "run this command") |
+| `docs/setup-with-agent.md` | **AI Agent** (user's Claude Code / Codex / Cursor agent tu dong install server) | Declarative config blocks (JSON/TOML), no "click here", exact mcpServers stanzas ready-to-copy, verification commands agent can run | Instructional ("Add this to settings.json", "Run this to verify") |
+
+> **KHONG merge 2 file**: agent khong can screenshots + troubleshooting dai dong; human khong can JSON boilerplate ready-to-paste. 2 audience = 2 cognitive load = 2 file. Cac repo drift thuong nham merge lai → user bi overwhelm hoac agent bi confuse.
+>
+> **KHONG trùng voi `AGENTS.md`**: `AGENTS.md` = **repo-level rule** cho agent dang CONTRIBUTE code vao repo (how to lint/test/commit). `docs/setup-with-agent.md` = **end-user installation guide** cho user's agent CAI DAT server. Scope hoan toan khac.
+>
+> **Other docs/ files**: `ARCHITECTURE.md`, `BENCHMARKS.md`, `MIGRATION.md`, `<feature>.md` tuy repo. KHONG bat buoc, chi viet khi co noi dung thuc.
 
 #### Layer 2: Skills (cross-compatible)
 
@@ -359,30 +378,77 @@ Nhược điểm:
 - Annotations không granular (readOnlyHint phải set cho worst-case)
 - Description phải compressed vì gom nhiều actions
 
-### Standard Tool Set
+### Standard Tool Set (N domain + `help` + `config` — chuẩn 2026-04-18)
 
-Mọi MCP server nên có 3 loại tools:
+Mọi MCP server expose CHÍNH XÁC 2 helper tools + N domain tools:
 
-| Loại | Mục đích | Annotations |
-|------|----------|-------------|
-| **Main tools** | Core functionality (1-5 mega tools) | Tùy theo action |
-| **Config tool** | Server config & management | readOnlyHint=False, idempotentHint=True |
-| **Help tool** | Full documentation on demand | readOnlyHint=True, idempotentHint=True |
+| Loại | Số lượng | Mục đích | Annotations |
+|------|:--------:|----------|-------------|
+| **Domain tools** | N (1-15) | Core functionality. Mega-tool pattern với `action` param dispatch | Tùy action |
+| **`config` tool** | 1 (bắt buộc) | Credential/relay setup + runtime config (**MERGED**) | readOnlyHint=False, idempotentHint=True |
+| **`help` tool** | 1 (bắt buộc) | Full documentation on demand | readOnlyHint=True, idempotentHint=True |
 
-Config tool chuẩn có các actions:
-- `status`: Hiển thị config hiện tại (DB, embedding, cache, sync)
-- `set`: Thay đổi runtime setting (key + value)
+> **KHÔNG có tool `setup` RIÊNG** (breaking change vs. chuẩn cũ). Setup actions GỘP vào `config`.
+> 7 reference repo hiện drift 3 patterns (`config+setup+help` / `config+help` / `setup+help`). Backport về chuẩn N+2 do session/agent riêng xử lý — KHÔNG touch cross-session.
+
+> **KHÔNG user-facing CLI subcommands**: Entry point của MCP server (`uv run <server>`, `npx <server>`, binary Docker) CHỈ start MCP server, KHÔNG phải multi-command CLI. **CẤM** các pattern:
+> - `<server> config set key value` — dùng MCP `config` tool action `set` thay thế
+> - `<server> security scan --engine=semgrep` — dùng MCP domain tool call thay thế
+> - `<server> build --roots a,b,c` — dùng MCP domain tool với param thay thế
+> - `<server> serve --port 8080` — config qua env var (`MCP_PORT=8080`) hoặc `config` tool
+>
+> **Cho phép** flags entry-point-level (start server): `--stdio`, `--http`, `--port <n>`, `--help`, `--version`. Các flag khác = code smell → move vào MCP tool action.
+>
+> **Lý do**: MCP server = server, không phải CLI app. User tương tác qua MCP client (Claude Code, Cursor, v.v.), không gọi binary trực tiếp. Giữ single entry point → simple mental model + single auth boundary + không split logic giữa CLI parser và tool dispatcher.
+>
+> **Cài đặt / setting persistent**: env var trước khi start + `config` tool action `set` + `~/.config/<server>/config.enc` (encrypted) do mcp-core quản lý.
+
+**`config` tool actions chuẩn**:
+
+*Credential / relay (nếu server cần credentials)*:
+- `open_relay`: Mở browser để user nhập credentials qua relay
+- `relay_status`: Trạng thái session relay hiện tại
+- `relay_skip`: Bỏ qua relay, dùng env vars
+- `relay_reset`: Reset credentials
+- `relay_complete`: Confirm setup hoàn tất
+- `warmup`: Pre-load heavy resources (embedding model, DB connection, tokenizer...)
+
+*Runtime*:
+- `status`: Hiển thị config hiện tại (DB, embedding, cache, sync, version)
+- `set`: Thay đổi runtime setting (key + value, validate whitelist)
 - `cache_clear`: Xóa cache
-- Custom actions tùy server (vd: `docs_reindex`, `sync`)
+- Custom tùy server (vd: `docs_reindex`, `setup_sync`, `reindex_graph`)
 
-Help tool load documentation từ markdown files, giữ tool descriptions ngắn gọn:
+**`help` tool**: Load documentation từ markdown files, giữ tool descriptions ngắn gọn:
 ```python
 @mcp.tool()
-async def help(tool_name: str = "search") -> str:
-    """Full documentation for a tool. Use when compressed descriptions are insufficient."""
-    doc_file = files("my_mcp.docs").joinpath(f"{tool_name}.md")
+async def help(topic: str = "<default-domain-tool>") -> str:
+    """Full documentation. Topics: <tool1> | <tool2> | ... | config.
+    Use when compressed descriptions are insufficient."""
+    doc_file = files("my_mcp.docs").joinpath(f"{topic}.md")
     return doc_file.read_text()
 ```
+
+> `help` topic list PHẢI match đúng tên domain tools + `config`. Validate input, reject invalid topic với error message list valid options.
+
+### Tier Consistency Rule (poor / rich)
+
+Nếu domain tool có tier param (`poor|rich`), 2 tier PHẢI map sang cùng **model family / generation** của provider khi có thể. Không được để poor dùng Gen N còn rich dùng Gen N+1 (hoặc ngược lại) trừ khi provider KHÔNG cung cấp cùng generation.
+
+**Ví dụ đúng** (cùng family):
+- Gemini understand: `gemini-3.1-flash-lite-preview` (poor) / `gemini-3.1-pro-preview` (rich) — cùng gen 3.1
+- Grok understand: `grok-4.20-0309-non-reasoning` (poor) / `grok-4.20-0309-reasoning` (rich) — cùng 4.20-0309
+- Gemini video: `veo-3.1-lite-generate-preview` (poor) / `veo-3.1-generate-preview` (rich) — cùng Veo 3.1
+
+**Ví dụ exception** (cross-gen bắt buộc vì provider reality):
+- Gemini generate.image: `gemini-3.1-flash-image-preview` (poor, Nano Banana 2) / `gemini-3-pro-image-preview` (rich, Nano Banana Pro) — Google chưa release `3.1-pro-image`
+- OpenAI generate.image: `gpt-image-1-mini` (poor, v1) / `gpt-image-1.5` (rich) — chưa có `gpt-image-1.5-mini`
+
+**How to apply**:
+1. Map tier trong code: prefer SAME family; cross-gen chỉ khi provider không có option.
+2. Provider reality cross-gen PHẢI document trong: (a) CLAUDE.md của repo, (b) docstring của provider module, (c) `help(topic="<tool>")` output, (d) `config(action="status")` output liệt kê model IDs đang active.
+3. Single-tier provider (vd Grok video): cả poor+rich map cùng model ID; document "single tier" trong help.
+4. Verify tier consistency khi bump provider: nếu Gen N+1 released cho cả poor+rich → update ngay; nếu chỉ 1 tier available ở Gen N+1 → GIỮ cả 2 ở Gen N cho đến khi full coverage.
 
 ### Parallelism & Concurrency
 
@@ -425,6 +491,35 @@ project/
 ├── pyproject.toml
 └── uv.lock
 ```
+
+### Category Config Parity (BẮT BUỘC)
+
+MCP servers trong CÙNG CATEGORY (cùng mode theo mode matrix) PHẢI có **thiết kế config giống hệt nhau**:
+
+| Category | Servers | Parity items |
+|---|---|---|
+| **http local relay** | wet, mnemo, crg | `config.py` defaults (incl. GDrive Desktop OAuth hardcoded), `relay_schema.py` (cloud API keys fields), `credential_state.py` (GDrive device code trigger), `sync.py` (GDrive API client) |
+| **http remote relay** | telegram, email | `config.py` defaults, `relay_schema.py` (provider creds fields), OAuth delegation pattern |
+| **http remote oauth** | notion | OAuth 2.1 AS pattern |
+| **http local non-relay** | godot | No credentials; parity = `server.py` only |
+
+**Rules:**
+1. Trước khi edit `config.py` / `relay_schema.py` / `credential_state.py` của 1 MCP server → đọc file tương ứng của ÍT NHẤT 1 server cùng category, compare field-by-field, flag divergence.
+2. Divergence → default answer: **sync lên standard của server đã work zero-config trước**. "Conservative choice" / "pick 1 pattern" KHÔNG phải reason hợp lệ.
+3. Thêm field mới → PHẢI add ở TẤT CẢ servers cùng category (same commit hoặc same PR batch).
+4. Fix bug trong flow → PHẢI apply cùng fix sang servers cùng category.
+5. Review PR: divergence trong category mà KHÔNG có justification in PR description = REJECT.
+6. E2E test: test PASS ở server A, MUST verify flow tương tự chạy ở server B cùng category.
+
+**Case study 2026-04-19** (wet-mcp vs mnemo-mcp):
+- wet hardcode `google_drive_client_id` + `google_drive_client_secret` (Desktop OAuth PUBLIC per Google) → relay submit auto-trigger GDrive device flow.
+- mnemo default `""` + `""` → relay submit skip GDrive → state=configured ngay (UX khác wet).
+- Fix: mnemo adopt wet defaults. Memory `feedback_mcp_config_parity.md`.
+
+**Anti-patterns cấm**:
+- "Đây là design choice conservative" (khi server kia đã ship zero-config safely).
+- "Server A ship secret hardcoded, server B empty default, cả 2 đều safe" → UX divergent = NOT OK.
+- "Fix 1 server trước, server khác làm sau" → phải batch cùng commit/PR.
 
 > **Env vars distribution**: MCP server KHÔNG dùng `.env` files. Env vars cấu hình trong **MCP client config** (`"env": {...}` trong jsonc), Pydantic Settings trong `config.py` đọc từ env vars do client inject:
 >
@@ -505,7 +600,11 @@ async def main_tool(action: str, ...) -> str:
 
 
 @mcp.tool(
-    description="Server config. Actions: status|set|cache_clear.",
+    description=(
+        "Server config + credential setup (MERGED). Actions: "
+        "(relay) open_relay|relay_status|relay_skip|relay_reset|relay_complete|warmup; "
+        "(runtime) status|set|cache_clear."
+    ),
     annotations=ToolAnnotations(
         title="Config",
         readOnlyHint=False,
@@ -514,13 +613,30 @@ async def main_tool(action: str, ...) -> str:
         openWorldHint=False,
     ),
 )
-async def config(action: str, key: str | None = None, value: str | None = None) -> str:
-    """Server configuration."""
-    ...
+async def config(
+    action: str,
+    key: str | None = None,
+    value: str | None = None,
+) -> str:
+    """Server configuration + credential relay setup (merged — no separate `setup` tool)."""
+    match action:
+        # Credential / relay
+        case "open_relay": ...
+        case "relay_status": ...
+        case "relay_skip": ...
+        case "relay_reset": ...
+        case "relay_complete": ...
+        case "warmup": ...
+        # Runtime
+        case "status": ...
+        case "set": ...
+        case "cache_clear": ...
+        case _:
+            raise ValueError(f"Unknown action {action!r}. Valid: open_relay|...|cache_clear")
 
 
 @mcp.tool(
-    description="Full docs. topic: 'main' | 'config'",
+    description="Full docs. topic: <domain-tool-name> | 'config'",
     annotations=ToolAnnotations(
         title="Help",
         readOnlyHint=True,
@@ -530,7 +646,7 @@ async def config(action: str, key: str | None = None, value: str | None = None) 
     ),
 )
 async def help(topic: str = "main") -> str:
-    """Load full documentation."""
+    """Load full documentation for any domain tool or `config`."""
     doc_file = files("my_mcp.docs").joinpath(f"{topic}.md")
     return doc_file.read_text()
 
