@@ -29,7 +29,7 @@ Xử lý theo đúng thứ tự dưới đây. KHÔNG nhảy bước — securit
 
 ## 2. Per-PR Review Protocol (sequential, interactive)
 
-Mỗi PR đi qua **7 bước**, user approve trước khi execute.
+Mỗi PR đi qua **9 bước**, user approve trước khi execute. **Bước 1-6 = đọc đủ context; Bước 7 = quyết định; Bước 8 = execute; Bước 9 = verify.**
 
 ### Step 1 — Đọc metadata
 ```bash
@@ -43,23 +43,45 @@ gh pr diff <N> -R n24q02m/<repo>
 ```
 Đọc **từng file, từng hunk**. Không scroll qua, không dừng ở file đầu.
 
-### Step 3 — Cross-check scope
-Build mental map: title nói "fix X" → diff chạm các file Y, Z, W → các file đó có nằm trong scope X không?
-Nếu có file/hunk **ngoài scope** → flag ngay.
+### Step 3 — Đọc PR comments + inline review comments
+```bash
+gh pr view <N> -R n24q02m/<repo> --comments
+gh api repos/n24q02m/<repo>/pulls/<N>/comments  # inline review comments
+```
+Scan mọi thread cho: reviewer request-changes, user pushback, unresolved concerns, bot retry messages (Jules/Renovate có thể retry với update scope). Nếu thread có unresolved issue → flag.
 
-### Step 4 — Extra scrutiny cho bot PR (Jules / Sentinel / Bolt / Daisy)
-Checklist bắt buộc:
+### Step 4 — Đọc linked issues (nếu có "Closes #X")
+```bash
+gh pr view <N> -R n24q02m/<repo> --json closingIssuesReferences
+# For each linked issue:
+gh issue view <M> -R n24q02m/<repo> --comments
+```
+Hiểu bug gốc, user priority, repro steps. PR có giải quyết HẾT issue không hay chỉ partial? Partial fix → comment yêu cầu scope rõ ràng hoặc close issue với explanation.
+
+### Step 5 — Đọc CI run logs nếu UNSTABLE/FAILING
+```bash
+gh pr checks <N> -R n24q02m/<repo>
+gh run view <failing-run-id> -R n24q02m/<repo> --log-failed | tail -80
+```
+Fail log có thể reveal: lint fail ở file không-liên-quan (= drive-by change), test timeout reveals race condition, security scan fail reveals hidden risk. **KHÔNG** dùng `--admin` flag bypass failing CI nếu chưa đọc log hiểu root cause.
+
+### Step 6 — Cross-check scope + Extra scrutiny cho bot PR
+Build mental map: title nói "fix X" → diff chạm các file Y, Z, W → các file đó có nằm trong scope X không?
+Nếu có file/hunk **ngoài scope**, hoặc comments có unresolved concerns, hoặc CI fail vì scope creep → flag ngay.
+
+Bot PR checklist (Jules/Sentinel/Bolt/Daisy):
 - [ ] Có xóa file nào không? Đặc biệt `src/auth/*`, `src/transports/*`, `config.py`, `setup.py`
 - [ ] Có đổi default value / mode / entry point không?
 - [ ] Có revert feature mode gần đây không? (check `git log` cho các file bị touch)
 - [ ] PR được rebase trên current main hay stale branch? `gh pr view <N> --json baseRefOid` rồi compare với `main` HEAD
 - [ ] Có touch files critical ngoài scope claim không? (transport, config, auth, registry)
+- [ ] Comments thread có reviewer/user comment "please split" hoặc "not what I want"?
 
-### Step 5 — User approval per PR
-**BẮT BUỘC** present findings cho user, chờ decision explicit: **merge / close / request-split / skip**.
+### Step 7 — User approval per PR
+**BẮT BUỘC** present findings (diff summary + comments summary + linked issues + CI status) cho user, chờ decision explicit: **merge / close / request-split / skip**.
 KHÔNG tự quyết, KHÔNG dispatch subagent để auto-close.
 
-### Step 6 — Execute decision
+### Step 8 — Execute decision
 - **Merge** (prefer squash cho clean history):
   ```bash
   gh pr merge <N> -R n24q02m/<repo> --squash --delete-branch
@@ -74,7 +96,7 @@ KHÔNG tự quyết, KHÔNG dispatch subagent để auto-close.
   gh pr close <N> -R n24q02m/<repo>
   ```
 
-### Step 7 — Post-action verification
+### Step 9 — Post-action verification
 - Merge → `git log main --oneline -1 -R <repo>` shows new commit SHA + prefix `fix:` hoặc `feat:` (xem `feedback_commit_prefix.md` — **không bao giờ** `chore:`/`refactor:`/`docs:`/`ci:`/`build:`/`style:`/`perf:`/`test:`)
 - Close → `gh pr list -R <repo> --state closed --limit 5` shows PR này đã closed
 - Re-run audit snippet cho repo → PR count giảm đúng 1
@@ -88,6 +110,9 @@ KHÔNG tự quyết, KHÔNG dispatch subagent để auto-close.
 - **"Bulk close N PRs để reach gate nhanh hơn"** — cấm tuyệt đối (xem `feedback_never_bulk_close.md`).
 - **"Dispatch agent auto-close/auto-merge"** — cấm (xem `feedback_pr_review_process.md`).
 - **"Tôi nhớ PR này chỉ fix X"** — memory không đủ, phải đọc lại diff trực tiếp.
+- **"Diff sạch nên skip comments"** — SAI. Comments có thể chứa reviewer concerns chưa resolve, user override scope, hidden constraints.
+- **"CI fail nhưng unrelated, admin-merge bypass"** — SAI. Luôn đọc `--log-failed` trước, fail log có thể reveal scope creep.
+- **"Issue title đã nói rồi, không cần đọc thread"** — SAI. Comments reveal repro, priority, related incidents.
 
 ## 4. Jules PR #517 Case Study (2026-04-19)
 
