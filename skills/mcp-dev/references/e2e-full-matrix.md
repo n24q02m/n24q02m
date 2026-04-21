@@ -53,9 +53,11 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
 [2]    Relay URL or OAuth redirect appears (skip for godot + stdio modes if cred already present)
        Verify: URL printed to stderr or accessible at 127.0.0.1:<port>
 
-[3]    User action in browser:
+[3]    User action in browser (REAL user, KHÔNG automation, KHÔNG programmatic POST):
          - remote-oauth: click Connect -> provider login -> callback
-         - remote-relay / local-relay: paste credentials at /authorize form
+         - remote-relay / local-relay: paste credentials at /authorize form —
+           FILL MỌI FIELD kể cả `required: false` bằng credential thật;
+           submit-empty/skip-optional = KHÔNG pass, vi phạm section 6
          - stdio-proxy: skip (cred loaded from config.enc)
 
 [4]    Server emits state=configured event (monitor stderr log)
@@ -102,6 +104,8 @@ Configs #21-24 (non-MCP): custom steps per repo — xem `non-mcp-repos.md` chi t
 - **"Mock the relay server"** -> defeat end-to-end purpose. Relay code path chính là cái cần test.
 - **"CI green nên skip E2E"** -> CI chỉ verify build+unit+integration mock. E2E verify user-facing flow thật.
 - **"Default mode PASS rồi, non-default chắc OK"** -> drift incident 2026-04-19 chứng minh ngược lại.
+- **"Optional field rỗng cũng OK, skip đi"** (2026-04-21) -> CẤM TUYỆT ĐỐI. Khi test relay, MỌI field (cả `required: true` lẫn `required: false`) PHẢI được fill bằng credential thật. Lý do: (1) optional field thường cover critical code path — `onCredentialsSaved` callback có branches theo từng field có value hay không; (2) submit-empty chỉ verify fallback branch, bỏ qua validation/normalization/persistence logic cho từng field; (3) cross-provider priority logic (vd `JINA > GEMINI > OPENAI > COHERE`) chỉ lộ bug khi có nhiều key cùng lúc; (4) "empty submit OK = pass" = giả mạo E2E coverage. Nếu thiếu credential cho optional field → pause test + xin user cung cấp, KHÔNG skip.
+- **"Browser automation (Playwright/Puppeteer/Selenium) để thay click user"** (2026-04-21) -> CẤM. User-action trong skill step [3] là bắt buộc user THẬT, không phải script. Browser automation = mock layer: không exercise OAuth redirect với real provider consent, không render real form + CSS + CSP, không submit via real click event listener, không replay real browser JWT cookie flow. Programmatic POST tới submit endpoint cũng cấm vì cùng lý do. Nếu user không có sẵn để participate → pause test, KHÔNG substitute automation.
 
 ## 7. Rule Summary
 

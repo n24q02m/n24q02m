@@ -62,6 +62,7 @@ Done
 4. **Full matrix (24 configs), not default-only.**
 5. **Release only at Phase 4** — no mid-session release, no incremental per-repo release.
 6. **Phase 5 must verify downstream auto-issue PRs** exist for core releases (mcp-core release triggers tracking issues in all 7 MCP + 3 consumer repos).
+7. **Remote mode = per-JWT-sub multi-user enforced** — any server running `remote-relay`/`remote-oauth` mode MUST store credentials keyed by JWT `sub` (or OAuth-provider user id). No silent fallback to single-user `config.enc`. If upstream mcp-core can't yet provide per-session sub, server MUST REFUSE start in remote mode with explicit error. See `feedback_remote_relay_multi_user_enforcement.md`.
 
 ## Red flags (STOP immediately)
 
@@ -73,6 +74,9 @@ Done
 - "Guess data store / env var / relay field" → violates `feedback_data_store_no_guessing.md` + see `references/mode-matrix.md` for truth.
 - "Let me add a new mode for X" → violates mode matrix fixed set; each server has fixed default + fixed list of supported alternates.
 - "Dual codepath — local form AND remote relay URL simultaneously" → user confusion, violates `feedback_relay_mode_ui_parity.md`.
+- "Remote-relay với single-user `writeConfig(SERVER_NAME, raw)` + `// TODO: upstream v1.5 will add sub`" → silent credential leak, violates `feedback_remote_relay_multi_user_enforcement.md`. Either impl per-JWT-sub NOW or REFUSE remote mode start.
+- "Skip optional field khi test relay" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. Mọi field kể cả `required: false` PHẢI fill credential thật. Submit-empty không được coi là PASS — chỉ verify fallback branch, bỏ qua validation/priority logic.
+- "Browser automation (Playwright/Puppeteer/Selenium) thay user click submit" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. User-action là real user, automation = mock layer, cũng cấm programmatic POST tới submit endpoint. Nếu user không có sẵn → pause test, KHÔNG substitute.
 
 ## References (load as needed)
 
