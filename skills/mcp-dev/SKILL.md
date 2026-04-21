@@ -37,7 +37,10 @@ Phase 1: Backlog clear (references/backlog-clearance.md) — interactive per-PR
 Phase 2: Clean state per server (references/clean-state.md)
   |
   v
-Phase 3: E2E full matrix (references/e2e-full-matrix.md) — 24 configs (20 MCP + 4 non-MCP)
+Phase 3: Test A — MCP PROTOCOL E2E (references/e2e-full-matrix.md) — 24 configs
+  SOURCE CODE: `uv run <server>` / `bun run build && node bin/cli.mjs`
+  CLIENT: Python MCP SDK (mcp.ClientSession + stdio_client / streamablehttp_client)
+  6 configs auto-verified via CI (#19-24); 18 manual configs require user browser fill
   |
   v
   ALL GREEN (24/24)?
@@ -51,8 +54,20 @@ Phase 4: Release dispatch (references/release-cascade.md) — mcp-core -> 7 MCP 
 Phase 5: Verify (auto-issues, PSR version, downstream pin bump PRs)
   |
   v
+Phase 6: Test B — CLIENT INTEGRATION (references/client-integration-test.md)
+  PUBLISHED ARTIFACT: `uvx <server>` / `npx @n24q02m/<server>` / plugin from marketplace
+  CLIENTS: Claude Code CLI (plugin marketplace), VS Code GitHub Copilot (mcp.json)
+  Verify plugin install + auth flow + tool invocation from real client context
+  |
+  v
 Done
 ```
+
+**Test A vs Test B — 2 phases RIÊNG BIỆT (never merge)**:
+- Test A = pre-release, source code, em as MCP client (Python SDK). Phase 3.
+- Test B = post-release, published artifact, user as client (Claude Code / VS Code). Phase 6.
+- Release MUST sit BETWEEN two tests. No published artifact → no plugin to install → cannot do Test B.
+- Merging Test A and Test B = anti-pattern (2026-04-21 violation, see `feedback_work_order_fix_test_release.md`).
 
 ## Invariants
 
@@ -78,6 +93,7 @@ Done
 - "Skip optional field khi test relay" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. Mọi field kể cả `required: false` PHẢI fill credential thật. Submit-empty không được coi là PASS — chỉ verify fallback branch, bỏ qua validation/priority logic.
 - "Browser automation (Playwright/Puppeteer/Selenium) thay user click submit" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. User-action là real user, automation = mock layer, cũng cấm programmatic POST tới submit endpoint. Nếu user không có sẵn → pause test, KHÔNG substitute.
 - "Stdio proxy skip relay form vì pre-configured / chỉ cần handshake" (2026-04-21) → SAI. Stdio proxy = server expose stdio nhưng bên trong spawn LOCAL `runLocalServer`/`run_local_server` relay form khi config.enc trống. Phase 2 clean-state bắt buộc config trống → stdio PHẢI exercise form flow giống http local-relay. Exception duy nhất: server KHÔNG có relay (better-godot-mcp).
+- "Test A (MCP protocol) + Test B (Claude Code + Copilot plugin install) gộp chung" (2026-04-21) → violates `feedback_work_order_fix_test_release.md`. Test A uses source code + Python MCP SDK pre-release. Test B uses published artifact + real client post-release. Release sits BETWEEN. "Configure plugin on Claude Code/Copilot" là Phase 6 work, không phải Phase 3.
 
 ## References (load as needed)
 
@@ -91,8 +107,9 @@ Done
 - `references/backlog-allowlist.md` — auto-allowed + explicit long-running
 - `references/backlog-clearance.md` — priority order + per-PR review protocol
 - `references/clean-state.md` — per-server clean paths (config.enc, token cache, session lock)
-- `references/e2e-full-matrix.md` — 24 configs table + uniform 9-step procedure
+- `references/e2e-full-matrix.md` — 24 configs table + uniform 9-step procedure (Test A)
 - `references/release-cascade.md` — PSR dispatch order + downstream auto-issue verify
+- `references/client-integration-test.md` — Phase 6 Test B: Claude Code + Copilot plugin install verify
 - `references/non-mcp-repos.md` — qwen3-embed / web-core / claude-plugins / n24q02m checks
 - `references/readme-parity.md` — README tier + parity across Productions/Scripts Stars lists (27 repos)
 

@@ -1,6 +1,10 @@
-# E2E Full Matrix — Phase 3 Cascade
+# E2E Full Matrix — Phase 3 (Test A: MCP Protocol, Pre-Release)
 
-Phase 3 của mcp-dev cascade. Entered **sau khi** Phase 2 (clean-state reset — xem `clean-state.md`) complete trên mọi server trong scope. Exit khi **24/24 configs PASS**.
+Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**, chạy TRƯỚC release. Entered sau khi Phase 2 (clean-state reset — xem `clean-state.md`) complete. Exit khi **24/24 configs PASS**.
+
+**Test A scope**: Server từ source code (`uv run <server>` / `bun run build && node bin/cli.mjs`). Client = em via Python MCP SDK (`mcp.ClientSession` + `stdio_client` / `streamablehttp_client`). Verify protocol works end-to-end BEFORE publishing broken binary.
+
+**NOT this phase**: Plugin install trên Claude Code CLI / VS Code Copilot. Đó là **Test B (Phase 6)** — xem `client-integration-test.md`. 2026-04-21 violation: em gộp Test A + Test B, user corrected: "Test qua mcprotocol đã, rồi mới release stable, thì mới có cái mà test với plugin".
 
 ## 1. Policy Change (2026-04-20)
 
