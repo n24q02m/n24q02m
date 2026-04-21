@@ -31,3 +31,15 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-commit]
+
+  # ============================================================================
+  # Markdownlint on owned .md files (skills/ synced excluded via ignore file)
+  # ============================================================================
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.0
+    hooks:
+      - id: markdownlint-cli2
+        args:
+          - --config
+          - .markdownlint.json
+        exclude: '^(skills|commands|agents|output-styles|hooks|node_modules|\.superpower)/'

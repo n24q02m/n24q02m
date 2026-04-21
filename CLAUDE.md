@@ -2,6 +2,7 @@
 applyTo: '**'
 ---
 ## 1. NGÔN NGỮ & LẬP LUẬN
+
 | Ngữ cảnh | Ngôn ngữ |
 |----------|----------|
 | Hội thoại, Tài liệu, Comments | **Tiếng Việt (chuẩn, có dấu)** |
@@ -17,6 +18,7 @@ applyTo: '**'
 <important if="session includes bug fixes, PR processing, security patches, AND any release/publish action">
 - **WORK ORDER BẤT BIẾN: CLEAR BACKLOG → E2E → RELEASE (CUỐI CÙNG CỦA CUỐI CÙNG)**: Trong session multi-step có fix + release, trình tự BẮT BUỘC: (1) Hoàn thành MỌI fix + **EMPTY BACKLOG toàn scope**: PRs=0 + issues=0 + Sentinel/Bolt/Daisy/Jules bot PRs=0 + dependabot=0 + codeql=0 + secret scan=0 + cred rotations pending=0 trên TẤT CẢ repo trong scope → (2) Chạy ONE comprehensive E2E full/real/live test → (3) CHỈ sau khi test pass toàn bộ mới dispatch release CD. TUYỆT ĐỐI KHÔNG "Phase X feature done = ready for E2E" khi còn 100+ open PRs. TUYỆT ĐỐI KHÔNG release giữa chừng rồi test sau. Vi phạm → broken releases + downstream pin drift + rework cascade. Verify backlog bằng: `gh pr list --limit 1000 --state open` + `gh issue list --limit 1000 --state open` + `gh api repos/<>/dependabot/alerts` (xem `feedback_gh_cli_pagination.md` — LUÔN --limit 1000). Xem memory `feedback_work_order_fix_test_release.md`.
 </important>
+
 <important if="merging, closing, or approving ANY pull request or issue — đặc biệt bot PRs (Jules/Sentinel/Bolt/Daisy/Renovate/Dependabot)">
 - **PR/ISSUE REVIEW PHẢI THẬT (ĐỦ 6 ITEMS)**: BẮT BUỘC đọc TRƯỚC KHI merge/close/approve: (1) **Full diff** từng file/hunk cross-check scope với title; (2) **PR + inline review comments** (`gh pr view <N> --comments` + `gh api repos/<r>/pulls/<N>/comments`) — reviewer concerns, request-changes, unresolved threads; (3) **Linked issues** qua `closingIssuesReferences` → `gh issue view <M> --comments` đọc bug context + user priority; (4) **CI run logs** nếu UNSTABLE/FAILING (`gh run view <id> --log-failed`) — failure có thể reveal scope creep; (5) **Commit messages** của PR để hiểu decision rationale; (6) **Scope map** diff vs title, flag xoá file/revert feature/đổi default. Diff chứa changes ngoài scope HOẶC comments có unresolved concerns → REJECT + tách PR. Bot PRs (Jules/Sentinel/Bolt) thường kèm collateral damage. "Backlog cleanup quick merge / skip comments / admin flag bypass failing CI" = ANTI-PATTERN. Vi phạm 2026-04-19: Jules PR #517 title `[FIX] Missing Cache` nhưng diff revert remote-oauth mode + xoá `src/auth/notion-token-store.ts` → phá mode matrix notion. Xem memory `feedback_pr_review_must_be_real.md`.
 </important>
@@ -84,6 +86,7 @@ applyTo: '**'
 **Why:** 18/04/2026 em định thêm rule mới về MCP tool standard vào CLAUDE.md + memory mà không check skill `fullstack-dev/references/mcp-server.md` đã có section "Standard Tool Set" (chỉ cần UPDATE, không phải tạo rule mới). User phải nhắc 2 lần. Rule bloat + skill stale = antipattern cost long-term context.
 
 **How to apply:**
+
 1. Bắt đầu task → scan system prompt skill list → match domain → invoke skill NGAY.
 2. Skill reference đã cover topic → đọc reference file, KHÔNG freehand lại hay duplicate vào rule.
 3. Content đã có trong skill nhưng outdated → UPDATE skill reference file, KHÔNG tạo rule mới bypass.
@@ -92,15 +95,18 @@ applyTo: '**'
 </important>
 
 ## 1.5. NGUYÊN TẮC CODING (KARPATHY)
+
 - **Surface assumptions, KHÔNG pick silently**: Trước khi code, state assumption; nếu có nhiều interpretation, liệt kê tất cả và hỏi, KHÔNG tự chọn một hướng rồi code 200 dòng.
 - **Surgical diff**: Mỗi dòng thay đổi PHẢI trace trực tiếp về yêu cầu user. KHÔNG drive-by refactor (đổi quote style, thêm type hint, reformat, "improve" comment adjacent). Match existing style của file kể cả khi muốn khác. Dead code pre-existing: mention, đừng xoá.
 - **Simplicity before speculation**: KHÔNG abstraction cho single-use, KHÔNG "flexibility/configurability" chưa được yêu cầu, KHÔNG error handling cho kịch bản bất khả thi. "Production-grade" != "over-engineered upfront" — scalable khi requirement thật sự xuất hiện, không phải preemptive Strategy pattern. Nguồn: https://github.com/forrestchang/andrej-karpathy-skills
 
 ## 2. CHUẨN MỰC CODE
+
 - **KHÔNG** dùng emoji trong code/tài liệu kỹ thuật.
 <important if="committing code or creating commits">
 - **Commits**: CHỈ dùng `fix:` và `feat:` prefix. **KHÔNG BAO GIỜ** dùng `chore:`, `docs:`, `refactor:`, `ci:`, `build:`, `style:`, `perf:`, `test:` hay bất kỳ type nào khác. **KHÔNG BAO GIỜ** dùng `!` (breaking change indicator). **KHÔNG BAO GIỜ** skip pre-commit hooks (`--no-verify`, `--no-gpg-sign`).
 </important>
+
 <important if="discussing release version, picking version number, writing changelog, planning release, or anything related to semantic versioning">
 - **PSR AUTO-VERSION**: Đọc skill `infra-devops/references/semantic-release.md` section "Anti-pattern: Tự pick version số trong spec/plan/PR" TRƯỚC khi viết spec/plan/PR có version. Tóm tắt: KHÔNG tự pick `v0.1.0`/`v1.0.0` — dùng placeholder `<auto>`. Memory `feedback_psr_auto_version.md`.
 </important>
@@ -115,6 +121,7 @@ applyTo: '**'
 - **VM Deploy**: **KHÔNG BAO GIỜ** chạy `docker compose` trực tiếp trên VM. Luôn dùng `make up-<service>` / `make down-<service>` (inject secrets từ Doppler + Infisical). **KHÔNG BAO GIỜ** `make up` / `make down` toàn bộ — chỉ thao tác từng service cụ thể. Dùng `make up-*` (không phải `restart-*`) khi thay đổi env vars.
 
 ## 3. E2E TESTING (MCP SERVERS)
+
 - **MCP protocol**: Test qua `mcp.ClientSession` + `stdio_client` (initialize → tools/list → tools/call). **KHÔNG BAO GIỜ** import Python functions trực tiếp.
 - **Source code**: Chạy server từ source (`uv run wet-mcp`, `uv run --directory . wet-mcp`). **KHÔNG** dùng PyPI/plugin đã install.
 - **Relay flow**: Mỗi server PHẢI test relay — clean state (xóa config.enc, unset env vars) → start server → relay URL hiển thị ở stderr → user vào browser config → verify server nhận config.

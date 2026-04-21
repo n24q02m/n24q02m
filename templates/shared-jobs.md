@@ -30,6 +30,7 @@ Reference for common jobs shared across all repos. Every job is inlined in ci.ym
 - **Chat**: Disabled (`auto_reply: false`) — no `@coderabbitai` mentions
 
 `.coderabbit.yaml` template:
+
 ```yaml
 language: "en-US"
 reviews:
@@ -65,6 +66,7 @@ chat:
 - **Config**: Auto review + describe + improve. Custom instructions from `.github/best_practices.md`.
 - **Vars**: `VERTEX_WIF_PROVIDER`, `VERTEX_SERVICE_ACCOUNT`, `VERTEX_PROJECT` (repo vars, not secrets)
 - **`if:` condition** (both branches must filter bot AND owner):
+
   ```yaml
   if: >-
     (
