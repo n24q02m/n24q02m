@@ -89,6 +89,7 @@ Done
 - `references/e2e-full-matrix.md` — 24 configs table + uniform 9-step procedure
 - `references/release-cascade.md` — PSR dispatch order + downstream auto-issue verify
 - `references/non-mcp-repos.md` — qwen3-embed / web-core / claude-plugins / n24q02m checks
+- `references/readme-parity.md` — README tier + parity across Productions/Scripts Stars lists (27 repos)
 
 ## Memory (incident log — why history)
 

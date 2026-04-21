@@ -8,8 +8,64 @@
 - Cấu hình pre-commit hooks cho project
 - Setup python-semantic-release cho automated versioning
 - Chuẩn hóa repo hiện có (mise, linting, CODEOWNERS)
+- Lên scope cho cross-repo audit / README rollout / backlog cleanup / release cascade
 
 > **Test Coverage**: ≥ 95% cho tất cả CI/CD workflows và automation scripts.
+
+## Repo Scope Source of Truth — 2 GitHub Stars Lists
+
+**Canonical source cho "repo nào thuộc scope":**
+
+- **Productions** — `https://github.com/stars/n24q02m/lists/productions` — user-facing products (OSS CLI, MCP servers, private apps)
+- **Scripts** — `https://github.com/stars/n24q02m/lists/scripts` — infra, tooling, profile
+
+**KHÔNG hardcode list tên repo vào spec/plan/rule.** Scope drift theo thời gian (repos added/archived/made private). Mỗi khi spec/plan cần scope, fetch lại live.
+
+### Fetch command (single-shot)
+
+```bash
+gh api graphql -f query='
+query {
+  viewer {
+    lists(first:10) {
+      nodes {
+        name
+        description
+        items(first:100) {
+          nodes {
+            ... on Repository {
+              nameWithOwner
+              isPrivate
+              isArchived
+              description
+            }
+          }
+        }
+      }
+    }
+  }
+}' --jq '.data.viewer.lists.nodes[] | select(.name == "Productions" or .name == "Scripts") | {name, count: (.items.nodes | length), repos: (.items.nodes | map(.nameWithOwner))}'
+```
+
+**Why GraphQL not REST**: GitHub REST API has no endpoint for user Stars lists. The web routes `/stars/<user>/lists/<slug>` return 404 for unauthenticated + non-owner viewers. `viewer.lists` field on authenticated GraphQL requires the token to belong to the list owner (here `n24q02m`) and returns exactly what the web UI shows.
+
+### Classification — Tier 1 vs Tier 2 (for README standard)
+
+| List | Visibility | Tier | README target |
+|------|------------|------|---------------|
+| Productions | public | **Tier 1 Flagship** (full hero + demo + install matrix) | match skret README |
+| Productions | private | Tier 1 internal | same structure, content internal-only |
+| Scripts | public | **Tier 2 Library/Infra** (title + badges + concise docs) | match scoop-bucket / homebrew-tap / n24q02m profile |
+| Scripts | private | No external README requirement | ops-focused, can skip |
+
+### Session-start snapshot
+
+When starting a cross-repo session (audit, README rollout, backlog cleanup, release cascade):
+
+1. Run the GraphQL fetch above
+2. Dump results to `<session>/memory/scope-snapshot-YYYY-MM-DD.md` with the date and per-list repo list
+3. Reference that snapshot throughout the session; fetch again if session crosses a day boundary
+4. Never paste "scope X repos" into conversation without showing the snapshot date
 
 ## Base Structure (All Languages)
 
@@ -44,12 +100,68 @@ project/
 > **PSR config**: Python repos dùng `[tool.semantic_release]` trong `pyproject.toml`. Non-Python repos dùng `semantic-release.toml` (standalone).
 > **Templates**: Issue/PR templates là **BẮT BUỘC** cho tất cả repos. PR template generic (không chứa repo-specific test commands).
 > **Infisical**: `.infisical.json` **PHẢI** được commit (KHÔNG gitignore). Chỉ chứa `workspaceId` (không nhạy cảm). Tất cả secrets qua Infisical (auto-sync → GitHub), KHÔNG dùng `gh secret set` trực tiếp.
+> **MCP server repos**: thêm `server.json` (MCP Registry metadata), `.claude-plugin/plugin.json` + `marketplace.json` (Claude Code plugin manifest), `hooks/hooks.json` (optional), `skills/` (optional guided workflows), `docs/{tool-name}.md` (per-tool docs load bởi `help` tool). Xem skill `fullstack-dev/references/mcp-server.md` cho tool layout chuẩn (N domain + `help` + `config`) và Phase 7 Plugin Packaging.
 
 ---
 
-## README Format
+## README Format — Two Tiers
 
-**Cấu trúc bắt buộc**: Title → Bold one-liner → 2-row badges → Content.
+Pick tier theo mục đích repo:
+
+| Tier | Dùng cho | Structure |
+|------|----------|-----------|
+| **Tier 1 — Flagship** | User-facing OSS CLI/app (skret, MCP servers, claude-plugins marketplace) | Hero logo + demo gif + install matrix + comparison + sponsors |
+| **Tier 2 — Library/Infra** | Internal deps, tap repos, profile README (web-core, scoop-bucket, homebrew-tap) | Simple title + one-liner + 2-row badges |
+
+**Reference implementation: https://github.com/n24q02m/skret/blob/main/README.md** (copy + adapt).
+
+---
+
+### Tier 1 — Flagship README (OSS CLI/App)
+
+Layout (trong `<p align="center">` blocks):
+
+1. **Hero logo** — `logo.svg` width=120, linked to docs domain
+2. **Title** `<h1 align="center">`
+3. **Tagline** — bold one-liner, short subtitle
+4. **Status badges row** — CI + CD + Codecov + Go Report Card + Latest Release + Language + semantic-release + License
+5. **Nav links** — `Docs · Install · Quick start · Community · Getting started`
+6. **Example code block** — 3 representative one-liners showing the value prop
+7. **Hero demo gif** — `<img src="https://<domain>/demo.gif" width="820">` centered
+8. **Table of contents** — clickable anchors (Why / Features / Install / Quick start / Comparison / Docs / Command overview / Contributing / Sponsors / Acks / License)
+9. **Why X?** — 2-3 bullets framing the problem + 1 sentence answer
+10. **Features** — bulleted list, each bullet one sentence
+11. **Install matrix** — markdown table, columns: Platform | One-shot script | Package manager
+12. **Quick start** — numbered steps, each a shell snippet
+13. **Comparison table** — vs competitors on feature rows
+14. **Documentation** — link to docs site + 3-5 key guides
+15. **Command overview** — terse table of top-level commands
+16. **Contributing** — link to CONTRIBUTING.md or inline short
+17. **Sponsors** — GitHub Sponsors badge + call-out
+18. **Acknowledgments** — tools/libraries this builds on (Cobra, Starlight, goreleaser, cosign)
+19. **License** — SPDX name + link
+
+**Required assets in `docs/public/` (or wherever the docs site serves from):**
+
+- `logo.svg` + `logo-dark.svg` (SVG, 120px sq, matching dark-mode variant)
+- `favicon.svg` + `favicon.ico` + `apple-touch-icon.png`
+- `banner.png` (1200×400, used on landing page)
+- `og-image.png` (1200×630, Open Graph + Twitter Card)
+- `demo.gif` (VHS recording, regenerated by `.github/workflows/demo.yml`)
+
+**GitHub repo settings to match:**
+
+```bash
+gh repo edit --description "Bold one-liner"
+gh repo edit --homepage "https://<domain>"
+gh api -X PUT repos/{owner}/{repo}/topics -f names[]="cli" -f names[]="go" ...
+# Social preview image (og-image.png) must be uploaded via web UI Settings → Social preview
+# (no REST endpoint exists — this is the single manual step)
+```
+
+---
+
+### Tier 2 — Library/Infra README
 
 ```markdown
 # Project Name
@@ -69,6 +181,15 @@ project/
 > **Codecov badge token**: `?token=XXX` trong URL badge là **graph token** (read-only, public-safe). KHÔNG cần set GitHub Secret cho badge. `CODECOV_TOKEN` trong CI action là upload token — đó mới cần secret.
 > **License badge**: Dùng `img.shields.io/github/license/org/repo` (dynamic từ repo) thay vì hardcode màu.
 > **No PyPI/Docker badge**: Nếu project không publish PyPI hoặc Docker Hub thì bỏ qua — không force badge không liên quan.
+
+---
+
+### Parity discipline
+
+- Mỗi public repo phải chọn Tier và giữ consistent qua time — không trộn (ví dụ skret chọn Tier 1, không bao giờ downgrade)
+- Tier 1 repos dùng **cùng một** logo style, color palette, badge order, section order → build familiarity
+- Khi template mature trên flagship (skret), roll out ra các repo cùng tier (7 MCP servers, mcp-core, etc.)
+- **Không có Tier 0**: README trống hoặc 1-dòng = anti-pattern. Ngay cả tap repos (Tier 2) phải có 2 rows badges
 
 ---
 
