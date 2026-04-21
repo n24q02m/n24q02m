@@ -46,6 +46,9 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | better-code-review-graph | #329 | `graph update` reviewer summary (functions_impacted) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #330 | `search`/`query` include embeddings_count + keyword-only header | long-running | External FR from @hoiung, covered by epic #324 (pairs with #317) | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #331 | `callers_of` auto-flag dynamic-dispatch (to_thread/partial/decorators) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
+| better-code-review-graph | #339 | `callers_of`/`callees_of` `not_found` ambiguous (not indexed vs zero callers) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
+| better-code-review-graph | #340 | `review`/`tests_for` untested-function over-reports on cross-lang + integration repos | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
+| better-code-review-graph | #341 | Promote `callers_of`/`impact`/`search` to first-class `action=` values | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
