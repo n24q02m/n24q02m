@@ -77,6 +77,7 @@ Done
 - "Remote-relay với single-user `writeConfig(SERVER_NAME, raw)` + `// TODO: upstream v1.5 will add sub`" → silent credential leak, violates `feedback_remote_relay_multi_user_enforcement.md`. Either impl per-JWT-sub NOW or REFUSE remote mode start.
 - "Skip optional field khi test relay" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. Mọi field kể cả `required: false` PHẢI fill credential thật. Submit-empty không được coi là PASS — chỉ verify fallback branch, bỏ qua validation/priority logic.
 - "Browser automation (Playwright/Puppeteer/Selenium) thay user click submit" (2026-04-21) → violates `feedback_relay_fill_all_fields.md`. User-action là real user, automation = mock layer, cũng cấm programmatic POST tới submit endpoint. Nếu user không có sẵn → pause test, KHÔNG substitute.
+- "Stdio proxy skip relay form vì pre-configured / chỉ cần handshake" (2026-04-21) → SAI. Stdio proxy = server expose stdio nhưng bên trong spawn LOCAL `runLocalServer`/`run_local_server` relay form khi config.enc trống. Phase 2 clean-state bắt buộc config trống → stdio PHẢI exercise form flow giống http local-relay. Exception duy nhất: server KHÔNG có relay (better-godot-mcp).
 
 ## References (load as needed)
 

@@ -19,24 +19,24 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
 |---|------|------|------------|-----------------|----------------------|
 | 1 | better-notion-mcp | http remote oauth (default) | Connect plugin to `https://notion-mcp.n24q02m.com` | Notion OAuth provider redirect -> callback | `state=configured` after callback |
 | 2 | better-notion-mcp | http local relay | `MCP_MODE=local-relay npx @n24q02m/better-notion-mcp` | Paste Notion integration token at `http://127.0.0.1:<port>/authorize` | `state=configured` after form submit |
-| 3 | better-notion-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-notion-mcp` | Pre-configured (from mode 1 or 2) | `state=configured` on launch |
+| 3 | better-notion-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-notion-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form at `http://127.0.0.1:<port>/authorize`; user fills Notion token (same field as mode 2) + submits | `state=configured` after form submit, stdio session resumes with saved cred |
 | 4 | better-email-mcp | http remote relay (default) | Connect plugin to `https://email-mcp.n24q02m.com` | Multi-provider form (Gmail/Yahoo/iCloud/Outlook) | `state=configured` after form submit |
 | 5 | better-email-mcp | http local relay | `MCP_MODE=local-relay npx @n24q02m/better-email-mcp` | Same multi-provider form at `http://127.0.0.1:<port>/authorize` | `state=configured` after form submit |
-| 6 | better-email-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-email-mcp` | Pre-configured (from mode 4 or 5) | `state=configured` on launch |
+| 6 | better-email-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-email-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form; user fills multi-provider creds (same as mode 5) + submits | `state=configured` after form submit, stdio session resumes |
 | 7 | better-telegram-mcp | http remote relay (default) | Connect plugin to `https://telegram-mcp.n24q02m.com` | Phone number + OTP code | `state=configured` after OTP verify |
 | 8 | better-telegram-mcp | http local relay | `MCP_MODE=local-relay uvx better-telegram-mcp` | Phone + OTP via local form | `state=configured` after OTP verify |
-| 9 | better-telegram-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx better-telegram-mcp` | Pre-configured | `state=configured` on launch |
-| 10 | wet-mcp | http local relay (default) | `uvx wet-mcp` | 4 optional API keys (Jina/Gemini/OpenAI/Cohere), all empty -> skip | `state=configured` after form submit |
-| 11 | wet-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx wet-mcp` | Same form, remote URL | `state=configured` after form submit |
-| 12 | wet-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx wet-mcp` | Pre-configured | `state=configured` on launch |
-| 13 | mnemo-mcp | http local relay (default) | `uvx mnemo-mcp` | Empty form (SQLite local, no creds needed) | `state=configured` after Skip |
-| 14 | mnemo-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx mnemo-mcp` | Empty form remote | `state=configured` after Skip |
-| 15 | mnemo-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx mnemo-mcp` | Pre-configured | `state=configured` on launch |
-| 16 | better-code-review-graph | http local relay (default) | `uvx better-code-review-graph` | Empty form (SQLite local) | `state=configured` after Skip |
-| 17 | better-code-review-graph | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx better-code-review-graph` | Empty form remote | `state=configured` after Skip |
-| 18 | better-code-review-graph | stdio proxy | `MCP_TRANSPORT=stdio uvx better-code-review-graph` | Pre-configured | `state=configured` on launch |
+| 9 | better-telegram-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx better-telegram-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form; user fills bot_token + phone/OTP (same as mode 8) + submits | `state=configured` after OTP verify, stdio session resumes |
+| 10 | wet-mcp | http local relay (default) | `uvx wet-mcp` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật per `feedback_relay_fill_all_fields.md` | `state=configured` after form submit |
+| 11 | wet-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx wet-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 12 | wet-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx wet-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields as mode 10); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
+| 13 | mnemo-mcp | http local relay (default) | `uvx mnemo-mcp` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật | `state=configured` after form submit |
+| 14 | mnemo-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx mnemo-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 15 | mnemo-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx mnemo-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
+| 16 | better-code-review-graph | http local relay (default) | `uvx better-code-review-graph` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật | `state=configured` after form submit |
+| 17 | better-code-review-graph | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx better-code-review-graph` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 18 | better-code-review-graph | stdio proxy | `MCP_TRANSPORT=stdio uvx better-code-review-graph` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
 | 19 | better-godot-mcp | http local non-relay (default) | `npx @n24q02m/better-godot-mcp` | No credentials | `state=configured` on launch (immediate) |
-| 20 | better-godot-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-godot-mcp` | No credentials | `state=configured` on launch (immediate) |
+| 20 | better-godot-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-godot-mcp` | No credentials (godot không dùng relay); verify MCP handshake + tools/list | `state=configured` on launch (immediate) |
 | 21 | qwen3-embed | pytest + smoke | `cd ~/projects/qwen3-embed && uv run pytest tests/` + embed smoke | N/A (library) | `pytest exit 0` + smoke returns shape `(1, N)` |
 | 22 | web-core | pytest + SearXNG runner | `cd ~/projects/web-core && uv run pytest tests/` + `uv run python -m web_core.searxng.runner --check` | N/A | `pytest exit 0` + "SearXNG ready at http://127.0.0.1:8888" |
 | 23 | claude-plugins | jq + lint + dry-run install | `jq . plugins/*/plugin.json` + `node scripts/lint-marketplace.js` + `claude plugin install <name> --dry-run` per MCP | N/A | jq exit 0 + lint exit 0 + dry-run no FAIL |
@@ -58,7 +58,14 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
          - remote-relay / local-relay: paste credentials at /authorize form —
            FILL MỌI FIELD kể cả `required: false` bằng credential thật;
            submit-empty/skip-optional = KHÔNG pass, vi phạm section 6
-         - stdio-proxy: skip (cred loaded from config.enc)
+         - stdio-proxy: với CLEAN state (config.enc trống, bắt buộc per
+           `clean-state.md`), server spawns LOCAL `runLocalServer` / `run_local_server`
+           relay form tại `http://127.0.0.1:<port>/authorize` (xem `feedback_stdio_fallback_local_only.md`).
+           USER PHẢI mở browser + fill MỌI field giống mode http-local-relay +
+           submit. KHÔNG skip như http mode. Exception duy nhất: server không
+           dùng relay (godot #19/#20) hoặc config đã có ở session khác của
+           CÙNG matrix run (không clean giữa mode của cùng server = vi phạm
+           clean-state rule).
 
 [4]    Server emits state=configured event (monitor stderr log)
        Verify: log line contains "state=configured" or equivalent
