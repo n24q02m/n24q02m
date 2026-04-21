@@ -15,6 +15,16 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
 
 ## 2. Full 24-Config Table
 
+**CI-verified tag**: 6 configs auto-run on every push/PR (no manual test needed — CI green = PASS):
+- `#19` better-godot-mcp http non-relay → `bun run test:live` (stdio handshake + tools/list, environment-agnostic)
+- `#20` better-godot-mcp stdio proxy → same live test covers stdio transport
+- `#21` qwen3-embed → `uv run pytest -m "not integration"` includes shape assertions (`test_custom_text_embedding.py` shape `(1,8)` / `(2,4)`)
+- `#22` web-core → `uv run pytest` covers `test_search/test_runner.py` + `test_runner_security.py`
+- `#23` claude-plugins → `python3 scripts/validate_marketplace.py` (CI `validate` job + precommit hook)
+- `#24` n24q02m → `markdownlint-cli` + lychee link check (CI `validate` job + precommit hook)
+
+**Manual user interaction** (remaining 18 configs `#1-18`): OAuth / OTP / real provider flows cannot be automated — user must drive browser per `feedback_relay_fill_all_fields.md`.
+
 | # | Repo | Mode | Activation | Credential flow | Expected state event |
 |---|------|------|------------|-----------------|----------------------|
 | 1 | better-notion-mcp | http remote oauth (default) | Connect plugin to `https://notion-mcp.n24q02m.com` | Notion OAuth provider redirect -> callback | `state=configured` after callback |
