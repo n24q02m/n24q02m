@@ -32,6 +32,7 @@ cp claude-code/settings.json ~/.claude/settings.json
 ```
 
 File này chứa:
+
 - **Plugins**: Danh sách plugins được bật (official + marketplace)
 - **Marketplaces**: n24q02m-plugins (n24q02m — 7 MCP servers), cc-marketplace (kenryu42)
 - **Env vars**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
@@ -45,6 +46,7 @@ claude plugin marketplace add n24q02m/claude-plugins
 ```
 
 Plugins bao gồm:
+
 - **Code quality**: security-guidance, pr-review-toolkit, better-code-review-graph
 - **Development**: feature-dev, frontend-design, superpowers, claude-md-management
 - **LSP**: gopls, typescript, pyright, rust-analyzer
@@ -93,6 +95,7 @@ cd ~/.claude/skills && git clone https://github.com/shuvonsec/claude-bug-bounty.
 ## Bước 5: Cấu hình MCP Servers
 
 MCP servers chia 2 nguồn:
+
 - **Plugin MCP** (7 servers): Quản lý bởi `n24q02m-plugins` marketplace — tự động cài khi bật plugin trong `settings.json`. Credentials cấu hình qua `setup`/`config` tools của từng plugin.
 - **Direct MCP** (3 servers): Cấu hình trong `~/.claude.json` (mục `mcpServers`). File `claude-code/mcp-servers.json` chứa template với placeholders.
 
@@ -143,6 +146,7 @@ Thêm vào `settings.json` (Ctrl+Shift+P → "Open User Settings (JSON)"):
 ### Gemini 3 Flash cho Paperclip VC
 
 Paperclip Virtual Company trên infra-vnic dùng Gemini 3 Flash qua Hermes agent:
+
 - API key: `GOOGLE_AI_STUDIO_API_KEY` (Doppler: virtual-company/dev)
 - Model: `gemini-3.1-flash` (poor tier), `gemini-3.1-pro` (rich tier)
 - Arena rank: #11 (tốt cho general tasks, giá rẻ)
@@ -235,6 +239,7 @@ Trên máy khác, pull và chạy lại Bước 2-4.
 Để Copilot VSC có thể "tương tự và đầy đủ" sức mạnh và bối cảnh (context) giống như Claude Code, bạn cần áp dụng các thay đổi sau vào VS Code.
 
 ### Đồng bộ System Prompts
+
 Trong `~/.config/Code - Insiders/User/prompts/` (hoặc `Code/User/prompts/`), hãy tạo file `AGENTS.instructions.md` với cùng nội dung:
 
 ```bash
@@ -243,6 +248,7 @@ cp claude-code/CLAUDE.md "$HOME/.config/Code - Insiders/User/prompts/AGENTS.inst
 ```
 
 ### Đồng bộ Skills
+
 Sao chép lại mô hình Skills và các thư viện external (Gstack) cho Copilot bằng cách đưa vào thư mục Prompts:
 
 ```bash
@@ -265,6 +271,7 @@ git clone https://github.com/shuvonsec/claude-bug-bounty.git
 ```
 
 ### Đồng bộ MCP Servers & Permission
+
 Sử dụng `settings.json` của VS Code (`~/.config/Code - Insiders/User/settings.json`) để thêm cấu hình bypass và định nghĩa list MCP servers:
 
 ```json
@@ -280,5 +287,5 @@ Sử dụng `settings.json` của VS Code (`~/.config/Code - Insiders/User/setti
     "better-code-review-graph": {"command": "uvx", "args": ["--python", "3.13", "better-code-review-graph@latest"]}
   }
 ```
-*Ghi chú: Thêm các biến môi trường env/API KEY nếu cần thiết (tương tự như `~/.claude.json`).*
 
+*Ghi chú: Thêm các biến môi trường env/API KEY nếu cần thiết (tương tự như `~/.claude.json`).*

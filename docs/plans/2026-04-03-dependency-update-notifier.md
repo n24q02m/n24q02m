@@ -15,10 +15,12 @@
 ## File Structure
 
 ### `n24q02m` repo (centralized)
+
 - **Create:** `dependency-map.yml` — core-to-downstream mapping
 - **Create:** `.github/workflows/notify-downstream.yml` — dispatcher workflow
 
 ### Core repos (4 repos, same pattern)
+
 - **Modify:** `qwen3-embed/.github/workflows/cd.yml` — add `notify-downstream` job
 - **Modify:** `web-core/.github/workflows/cd.yml` — add `notify-downstream` job
 - **Modify:** `mcp-relay-core/.github/workflows/cd.yml` — add `notify-downstream` job
@@ -29,6 +31,7 @@
 ### Task 1: Create dependency map in `n24q02m` repo
 
 **Files:**
+
 - Create: `dependency-map.yml`
 
 - [ ] **Step 1: Create `dependency-map.yml`**
@@ -92,6 +95,7 @@ git commit -m "feat: add dependency map for core-to-downstream tracking"
 ### Task 2: Create `notify-downstream.yml` workflow in `n24q02m` repo
 
 **Files:**
+
 - Create: `.github/workflows/notify-downstream.yml`
 
 - [ ] **Step 1: Create workflow file**
@@ -206,6 +210,7 @@ git commit -m "feat: add notify-downstream workflow for core update issues"
 ### Task 3: Add `notify-downstream` job to `qwen3-embed` CD
 
 **Files:**
+
 - Modify: `qwen3-embed/.github/workflows/cd.yml`
 
 - [ ] **Step 1: Add `notify-downstream` job at the end of `cd.yml`**
@@ -261,6 +266,7 @@ git commit -m "feat: notify downstream repos on stable release"
 ### Task 4: Add `notify-downstream` job to `web-core` CD
 
 **Files:**
+
 - Modify: `web-core/.github/workflows/cd.yml`
 
 - [ ] **Step 1: Add `notify-downstream` job at the end of `cd.yml`**
@@ -316,6 +322,7 @@ git commit -m "feat: notify downstream repos on stable release"
 ### Task 5: Add `notify-downstream` job to `mcp-relay-core` CD
 
 **Files:**
+
 - Modify: `mcp-relay-core/.github/workflows/cd.yml`
 
 - [ ] **Step 1: Add `notify-downstream` job at the end of `cd.yml`**
@@ -371,6 +378,7 @@ git commit -m "feat: notify downstream repos on stable release"
 ### Task 6: Add `notify-downstream` job to `knowledge-core` CD
 
 **Files:**
+
 - Modify: `knowledge-core/.github/workflows/cd.yml`
 
 Note: knowledge-core is a private library consumed via `git+ssh://git@github.com/n24q02m/knowledge-core.git@v{tag}` (not PyPI). It runs on `self-hosted` ARM64 and has only a `release` job. The `notify-downstream` job runs on `ubuntu-latest` since it only calls the GitHub API.

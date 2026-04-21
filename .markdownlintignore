@@ -1,0 +1,16 @@
+node_modules/
+.git/
+.venv/
+build/
+dist/
+coverage/
+.superpower/
+.pytest_cache/
+.ruff_cache/
+
+# Synced from source repos (skills, plugins) — lint at source
+skills/
+commands/
+agents/
+output-styles/
+hooks/

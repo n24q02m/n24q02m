@@ -96,6 +96,7 @@ Save this key -- every client needs it.
 ### 1.4 Security
 
 Ports 21115-21117 are bound to `0.0.0.0` on the host but **only reachable via Tailscale** because:
+
 - Cloud firewall (e.g. OCI Security List) blocks all inbound except SSH
 - OS firewall (iptables) has a default REJECT rule
 - Tailscale traffic bypasses both firewalls via the `tailscale0` interface
@@ -107,17 +108,20 @@ Ports 21115-21117 are bound to `0.0.0.0` on the host but **only reachable via Ta
 ### 2.1 Install Tailscale
 
 **Windows:**
+
 ```
 winget install Tailscale.Tailscale
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 ```
 
 **macOS:**
+
 ```
 brew install tailscale
 ```
@@ -134,11 +138,13 @@ tailscale status
 Download from [rustdesk.com](https://rustdesk.com/download) or:
 
 **Windows:**
+
 ```
 winget install RustDesk.RustDesk
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 # Check latest version at https://github.com/rustdesk/rustdesk/releases
 wget https://github.com/rustdesk/rustdesk/releases/download/<VERSION>/rustdesk-<VERSION>-x86_64.deb
@@ -165,11 +171,13 @@ For unattended access, set a permanent password:
 **Via GUI:** Settings > Security > Permanent Password
 
 **Via CLI (Linux, requires sudo):**
+
 ```bash
 sudo rustdesk --password <YOUR_PASSWORD>
 ```
 
 **Via config file (Windows):**
+
 1. Close RustDesk
 2. Edit `%APPDATA%\RustDesk\config\RustDesk.toml`
 3. Set `password = '<YOUR_PASSWORD>'` (plain text)
@@ -178,11 +186,13 @@ sudo rustdesk --password <YOUR_PASSWORD>
 ### 2.5 Enable Auto-start
 
 **Windows:** RustDesk auto-starts by default. Or add to registry:
+
 ```powershell
 New-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' -Name 'RustDesk' -Value '"<RUSTDESK_PATH>\rustdesk.exe" --tray'
 ```
 
 **Ubuntu:**
+
 ```bash
 sudo systemctl enable rustdesk
 sudo systemctl start rustdesk
@@ -216,6 +226,7 @@ Note down for your records:
 4. Full GUI remote desktop
 
 **Tips:**
+
 - Lock the remote machine when disconnecting (Ctrl+Alt+L on Linux, Win+L on Windows)
 - Enable "Lock session on disconnect" in RustDesk Settings > Security
 - RustDesk traffic goes P2P through Tailscale when possible (~40ms), or relays through the VPS
