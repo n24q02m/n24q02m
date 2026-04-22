@@ -33,6 +33,41 @@ Giống `http local relay` về transport (local 127.0.0.1) nhưng KHÔNG có `r
 ### `stdio proxy`
 Server expose stdio transport qua `mcp-stdio-proxy` CLI hoặc entry point riêng (`--stdio` flag hoặc `MCP_TRANSPORT=stdio` env var). Backward compatibility cho agent không support HTTP transport. **BẮT BUỘC mọi server hỗ trợ** (kể cả server có default là HTTP). Proxy internally spawn HTTP local relay rồi bridge stdin/stdout <-> HTTP.
 
+**Fallback rule (BẤT BIẾN)**: Khi stdio khởi động với `config.enc` trống:
+1. Đọc `config.enc` qua `resolve_config` / `resolveConfig`.
+2. Nếu thiếu cred → spawn **LOCAL HTTP** via `run_local_server` / `runLocalServer` với `relaySchema`, port=0 (random), host=`127.0.0.1`.
+3. Print URL local (`http://127.0.0.1:<port>/`), `tryOpenBrowser(url)`.
+4. `onCredentialsSaved` callback → `writeConfig(SERVER_NAME, creds)` → schedule `handle.close()` sau 5s grace (cho browser nhận `notifyComplete`).
+5. **TUYỆT ĐỐI KHÔNG**: `create_session(remote_url, ...)`, hit `https://<server>.n24q02m.com`, follow default mode (remote-oauth hay remote-relay), advertise deployed domain as paste-key endpoint.
+
+Default mode (remote-oauth / remote-relay) chỉ active khi user explicit chọn HTTP mode qua `MCP_MODE` env var HOẶC cài qua plugin auto-install (Claude Code plugin system). stdio-proxy **độc lập** với default mode — luôn local paste-key form.
+
+## 2.5. Subdomain Deployment Matrix (n24q02m.com)
+
+**Quy tắc BẤT BIẾN**: Chỉ servers có default `http remote *` mới được n24q02m deploy subdomain public. Servers có default `http local *` + optional `(self-host)` = user tự deploy trên infra của họ, n24q02m KHÔNG host public instance.
+
+| Server | Subdomain deployed by n24q02m? | Lý do |
+|---|---|---|
+| **better-notion-mcp** | ✅ `notion-mcp.n24q02m.com` (Caddy + OCI VM) | Default `http remote oauth` — end-user không self-host notion OAuth app được |
+| **better-telegram-mcp** | ✅ `telegram-mcp.n24q02m.com` | Default `http remote relay` — cần multi-user per-JWT-sub |
+| **better-email-mcp** | ✅ `email-mcp.n24q02m.com` | Default `http remote relay` — cần multi-user per-JWT-sub |
+| **wet-mcp** | ❌ **KHÔNG** | Default `http local relay` — user cài plugin chạy local 127.0.0.1. `(self-host)` = user deploy cho riêng họ, không phải n24q02m |
+| **mnemo-mcp** | ❌ **KHÔNG** | Same as wet |
+| **better-code-review-graph** | ❌ **KHÔNG** | Same as wet |
+| **better-godot-mcp** | ❌ **KHÔNG** | Default `http local non-relay`, no HTTP remote |
+
+**Semantic của `(self-host)`**: Annotation cạnh tên mode (vd `http remote relay (self-host)`) = **end-user tự deploy instance của chính họ**. Họ point MCP client sang `MCP_RELAY_URL=https://<their-infra>.example.com`. n24q02m **KHÔNG cung cấp** subdomain cho các mode annotated `(self-host)`.
+
+**Kéo theo yêu cầu code**:
+1. Server có default local-relay **KHÔNG được hardcode `DEFAULT_RELAY_URL = "https://<server>.n24q02m.com"`**. Hardcode như vậy = assume centralized relay tồn tại, trái matrix.
+2. Server có optional `(self-host)` mode phải **require `MCP_RELAY_URL` env var explicit** khi `MCP_MODE=remote-relay` — reject startup nếu missing, kèm error message hướng dẫn user set URL của self-host instance của họ.
+3. Server deploy subdomain (notion/telegram/email) có thể baked-in production URL cho client plugin, nhưng phải override-able qua env var để user self-host thay thế.
+
+**Anti-pattern cấm**:
+- `DEFAULT_RELAY_URL = "https://wet-mcp.n24q02m.com"` trong wet-mcp/mnemo/crg source code (vi phạm 2026-04-22: tồn tại cả 3, di sản từ thời mcp-relay-core centralize).
+- Central relay server route `<server>.n24q02m.com/<server>/` cho tất cả 6 MCP servers (kiến trúc cũ `mcp-relay-core/packages/relay-server` + `pages/{6}`). Đã deprecated 2026-04-22, re-archived.
+- Assume subdomain `<server>.n24q02m.com` tồn tại cho bất kỳ server nào có default local-relay — KHÔNG có, và không nên tạo.
+
 ## 3. Activation Mechanism
 
 Chọn mode qua env var `MCP_MODE` (ưu tiên) HOẶC CLI flag. Nếu không set -> dùng default theo matrix.
@@ -53,6 +88,9 @@ Set sai value -> server PHẢI reject startup với error rõ ràng liệt kê v
 - **Inventing new mode**: thêm mode không có trong matrix (vd `remote oauth` cho telegram khi provider không có OAuth 2.1, `hybrid mode`, `proxy mode`). Provider thiếu capability -> không hỗ trợ mode đó, không fake.
 - **Dual-codepath parallel**: khi default chạy, TUYỆT ĐỐI không activate thêm codepath khác. Vi phạm điển hình: `runLocalServer` serve `/authorize` local form ĐỒNG THỜI lazy-trigger remote relay URL -> user mở plugin thấy 2 URL, không biết paste cred vào cái nào. Phải ONE active codepath per process.
 - **Auto-activating non-default mode when default is configured**: nếu user đã setup default (vd notion có OAuth token valid) thì không được tự chuyển sang `local relay` "for fallback". Default stays default. Mode switch CHỈ khi user explicit set `MCP_MODE`.
+- **stdio fallback to remote URL**: `create_session(DEFAULT_RELAY_URL="https://<server>.n24q02m.com", RELAY_SCHEMA)` trong stdio lazy trigger. Sai vì: (a) remote URL không luôn serve paste-key, (b) kiến trúc mismatch (notion remote = OAuth, paste-key từ stdio = inconsistent), (c) default mode != stdio fallback. stdio fallback phải **LOCAL HTTP** qua `run_local_server` — xem section `stdio proxy` mục 2.
+- **Centralized relay server for all MCP servers** (legacy `mcp-relay-core` pattern): 1 Docker container serve `wet-mcp.n24q02m.com/wet/`, `mnemo-mcp.n24q02m.com/mnemo/`, etc. Đã deprecated 2026-04-22. Mỗi MCP server định nghĩa riêng mode của mình; n24q02m chỉ deploy subdomain cho default-remote servers (xem mục 2.5). KHÔNG xây relay gateway dùng chung.
+- **Assume `<server>.n24q02m.com` tồn tại cho mọi server**: audit plan/spec/infra trước khi reference subdomain public. Default local-relay servers (wet/mnemo/crg) KHÔNG có subdomain — ref `feedback_matrix_selfhost_semantics.md`.
 
 ## 5. Conformance Verification Checklist
 
