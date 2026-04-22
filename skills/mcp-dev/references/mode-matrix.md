@@ -30,17 +30,18 @@ Server chạy LOCAL (`127.0.0.1:<port>`) qua `runLocalServer` (TS) / `run_local_
 ### `http local non-relay`
 Giống `http local relay` về transport (local 127.0.0.1) nhưng KHÔNG có `relaySchema` và KHÔNG serve credential form. CHỈ godot dùng (game tools không cần API key, không cần cred). Entry point bypass setup flow, start MCP protocol endpoint ngay.
 
-### `stdio proxy`
-Server expose stdio transport qua `mcp-stdio-proxy` CLI hoặc entry point riêng (`--stdio` flag hoặc `MCP_TRANSPORT=stdio` env var). Backward compatibility cho agent không support HTTP transport. **BẮT BUỘC mọi server hỗ trợ** (kể cả server có default là HTTP). Proxy internally spawn HTTP local relay rồi bridge stdin/stdout <-> HTTP.
+### `stdio proxy` (Smart Daemon Manager / 1-Daemon)
+Server expose stdio transport qua `run_smart_stdio_proxy` trong `mcp-core`. Backward compatibility cho agent không support HTTP transport. **BẮT BUỘC mọi server hỗ trợ** (kể cả server có default là HTTP) và **TUYỆT ĐỐI TUÂN THỦ kiến trúc 1-Daemon**.
+Thay vì gọi `mcp.run()` trực tiếp (gây spam instance tốn tài nguyên khi có nhiều agent/IDE cùng kết nối), proxy sử dụng `LifecycleLock` cross-process để detect background daemon. Nếu chưa có, nó sẽ spawn HTTP daemon dưới dạng detached process. Nếu đã có, nó sẽ reuse và làm pass-through proxy (stdin/stdout <-> HTTP SSE).
 
 **Fallback rule (BẤT BIẾN)**: Khi stdio khởi động với `config.enc` trống:
 1. Đọc `config.enc` qua `resolve_config` / `resolveConfig`.
-2. Nếu thiếu cred → spawn **LOCAL HTTP** via `run_local_server` / `runLocalServer` với `relaySchema`, port=0 (random), host=`127.0.0.1`.
+2. Nếu thiếu cred → spawn **LOCAL HTTP** via `run_local_server` / `runLocalServer` với `relaySchema`, port=0 (random), host=`127.0.0.1`. (Cấp zero-config auth token 1-year JWT lưu vào file lock để proxy kết nối).
 3. Print URL local (`http://127.0.0.1:<port>/`), `tryOpenBrowser(url)`.
 4. `onCredentialsSaved` callback → `writeConfig(SERVER_NAME, creds)` → schedule `handle.close()` sau 5s grace (cho browser nhận `notifyComplete`).
 5. **TUYỆT ĐỐI KHÔNG**: `create_session(remote_url, ...)`, hit `https://<server>.n24q02m.com`, follow default mode (remote-oauth hay remote-relay), advertise deployed domain as paste-key endpoint.
 
-Default mode (remote-oauth / remote-relay) chỉ active khi user explicit chọn HTTP mode qua `MCP_MODE` env var HOẶC cài qua plugin auto-install (Claude Code plugin system). stdio-proxy **độc lập** với default mode — luôn local paste-key form.
+Default mode (remote-oauth / remote-relay) chỉ active khi user explicit chọn HTTP mode qua `MCP_MODE` env var HOẶC cài qua plugin auto-install (Claude Code plugin system). stdio-proxy **độc lập** với default mode — luôn local paste-key form và **luôn reuse daemon**.
 
 ## 2.5. Subdomain Deployment Matrix (n24q02m.com)
 
