@@ -2,7 +2,6 @@
 applyTo: '**'
 ---
 ## 1. NGÔN NGỮ & LẬP LUẬN
-
 | Ngữ cảnh | Ngôn ngữ |
 |----------|----------|
 | Hội thoại, Tài liệu, Comments | **Tiếng Việt (chuẩn, có dấu)** |
@@ -18,9 +17,8 @@ applyTo: '**'
 <important if="session includes bug fixes, PR processing, security patches, AND any release/publish action">
 - **WORK ORDER BẤT BIẾN: CLEAR BACKLOG → E2E → RELEASE (CUỐI CÙNG CỦA CUỐI CÙNG)**: Trong session multi-step có fix + release, trình tự BẮT BUỘC: (1) Hoàn thành MỌI fix + **EMPTY BACKLOG toàn scope**: PRs=0 + issues=0 + Sentinel/Bolt/Daisy/Jules bot PRs=0 + dependabot=0 + codeql=0 + secret scan=0 + cred rotations pending=0 trên TẤT CẢ repo trong scope → (2) Chạy ONE comprehensive E2E full/real/live test → (3) CHỈ sau khi test pass toàn bộ mới dispatch release CD. TUYỆT ĐỐI KHÔNG "Phase X feature done = ready for E2E" khi còn 100+ open PRs. TUYỆT ĐỐI KHÔNG release giữa chừng rồi test sau. Vi phạm → broken releases + downstream pin drift + rework cascade. Verify backlog bằng: `gh pr list --limit 1000 --state open` + `gh issue list --limit 1000 --state open` + `gh api repos/<>/dependabot/alerts` (xem `feedback_gh_cli_pagination.md` — LUÔN --limit 1000). Xem memory `feedback_work_order_fix_test_release.md`.
 </important>
-
-<important if="merging, closing, or approving ANY pull request — đặc biệt bot PRs (Jules/Sentinel/Bolt/Daisy/Renovate/Dependabot)">
-- **PR REVIEW PHẢI THẬT**: BẮT BUỘC đọc **FULL diff** toàn bộ file changes TRƯỚC KHI merge/close/approve, KHÔNG dừng ở title/description. Từng file, từng hunk, cross-check scope với PR title. Diff chứa changes NGOÀI scope title → REJECT + request tách PR. Bot PRs (đặc biệt Jules/Sentinel/Bolt) thường rebase trên old main hoặc kèm collateral damage (xoá file, revert feature, đổi default). CI green = chỉ verify build+test, KHÔNG verify scope. "Backlog cleanup quick merge" = ANTI-PATTERN. Vi phạm 2026-04-19: Jules PR #517 title `[FIX] Missing Cache` nhưng diff thực tế revert remote-oauth mode + xoá `src/auth/notion-token-store.ts` + revert `config.ts→setup.ts` → phá mode matrix notion → phát hiện ở E2E staging. Xem memory `feedback_pr_review_must_be_real.md` (kèm liên kết 4 feedback gốc về PR review).
+<important if="merging, closing, or approving ANY pull request or issue — đặc biệt bot PRs (Jules/Sentinel/Bolt/Daisy/Renovate/Dependabot)">
+- **PR/ISSUE REVIEW PHẢI THẬT (ĐỦ 6 ITEMS)**: BẮT BUỘC đọc TRƯỚC KHI merge/close/approve: (1) **Full diff** từng file/hunk cross-check scope với title; (2) **PR + inline review comments** (`gh pr view <N> --comments` + `gh api repos/<r>/pulls/<N>/comments`) — reviewer concerns, request-changes, unresolved threads; (3) **Linked issues** qua `closingIssuesReferences` → `gh issue view <M> --comments` đọc bug context + user priority; (4) **CI run logs** nếu UNSTABLE/FAILING (`gh run view <id> --log-failed`) — failure có thể reveal scope creep; (5) **Commit messages** của PR để hiểu decision rationale; (6) **Scope map** diff vs title, flag xoá file/revert feature/đổi default. Diff chứa changes ngoài scope HOẶC comments có unresolved concerns → REJECT + tách PR. Bot PRs (Jules/Sentinel/Bolt) thường kèm collateral damage. "Backlog cleanup quick merge / skip comments / admin flag bypass failing CI" = ANTI-PATTERN. Vi phạm 2026-04-19: Jules PR #517 title `[FIX] Missing Cache` nhưng diff revert remote-oauth mode + xoá `src/auth/notion-token-store.ts` → phá mode matrix notion. Xem memory `feedback_pr_review_must_be_real.md`.
 </important>
 <important if="releasing a core/shared/dependency repo (mcp-core, web-core, qwen3-embed, hoặc package khác mà repo khác pin/depend vào)">
 - **CORE RELEASE → AUTO-ISSUE DOWNSTREAM**: Mỗi khi core/shared repo cut stable release mới, CD pipeline BẮT BUỘC auto-create tracking issue ở MỌI downstream repo với title dạng `chore: bump <core-pkg> to <new-version>` + body chứa changelog link + current pin detection. Prevents drift khi downstream pin `^1.0.0` nhưng core đã `1.1.1` (manual bump hay bị miss). Implementation: CD workflow step dùng `gh api repos/<downstream>/issues` hoặc `gh issue create -R <downstream>`. Phải cover tất cả consumers (VD mcp-core: 7 MCPs; web-core: KP + downstream apps). Xem memory `feedback_core_release_auto_issue.md`.
@@ -33,6 +31,9 @@ applyTo: '**'
 </important>
 <important if="producing spec, plan, model artifact, dataset, eval result, or any deliverable that might be released publicly">
 - **PROD-LEVEL / INDUSTRY-LEVEL / PUBLIC-READY**: Mọi deliverable viết từ đầu với giả định sẽ release public (HuggingFace Hub, GitHub, arXiv) — industry best practice, fully consolidated, reproducible. **KHÔNG** expose: Infisical project ID, Modal workspace name, personal email, internal infra hostnames, API keys, MLflow internal URLs, private CF Tunnel hostnames. Luôn dùng placeholder `<workspace>`, `<project-id>`, `<your-email>`. License clear (MIT/Apache-2.0 cho code, CC-BY-4.0/ODC-BY cho datasets). Model card + dataset card theo HF template. Eval phải reproducible với public benchmarks (BEIR, MMEB, MIRACL, MMDocIR, ViDoRe, AudioCaps, CMTEB). Không bao giờ hardcode secrets vào spec/plan/artifact.
+</important>
+<important if="user yêu cầu mở/drive browser, click/fill/login dashboard (Dodo/Stripe/CF/GCP/Firebase/GitHub), screenshot page, navigate UI — HOẶC cần MCP khác (notion/email/telegram/wet/mnemo/crg) chưa có trong deferred tools list">
+- **MCP OFFLINE → BÁO USER, KHÔNG fallback launcher vô dụng**: Khi tool MCP cần thiết (Playwright, chrome-devtools, Notion, better-email, telegram, wet, mnemo, crg) KHÔNG xuất hiện ở deferred tools list / `ToolSearch` không match → PHẢI báo user một câu "MCP `<server>` offline, cần `/mcp` reconnect hoặc `/reload-plugins` trước khi em làm `<X>`". TUYỆT ĐỐI KHÔNG fallback `cmd /c start <URL>`, `Start-Process <URL>`, `xdg-open`, `open`, `rundll32 shell32,ShellExec_RunDLL` — đó chỉ là fire-and-forget launcher, KHÔNG drive click/type/screenshot/verify được, user coi là "mở browser vô dụng". Vi phạm 2026-04-21 session KP milestone closeout. Xem memory `feedback_mcp_disconnected_report_first.md`.
 </important>
 <important if="reading screenshots, dashboard images, rate limit tables, pricing tables, leaderboard images, or any dense-text image from user">
 - **IMAGE → OCR, KHÔNG raw vision**: Claude vision tệ với dense text/tables/số liệu. BẮT BUỘC chạy OCR (`tesseract` sau khi upscale 3x LANCZOS + grayscale) trước khi claim bất kỳ số/text nào từ ảnh. Nếu chưa cài: `winget install UB-Mannheim.TesseractOCR` (Windows) hoặc `apt install tesseract-ocr` (Linux). Khi `imagine-mcp` (WS-7) ready → ưu tiên dùng (Gemini/OpenAI/Grok vision mạnh hơn). Chỉ bỏ OCR khi ảnh đơn giản 1-2 elements UI. Xem memory `feedback_image_ocr_vision.md`.
@@ -67,6 +68,9 @@ applyTo: '**'
 <important if="editing, auditing, testing, releasing, or developing ANY của 12 repo MCP stack (mcp-core / better-notion-mcp / better-email-mcp / better-telegram-mcp / wet-mcp / mnemo-mcp / better-code-review-graph / better-godot-mcp / qwen3-embed / web-core / claude-plugins / n24q02m) — HOẶC multi-repo backlog+E2E+release cascade">
 - **MCP WORK → BẮT BUỘC INVOKE `Skill mcp-dev` TRƯỚC KHI HÀNH ĐỘNG**: Skill `~/.claude/skills/mcp-dev/` là canonical source cho MCP workflow. 14 reference files cover: scope-and-repos, mode-matrix, tool-layout (N+2), config-parity, relay-flow, reuse-mcp-core, audit-commands (`--limit 1000`), backlog-allowlist, backlog-clearance, clean-state, e2e-full-matrix (24 configs: 20 MCP + 4 non-MCP), release-cascade, non-mcp-repos, readme-parity. KHÔNG freehand, KHÔNG guess mode/config/data-store, KHÔNG shortcut E2E qua env var, KHÔNG release giữa chừng, KHÔNG skip backlog gate, KHÔNG bulk-close PRs. Memory `feedback_mcp_*` + `scope-12-repos` + `mcp-server-data-stores` = incident log (why); skill = how-to-apply (authoritative). Vi phạm → rework cascade. Xem memory `feedback_mcp_dev_skill.md`.
 </important>
+<important if="referencing `<server>.n24q02m.com` URL, planning/auditing MCP subdomain deployment, hoặc thấy `DEFAULT_RELAY_URL` trong wet/mnemo/crg source">
+- **MATRIX `(self-host)` = USER DEPLOY**: `(self-host)` annotation cạnh mode (vd `http remote relay (self-host)`) nghĩa user tự deploy instance của họ, KHÔNG phải n24q02m host subdomain public. Default local-relay servers (wet/mnemo/crg) KHÔNG có `<server>.n24q02m.com` deployed. CHỈ notion/email/telegram default-remote mới có subdomain n24q02m. BẮT BUỘC `curl -I https://<server>.n24q02m.com/health + check `via: 1.1 Caddy`` TRƯỚC khi reference URL trong plan/code. Hardcode `DEFAULT_RELAY_URL = "https://<server>.n24q02m.com"` trong wet/mnemo/crg = violation (di sản mcp-relay-core centralized). Xem skill `mcp-dev/references/mode-matrix.md` mục 2.5 + memory `feedback_matrix_selfhost_semantics.md`. Vi phạm 2026-04-22 × 2 lần.
+</important>
 <important if="cần tìm scope repo (MCP stack, cross-repo audit, backlog cleanup, README rollout, release cascade, dogfood) hoặc sắp hardcode list tên repo vào spec/plan/rule">
 - **REPO SCOPE = 2 GITHUB STARS LISTS**: Canonical source cho "repo nào thuộc scope" luôn là 2 lists của `n24q02m`: **Productions** (`https://github.com/stars/n24q02m/lists/productions`) — user-facing OSS + private apps; **Scripts** (`https://github.com/stars/n24q02m/lists/scripts`) — infra + tooling + profile. KHÔNG hardcode "17 repos" / "12 repos" / "15 repos" vào spec/plan/rule — scope drift theo thời gian. Fetch qua `gh api graphql -f query='query { viewer { lists(first:10) { nodes { name items(first:100) { nodes { ... on Repository { nameWithOwner isPrivate isArchived } } } } } } }'` (REST + web đều trả 404 cho Stars lists, phải GraphQL với `viewer.lists`). Khi viết spec/plan/rule multi-repo: (1) fetch lists ngay đầu, (2) snapshot scope kèm ngày, (3) reference lists thay vì hardcode. Xem skill `infra-devops/references/repo-structure.md` "Tier 1/Tier 2" + `mcp-dev/references/readme-parity.md` cho breakdown. Memory `scope-12-repos.md` vẫn valid cho MCP stack con của Productions; lists là superset.
 </important>
@@ -83,7 +87,6 @@ applyTo: '**'
 **Why:** 18/04/2026 em định thêm rule mới về MCP tool standard vào CLAUDE.md + memory mà không check skill `fullstack-dev/references/mcp-server.md` đã có section "Standard Tool Set" (chỉ cần UPDATE, không phải tạo rule mới). User phải nhắc 2 lần. Rule bloat + skill stale = antipattern cost long-term context.
 
 **How to apply:**
-
 1. Bắt đầu task → scan system prompt skill list → match domain → invoke skill NGAY.
 2. Skill reference đã cover topic → đọc reference file, KHÔNG freehand lại hay duplicate vào rule.
 3. Content đã có trong skill nhưng outdated → UPDATE skill reference file, KHÔNG tạo rule mới bypass.
@@ -92,18 +95,15 @@ applyTo: '**'
 </important>
 
 ## 1.5. NGUYÊN TẮC CODING (KARPATHY)
-
 - **Surface assumptions, KHÔNG pick silently**: Trước khi code, state assumption; nếu có nhiều interpretation, liệt kê tất cả và hỏi, KHÔNG tự chọn một hướng rồi code 200 dòng.
 - **Surgical diff**: Mỗi dòng thay đổi PHẢI trace trực tiếp về yêu cầu user. KHÔNG drive-by refactor (đổi quote style, thêm type hint, reformat, "improve" comment adjacent). Match existing style của file kể cả khi muốn khác. Dead code pre-existing: mention, đừng xoá.
 - **Simplicity before speculation**: KHÔNG abstraction cho single-use, KHÔNG "flexibility/configurability" chưa được yêu cầu, KHÔNG error handling cho kịch bản bất khả thi. "Production-grade" != "over-engineered upfront" — scalable khi requirement thật sự xuất hiện, không phải preemptive Strategy pattern. Nguồn: https://github.com/forrestchang/andrej-karpathy-skills
 
 ## 2. CHUẨN MỰC CODE
-
 - **KHÔNG** dùng emoji trong code/tài liệu kỹ thuật.
 <important if="committing code or creating commits">
 - **Commits**: CHỈ dùng `fix:` và `feat:` prefix. **KHÔNG BAO GIỜ** dùng `chore:`, `docs:`, `refactor:`, `ci:`, `build:`, `style:`, `perf:`, `test:` hay bất kỳ type nào khác. **KHÔNG BAO GIỜ** dùng `!` (breaking change indicator). **KHÔNG BAO GIỜ** skip pre-commit hooks (`--no-verify`, `--no-gpg-sign`).
 </important>
-
 <important if="discussing release version, picking version number, writing changelog, planning release, or anything related to semantic versioning">
 - **PSR AUTO-VERSION**: Đọc skill `infra-devops/references/semantic-release.md` section "Anti-pattern: Tự pick version số trong spec/plan/PR" TRƯỚC khi viết spec/plan/PR có version. Tóm tắt: KHÔNG tự pick `v0.1.0`/`v1.0.0` — dùng placeholder `<auto>`. Memory `feedback_psr_auto_version.md`.
 </important>
@@ -118,7 +118,6 @@ applyTo: '**'
 - **VM Deploy**: **KHÔNG BAO GIỜ** chạy `docker compose` trực tiếp trên VM. Luôn dùng `make up-<service>` / `make down-<service>` (inject secrets từ Doppler + Infisical). **KHÔNG BAO GIỜ** `make up` / `make down` toàn bộ — chỉ thao tác từng service cụ thể. Dùng `make up-*` (không phải `restart-*`) khi thay đổi env vars.
 
 ## 3. E2E TESTING (MCP SERVERS)
-
 - **MCP protocol**: Test qua `mcp.ClientSession` + `stdio_client` (initialize → tools/list → tools/call). **KHÔNG BAO GIỜ** import Python functions trực tiếp.
 - **Source code**: Chạy server từ source (`uv run wet-mcp`, `uv run --directory . wet-mcp`). **KHÔNG** dùng PyPI/plugin đã install.
 - **Relay flow**: Mỗi server PHẢI test relay — clean state (xóa config.enc, unset env vars) → start server → relay URL hiển thị ở stderr → user vào browser config → verify server nhận config.
