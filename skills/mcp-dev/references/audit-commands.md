@@ -6,15 +6,15 @@ Gate này quyết định: có được phép tiến sang Phase 2 (clean state) 
 **Khi nào chạy**: đầu session multi-repo có scope "làm đầy đủ / fix all / audit all / ready for E2E / ready to release". Chạy LẠI sau mỗi lần clear 1 item trong Phase 1 (backlog clearance).
 
 **Cross-ref**:
-- Scope 12 repo: `./scope-and-repos.md` + memory `scope-12-repos.md`
+- Scope 13 repo: `./scope-and-repos.md` + memory `scope-12-repos.md` (file cũ, đã update content 13 repo)
 - Gate formula nguồn: memory `feedback_work_order_fix_test_release.md`
 - `--limit 1000` rule: memory `feedback_gh_cli_pagination.md`
 
 ---
 
-## 12-repo scope reminder
+## 13-repo scope reminder (expanded 2026-04-24 +imagine-mcp)
 
-Audit BẮT BUỘC cover đủ 12 repo (không 7, không 8, không 11):
+Audit BẮT BUỘC cover đủ 13 repo (không 8, không 9, không 12):
 
 | # | Repo | Role |
 |---|------|------|
@@ -22,16 +22,17 @@ Audit BẮT BUỘC cover đủ 12 repo (không 7, không 8, không 11):
 | 2 | `better-notion-mcp` | MCP server — Notion (remote OAuth) |
 | 3 | `better-email-mcp` | MCP server — Email (remote relay) |
 | 4 | `better-telegram-mcp` | MCP server — Telegram (remote relay) |
-| 5 | `wet-mcp` | MCP server — Web toolkit (local relay) |
-| 6 | `mnemo-mcp` | MCP server — Memory (local relay) |
-| 7 | `better-code-review-graph` | MCP server — Code graph (local relay) |
+| 5 | `wet-mcp` | MCP server — Web toolkit (daemon) |
+| 6 | `mnemo-mcp` | MCP server — Memory (daemon) |
+| 7 | `better-code-review-graph` | MCP server — Code graph (daemon) |
 | 8 | `better-godot-mcp` | MCP server — Godot (local non-relay) |
-| 9 | `qwen3-embed` | Embedding/reranker lib |
-| 10 | `web-core` | Shared web infra package |
-| 11 | `claude-plugins` | Marketplace cho better-* MCP |
-| 12 | `n24q02m` | Profile repo (public sync `~/.claude/`) |
+| 9 | `imagine-mcp` | MCP server — image/video Gemini/OpenAI/Grok (daemon) |
+| 10 | `qwen3-embed` | Embedding/reranker lib |
+| 11 | `web-core` | Shared web infra package |
+| 12 | `claude-plugins` | Marketplace cho better-* MCP |
+| 13 | `n24q02m` | Profile repo (public sync `~/.claude/`) |
 
-Nếu scope audit ≠ 12 repo → STOP, confirm user explicit narrow scope trước khi chạy.
+Nếu scope audit ≠ 13 repo → STOP, confirm user explicit narrow scope trước khi chạy.
 
 ---
 
@@ -41,7 +42,7 @@ Lưu thành `audit.sh` rồi `bash audit.sh`. Output = per-repo metric line + ag
 
 ```bash
 #!/usr/bin/env bash
-# mcp-dev Phase 0 backlog audit — 12 repos
+# mcp-dev Phase 0 backlog audit — 13 repos (expanded 2026-04-24 +imagine-mcp)
 # Usage: bash audit.sh
 # Output: per-repo metric line + aggregate gate verdict
 
@@ -50,7 +51,7 @@ REPOS=(
   mcp-core
   better-notion-mcp better-email-mcp better-telegram-mcp
   wet-mcp mnemo-mcp better-code-review-graph
-  better-godot-mcp
+  better-godot-mcp imagine-mcp
   qwen3-embed web-core claude-plugins n24q02m
 )
 
@@ -197,7 +198,7 @@ Với mỗi item trả về → quyết định action:
 5. **Chỉ khi GATE: PASS liên tiếp 2 lần** (lần 1 sau clearance + lần xác nhận) → mới chuyển Phase 2.
 
 **Anti-patterns cấm**:
-- Chạy audit subset (8 / 11 repo) rồi claim "all clean" — phải đủ 12.
+- Chạy audit subset (9 / 12 repo) rồi claim "all clean" — phải đủ 13.
 - Bỏ `--limit 1000` → default 30 → miss PRs → false pass.
 - Skip security alerts ("severity low, không blocking") — rule = 0 tuyệt đối.
 - Release dispatch khi GATE FAIL (vi phạm `feedback_work_order_fix_test_release.md`).
