@@ -1,8 +1,8 @@
 # Release Cascade — Phase 4-5 Dispatch Protocol
 
-Phase 4-5 của mcp-dev cascade. **CHỈ bước vào sau khi Phase 3 (E2E full matrix) show 24/24 green**. Release dispatch là **LAST action của session** — không có exception, không release giữa chừng.
+Phase 4-5 của mcp-dev cascade. **CHỈ bước vào sau khi Phase 3 (E2E full matrix) show 19/19 green** (post-imagine-mcp 2026-04-24). Release dispatch là **LAST action của session** — không có exception, không release giữa chừng.
 
-Nếu Phase 3 còn bất kỳ config nào chưa PASS → QUAY LẠI fix, KHÔNG được dispatch. Nếu session còn bất kỳ PR/issue/security alert nào open trên TẤT CẢ 12 repo trong scope → QUAY LẠI `backlog-allowlist.md`, KHÔNG được dispatch.
+Nếu Phase 3 còn bất kỳ config nào chưa PASS → QUAY LẠI fix, KHÔNG được dispatch. Nếu session còn bất kỳ PR/issue/security alert nào open trên TẤT CẢ 13 repo trong scope → QUAY LẠI `backlog-allowlist.md`, KHÔNG được dispatch.
 
 Cross-ref: `feedback_work_order_fix_test_release.md` (FIX → TEST → RELEASE bất biến), `feedback_test_before_release.md` (merge trước, E2E trên main, release cuối).
 
@@ -16,10 +16,10 @@ Phase 4 dispatch sequence:
   1. mcp-core (stable)                    <-- MUST be first; downstream pin source
       |
       |  wait + verify: new tag, PyPI n24q02m-mcp-core published, npm @n24q02m/mcp-core published
-      |  verify: downstream auto-issues created in 7 MCP + 3 consumer repos
+      |  verify: downstream auto-issues created in 8 MCP + 3 consumer repos
       |
       v
-  2. 7 MCP servers (parallel OK):
+  2. 8 MCP servers (parallel OK):
       - better-notion-mcp
       - better-email-mcp
       - better-telegram-mcp
@@ -27,6 +27,7 @@ Phase 4 dispatch sequence:
       - mnemo-mcp
       - better-code-review-graph
       - better-godot-mcp
+      - imagine-mcp
       |
       |  wait + verify: each repo has new release tag
       |
@@ -43,9 +44,9 @@ Phase 4 dispatch sequence:
   Done → enter Phase 5 verify
 ```
 
-**Tại sao mcp-core phải đi ĐẦU**: tất cả 7 MCP server + 3 downstream consumer pin `@n24q02m/mcp-core` hoặc `n24q02m-mcp-core`. Nếu release 7 MCP trước khi mcp-core stable mới lên registry → MCP server lock vào version cũ, bỏ qua bugfix vừa ship trong session. Lặp lại vi phạm 2026-04-17 (session 80d829f6) khi cut mcp-core v1.1.1 xong mới phát hiện OAuth bug → phải bump v1.1.2 + cascade lại.
+**Tại sao mcp-core phải đi ĐẦU**: tất cả 8 MCP server + 3 downstream consumer pin `@n24q02m/mcp-core` hoặc `n24q02m-mcp-core`. Nếu release 8 MCP trước khi mcp-core stable mới lên registry → MCP server lock vào version cũ, bỏ qua bugfix vừa ship trong session. Lặp lại vi phạm 2026-04-17 (session 80d829f6) khi cut mcp-core v1.1.1 xong mới phát hiện OAuth bug → phải bump v1.1.2 + cascade lại.
 
-**Tại sao 7 MCP OK parallel**: không repo nào pin repo MCP khác. Dispatch 7 workflow simultaneously giảm wall-clock time từ ~60 min xuống ~15 min.
+**Tại sao 8 MCP OK parallel**: không repo nào pin repo MCP khác. Dispatch 8 workflow simultaneously giảm wall-clock time từ ~70 min xuống ~15 min.
 
 ---
 
@@ -77,7 +78,7 @@ Sau khi mcp-core stable cut, verify tracking issues đã được tạo ở 10 d
 CORE_VERSION=$(gh release view --repo n24q02m/mcp-core --json tagName --jq .tagName)
 echo "Just released mcp-core $CORE_VERSION"
 
-for repo in better-notion-mcp better-email-mcp better-telegram-mcp wet-mcp mnemo-mcp better-code-review-graph better-godot-mcp qwen3-embed web-core claude-plugins; do
+for repo in better-notion-mcp better-email-mcp better-telegram-mcp wet-mcp mnemo-mcp better-code-review-graph better-godot-mcp imagine-mcp qwen3-embed web-core claude-plugins; do
   count=$(gh issue list -R n24q02m/$repo --search "bump mcp-core $CORE_VERSION" --state open --limit 5 --json number --jq 'length')
   if [[ $count -gt 0 ]]; then
     echo "  $repo: OK ($count tracking issue(s) found)"
@@ -196,7 +197,7 @@ Nếu `commits == 0` cho repo nào → SKIP dispatch, không force release rỗn
 Sau mcp-core release + tracking issue, mỗi downstream repo nên có Renovate PR hoặc manual PR bump pin. Verify:
 
 ```bash
-for repo in better-notion-mcp better-email-mcp better-telegram-mcp wet-mcp mnemo-mcp better-code-review-graph better-godot-mcp; do
+for repo in better-notion-mcp better-email-mcp better-telegram-mcp wet-mcp mnemo-mcp better-code-review-graph better-godot-mcp imagine-mcp; do
   pr_count=$(gh pr list -R n24q02m/$repo --search "bump mcp-core" --state open --limit 5 --json number --jq 'length')
   echo "$repo: $pr_count bump PR(s) open"
 done
@@ -218,7 +219,7 @@ done
 
 5. **Skip downstream auto-issue verify** — leads to pin drift trong N tuần. Vi phạm 2026-04-17: sau mcp-core v1.1.1 + v1.1.2, better-godot-mcp vẫn pin `^1.0.0`, better-telegram-mcp vẫn `>=1.1.0`.
 
-6. **Test only default mode then release** — phải 24/24 full matrix pass (20 MCP configs + 4 non-MCP). Cross-ref `e2e-full-matrix.md`.
+6. **Test only default mode then release** — phải 19/19 full matrix pass (15 MCP configs + 4 non-MCP). Cross-ref `e2e-full-matrix.md`.
 
 7. **Manual pick version number** — spec/plan/PR/issue KHÔNG được đề xuất `v0.1.0`, `v1.0.0`. Dùng `<auto>` / `<next-version>` / `<computed>`. Cross-ref `feedback_psr_auto_version.md`.
 

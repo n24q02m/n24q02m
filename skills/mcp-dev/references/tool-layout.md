@@ -242,6 +242,7 @@ await server.connect(new StdioServerTransport());
 | `mnemo-mcp` | Python (FastMCP) | `uv run mnemo-mcp` |
 | `better-code-review-graph` | Python (FastMCP) | `uv run crg` |
 | `better-telegram-mcp` | Python (FastMCP) | `uv run better-telegram-mcp` |
+| `imagine-mcp` | Python (FastMCP) | `uv run imagine-mcp` |
 | `better-notion-mcp` | TypeScript (`@modelcontextprotocol/sdk`) | `npx @n24q02m/better-notion-mcp` |
 | `better-email-mcp` | TypeScript (`@modelcontextprotocol/sdk`) | `npx @n24q02m/better-email-mcp` |
 | `better-godot-mcp` | TypeScript (`@modelcontextprotocol/sdk`) | `npx @n24q02m/better-godot-mcp` |

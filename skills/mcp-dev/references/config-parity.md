@@ -10,7 +10,8 @@ MCP servers được phân 4 category theo mode matrix. Servers trong cùng cate
 
 | Category | Servers | Parity scope |
 |---|---|---|
-| **http local relay** | `wet-mcp`, `mnemo-mcp`, `better-code-review-graph` | `config.py` defaults (bao gồm GDrive Desktop OAuth hardcoded), `relay_schema.py` fields (4 cloud API keys), `credential_state.py` (GDrive device code trigger), `sync.py` (GDrive client) |
+| **http local relay (full parity — GDrive sync)** | `wet-mcp`, `mnemo-mcp`, `better-code-review-graph` | `config.py` defaults (bao gồm GDrive Desktop OAuth hardcoded), `relay_schema.py` fields (4 cloud API keys), `credential_state.py` (GDrive device code trigger), `sync.py` (GDrive client) |
+| **http local relay (API-key only, no sync)** | `imagine-mcp` | `config.py` defaults (3 provider keys: GOOGLE_AI_STUDIO / OPENAI / XAI), `relay_schema.py` fields (3 password fields, all optional). KHÔNG có GDrive sync (no `sync.py`), KHÔNG share `credential_state.py` device-code pattern với trio. Parity scope = mode flow (daemon + remote-relay self-host) + entry point shape; KHÔNG forced field parity với trio. |
 | **http remote relay** | `better-telegram-mcp`, `better-email-mcp` | `config.py` defaults, `relay_schema.py` (provider creds + multi-provider paste form), OAuth delegation pattern, per-`sub` storage |
 | **http remote oauth** | `better-notion-mcp` | OAuth 2.1 AS pattern, single-provider delegation (parity tự thân — chỉ 1 server trong category) |
 | **http local non-relay** | `better-godot-mcp` | Không có credentials; parity = server.py entry point only |

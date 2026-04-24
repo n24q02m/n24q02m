@@ -1,15 +1,15 @@
 ---
 name: mcp-dev
-description: Canonical skill for MCP server stack work (12 repos). Use when editing/auditing/testing/releasing ANY of mcp-core, 7 better-*/wet/mnemo MCP servers, qwen3-embed, web-core, claude-plugins, n24q02m profile — OR running multi-repo backlog + E2E + release cascade. Enforces mode matrix, tool layout N+2, config parity, relay flow parity, reuse mcp-core primitives, clean-state E2E, full matrix testing (13 MCP + 4 non-MCP configs), empty-backlog gate before release, PSR dispatch order, downstream auto-issue verify.
+description: Canonical skill for MCP server stack work (13 repos — expanded 2026-04-24 +imagine-mcp). Use when editing/auditing/testing/releasing ANY of mcp-core, 8 MCP servers (better-notion/email/telegram/godot, wet/mnemo/crg/imagine-mcp), qwen3-embed, web-core, claude-plugins, n24q02m profile — OR running multi-repo backlog + E2E + release cascade. Enforces mode matrix, tool layout N+2, config parity, relay flow parity, reuse mcp-core primitives, clean-state E2E, full matrix testing (15 MCP + 4 non-MCP = 19 configs), empty-backlog gate before release, PSR dispatch order, downstream auto-issue verify.
 ---
 
 # MCP Dev Skill
 
-Canonical workflow for the 12-repo MCP stack. Invoke this BEFORE any edit, audit, test, or release on any listed repo.
+Canonical workflow for the 13-repo MCP stack. Invoke this BEFORE any edit, audit, test, or release on any listed repo.
 
 ## When to invoke
 
-Trigger keywords: "MCP server", "mcp-core", "better-notion", "better-email", "better-telegram", "wet-mcp", "mnemo", "code-review-graph", "godot-mcp", "qwen3-embed", "web-core", "claude-plugins", "12 repos", "release cascade", "backlog clear", "full matrix E2E", "ship MCP stack", "audit all repos", "verify parity".
+Trigger keywords: "MCP server", "mcp-core", "better-notion", "better-email", "better-telegram", "wet-mcp", "mnemo", "code-review-graph", "godot-mcp", "imagine-mcp", "qwen3-embed", "web-core", "claude-plugins", "13 repos", "release cascade", "backlog clear", "full matrix E2E", "ship MCP stack", "audit all repos", "verify parity".
 
 ## Task type detection
 
@@ -37,18 +37,18 @@ Phase 1: Backlog clear (references/backlog-clearance.md) — interactive per-PR
 Phase 2: Clean state per server (references/clean-state.md)
   |
   v
-Phase 3: Test A — MCP PROTOCOL E2E (references/e2e-full-matrix.md) — 17 configs
+Phase 3: Test A — MCP PROTOCOL E2E (references/e2e-full-matrix.md) — 19 configs
   SOURCE CODE: `uv run <server>` / `bun run build && node bin/cli.mjs`
   CLIENT: Python MCP SDK (mcp.ClientSession + stdio_client / streamablehttp_client)
-  6 configs auto-verified via CI (#19-24); 18 manual configs require user browser fill
+  5 configs auto-verified via CI (#15-19 non-MCP); 14 manual configs require user browser fill
   |
   v
-  ALL GREEN (24/24)?
+  ALL GREEN (19/19)?
   |
   +---> any fail: back to Phase 1
   |
   v
-Phase 4: Release dispatch (references/release-cascade.md) — mcp-core -> 7 MCP -> downstream
+Phase 4: Release dispatch (references/release-cascade.md) — mcp-core -> 8 MCP -> downstream
   |
   v
 Phase 5: Verify (auto-issues, PSR version, downstream pin bump PRs)
@@ -71,12 +71,12 @@ Done
 
 ## Invariants
 
-1. **Scope** = 12 repos default (see `references/scope-and-repos.md`); explicit override required for subset.
+1. **Scope** = 13 repos default (see `references/scope-and-repos.md`); explicit override required for subset.
 2. **EMPTY BACKLOG gate strict** — see `references/backlog-allowlist.md` for allowed exceptions: Renovate Dashboard auto-allowed (1/repo), explicit long-running with review-by date. Security alerts (dependabot/codeql/secret) are strict zero, no allowlist.
 3. **Clean state per server before E2E** — no skip, even if "already configured".
-4. **Full matrix (17 configs), not default-only.**
+4. **Full matrix (19 configs), not default-only.**
 5. **Release only at Phase 4** — no mid-session release, no incremental per-repo release.
-6. **Phase 5 must verify downstream auto-issue PRs** exist for core releases (mcp-core release triggers tracking issues in all 7 MCP + 3 consumer repos).
+6. **Phase 5 must verify downstream auto-issue PRs** exist for core releases (mcp-core release triggers tracking issues in all 8 MCP + 3 consumer repos).
 7. **Remote mode = per-JWT-sub multi-user enforced** — any server running `remote-relay`/`remote-oauth` mode MUST store credentials keyed by JWT `sub` (or OAuth-provider user id). No silent fallback to single-user `config.enc`. If upstream mcp-core can't yet provide per-session sub, server MUST REFUSE start in remote mode with explicit error. See `feedback_remote_relay_multi_user_enforcement.md`.
 
 ## Red flags (STOP immediately)

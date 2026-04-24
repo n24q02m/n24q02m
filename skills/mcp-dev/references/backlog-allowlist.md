@@ -1,7 +1,7 @@
 # Backlog Allowlist
 
-**Updated**: 2026-04-20
-**Scope**: 12 repos (see `scope-and-repos.md`)
+**Updated**: 2026-04-24 (+imagine-mcp scope expansion)
+**Scope**: 13 repos (see `scope-and-repos.md`)
 **Purpose**: Define which open issues/PRs are permitted during EMPTY BACKLOG gate (Phase 0 of mcp-dev cascade).
 
 ## Auto-allowed (bot-generated, no manual entry required)
