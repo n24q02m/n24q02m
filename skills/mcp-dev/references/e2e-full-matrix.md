@@ -61,10 +61,11 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
    - **http client** (streamablehttp_client): connect `http://127.0.0.1:<port>/mcp` trên CÙNG daemon (client-side switch, daemon KHÔNG quan tâm)
 
 **Test A verification cho daemon config**:
-- Clean state → launch → user fill form (1 lần)
-- Run `stdio_client` → initialize + tools/list + tools/call(config, help) → pass ✓
-- Run `streamablehttp_client` cùng daemon → initialize + tools/list + tools/call(config, help) → pass ✓
-- Tất cả 2 transports phải pass trên cùng cred setup mới coi là daemon config PASS
+- Clean state → launch stdio subprocess → user fill form (1 lần) → state=configured
+- Run `stdio_client` → initialize + tools/list + tools/call(config, help) + functional domain call → pass ✓
+- Daemon process lifecycle bound to spawning stdio subprocess — khi stdio exit, daemon cũng exit. KHÔNG feasible connect streamablehttp_client cùng lúc vì lock token in-process không expose.
+- HTTP transport của cùng server được verify qua remote-* config (cùng `streamablehttp_client` code path): notion `#1 remote-oauth`, email `#3 remote-relay`, telegram `#5 remote-relay`, wet/mnemo/crg `#8/#10/#12 remote-relay self-host`.
+- godot `#13` không cred → chỉ chạy `bun run test:live` cover cả stdio + http qua live test.
 
 ## 3. Per-Config Procedure (uniform 10 steps for configs #1-13)
 
@@ -102,11 +103,7 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 [8]    tools/call help()
        Verify: valid topics list returned (contains all domain tool names + "config")
 
-[9]    (daemon mode only) Re-connect via streamablehttp_client to
-       http://127.0.0.1:<port>/mcp — repeat steps [5-8]
-       Verify: same pass criteria via HTTP transport
-
-[10]   Teardown: kill server process. Preserve config.enc UNTIL cross-mode
+[9]    Teardown: kill server process. Preserve config.enc UNTIL cross-mode
        verification done; clean before moving to next different-mode config.
 ```
 
