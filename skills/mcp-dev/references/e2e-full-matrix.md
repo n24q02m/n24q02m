@@ -10,53 +10,45 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 
 Trước 2026-04-20: E2E chỉ cover default mode mỗi server ("default TRƯỚC, modes khác sau nếu spec yêu cầu") -> 7 configs. Đủ MVP nhưng miss bug ở non-default modes.
 
-Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộng 24 configs = 20 MCP (mỗi server x mỗi mode) + 4 non-MCP (qwen3-embed, web-core, claude-plugins, n24q02m profile).
+Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộng 17 configs = 13 MCP (mỗi server x mỗi mode sau khi gộp 1-Daemon) + 4 non-MCP (qwen3-embed, web-core, claude-plugins, n24q02m profile).
 
 **Justification**:
 - 13 / 20 MCP configs trước đây chưa bao giờ test end-to-end (chỉ unit + smoke).
 - Incident 2026-04-19 (email-mcp): remote-relay code path ép Outlook only, local-relay có paste form multi-provider -> drift silently vì remote-relay không trong E2E matrix.
 - Release cascade (mcp-core bump -> 7 MCP bumps) dễ breakage ở non-default modes vì CI green chỉ verify default. User chạy `MCP_MODE=local-relay` trên server có OAuth config -> gặp bug không ai test.
 
-## 2. Full 24-Config Table
+## 2. Full 17-Config Table
 
-**CI-verified tag**: 6 configs auto-run on every push/PR (no manual test needed — CI green = PASS):
-- `#19` better-godot-mcp http non-relay → `bun run test:live` (stdio handshake + tools/list, environment-agnostic)
-- `#20` better-godot-mcp stdio proxy → same live test covers stdio transport
-- `#21` qwen3-embed → `uv run pytest -m "not integration"` includes shape assertions (`test_custom_text_embedding.py` shape `(1,8)` / `(2,4)`)
-- `#22` web-core → `uv run pytest` covers `test_search/test_runner.py` + `test_runner_security.py`
-- `#23` claude-plugins → `python3 scripts/validate_marketplace.py` (CI `validate` job + precommit hook)
-- `#24` n24q02m → `markdownlint-cli` + lychee link check (CI `validate` job + precommit hook)
+**CI-verified tag**: 5 configs auto-run on every push/PR (no manual test needed — CI green = PASS):
+- `#13` better-godot-mcp 1-Daemon (http local / stdio proxy) → `bun run test:live` (stdio handshake + tools/list, environment-agnostic)
+- `#14` qwen3-embed → `uv run pytest -m "not integration"` includes shape assertions (`test_custom_text_embedding.py` shape `(1,8)` / `(2,4)`)
+- `#15` web-core → `uv run pytest` covers `test_search/test_runner.py` + `test_runner_security.py`
+- `#16` claude-plugins → `python3 scripts/validate_marketplace.py` (CI `validate` job + precommit hook)
+- `#17` n24q02m → `markdownlint-cli` + lychee link check (CI `validate` job + precommit hook)
 
-**Manual user interaction** (remaining 18 configs `#1-18`): OAuth / OTP / real provider flows cannot be automated — user must drive browser per `feedback_relay_fill_all_fields.md`.
+**Manual user interaction** (remaining 12 configs `#1-12`): OAuth / OTP / real provider flows cannot be automated — user must drive browser per `feedback_relay_fill_all_fields.md`.
 
 | # | Repo | Mode | Activation | Credential flow | Expected state event |
 |---|------|------|------------|-----------------|----------------------|
 | 1 | better-notion-mcp | http remote oauth (default) | Connect plugin to `https://notion-mcp.n24q02m.com` | Notion OAuth provider redirect -> callback | `state=configured` after callback |
-| 2 | better-notion-mcp | http local relay | `MCP_MODE=local-relay npx @n24q02m/better-notion-mcp` | Paste Notion integration token at `http://127.0.0.1:<port>/authorize` | `state=configured` after form submit |
-| 3 | better-notion-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-notion-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form at `http://127.0.0.1:<port>/authorize`; user fills Notion token (same field as mode 2) + submits | `state=configured` after form submit, stdio session resumes with saved cred |
-| 4 | better-email-mcp | http remote relay (default) | Connect plugin to `https://email-mcp.n24q02m.com` | Multi-provider form (Gmail/Yahoo/iCloud/Outlook) | `state=configured` after form submit |
-| 5 | better-email-mcp | http local relay | `MCP_MODE=local-relay npx @n24q02m/better-email-mcp` | Same multi-provider form at `http://127.0.0.1:<port>/authorize` | `state=configured` after form submit |
-| 6 | better-email-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-email-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form; user fills multi-provider creds (same as mode 5) + submits | `state=configured` after form submit, stdio session resumes |
-| 7 | better-telegram-mcp | http remote relay (default) | Connect plugin to `https://telegram-mcp.n24q02m.com` | Phone number + OTP code | `state=configured` after OTP verify |
-| 8 | better-telegram-mcp | http local relay | `MCP_MODE=local-relay uvx better-telegram-mcp` | Phone + OTP via local form | `state=configured` after OTP verify |
-| 9 | better-telegram-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx better-telegram-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form; user fills bot_token + phone/OTP (same as mode 8) + submits | `state=configured` after OTP verify, stdio session resumes |
-| 10 | wet-mcp | http local relay (default) | `uvx wet-mcp` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật per `feedback_relay_fill_all_fields.md` | `state=configured` after form submit |
-| 11 | wet-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx wet-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
-| 12 | wet-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx wet-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields as mode 10); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
-| 13 | mnemo-mcp | http local relay (default) | `uvx mnemo-mcp` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật | `state=configured` after form submit |
-| 14 | mnemo-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx mnemo-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
-| 15 | mnemo-mcp | stdio proxy | `MCP_TRANSPORT=stdio uvx mnemo-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
-| 16 | better-code-review-graph | http local relay (default) | `uvx better-code-review-graph` | 4 password fields (Jina/Gemini/OpenAI/Cohere), all `required: false`; fill ALL với cred thật | `state=configured` after form submit |
-| 17 | better-code-review-graph | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx better-code-review-graph` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
-| 18 | better-code-review-graph | stdio proxy | `MCP_TRANSPORT=stdio uvx better-code-review-graph` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (same 4 fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
-| 19 | better-godot-mcp | http local non-relay (default) | `npx @n24q02m/better-godot-mcp` | No credentials | `state=configured` on launch (immediate) |
-| 20 | better-godot-mcp | stdio proxy | `MCP_TRANSPORT=stdio npx @n24q02m/better-godot-mcp` | No credentials (godot không dùng relay); verify MCP handshake + tools/list | `state=configured` on launch (immediate) |
-| 21 | qwen3-embed | pytest + smoke | `cd ~/projects/qwen3-embed && uv run pytest tests/` + embed smoke | N/A (library) | `pytest exit 0` + smoke returns shape `(1, N)` |
-| 22 | web-core | pytest + SearXNG runner | `cd ~/projects/web-core && uv run pytest tests/` + `uv run python -m web_core.searxng.runner --check` | N/A | `pytest exit 0` + "SearXNG ready at http://127.0.0.1:8888" |
-| 23 | claude-plugins | jq + lint + dry-run install | `jq . plugins/*/plugin.json` + `node scripts/lint-marketplace.js` + `claude plugin install <name> --dry-run` per MCP | N/A | jq exit 0 + lint exit 0 + dry-run no FAIL |
-| 24 | n24q02m profile | markdownlint + linkcheck + secret-scan | `npx markdownlint-cli '**/*.md'` + link-check CLAUDE.md/MEMORY.md + grep for inline secrets | N/A | markdown lint 0 + no broken links + no secret matches |
+| 2 | better-notion-mcp | 1-Daemon (http local / stdio proxy) | `MCP_TRANSPORT=stdio npx @n24q02m/better-notion-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form at `http://127.0.0.1:<port>/authorize`; user fills Notion token + submits | `state=configured` after form submit, stdio session resumes with saved cred |
+| 3 | better-email-mcp | http remote relay (default) | Connect plugin to `https://email-mcp.n24q02m.com` | Multi-provider form (Gmail/Yahoo/iCloud/Outlook) | `state=configured` after form submit |
+| 4 | better-email-mcp | 1-Daemon (http local / stdio proxy) | `MCP_TRANSPORT=stdio npx @n24q02m/better-email-mcp` | Clean config.enc → server spawns LOCAL `runLocalServer` relay form; user fills multi-provider creds + submits | `state=configured` after form submit, stdio session resumes |
+| 5 | better-telegram-mcp | http remote relay (default) | Connect plugin to `https://telegram-mcp.n24q02m.com` | Phone number + OTP code | `state=configured` after OTP verify |
+| 6 | better-telegram-mcp | 1-Daemon (http local / stdio proxy) | `MCP_TRANSPORT=stdio uvx better-telegram-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form; user fills bot_token + phone/OTP + submits | `state=configured` after OTP verify, stdio session resumes |
+| 7 | wet-mcp | 1-Daemon (http local / stdio proxy) (default) | `MCP_TRANSPORT=stdio uvx wet-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (4 password fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
+| 8 | wet-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx wet-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 9 | mnemo-mcp | 1-Daemon (http local / stdio proxy) (default) | `MCP_TRANSPORT=stdio uvx mnemo-mcp` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (4 password fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
+| 10 | mnemo-mcp | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx mnemo-mcp` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 11 | better-code-review-graph | 1-Daemon (http local / stdio proxy) (default) | `MCP_TRANSPORT=stdio uvx better-code-review-graph` | Clean config.enc → server spawns LOCAL `run_local_server` relay form (4 password fields); fill ALL + submit | `state=configured` after form submit, stdio session resumes |
+| 12 | better-code-review-graph | http remote relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx better-code-review-graph` | Same 4-field form, remote URL; fill ALL | `state=configured` after form submit |
+| 13 | better-godot-mcp | 1-Daemon (http local non-relay / stdio proxy) | `MCP_TRANSPORT=stdio npx @n24q02m/better-godot-mcp` | No credentials (godot không dùng relay); verify MCP handshake + tools/list | `state=configured` on launch (immediate) |
+| 14 | qwen3-embed | pytest + smoke | `cd ~/projects/qwen3-embed && uv run pytest tests/` + embed smoke | N/A (library) | `pytest exit 0` + smoke returns shape `(1, N)` |
+| 15 | web-core | pytest + SearXNG runner | `cd ~/projects/web-core && uv run pytest tests/` + `uv run python -m web_core.searxng.runner --check` | N/A | `pytest exit 0` + "SearXNG ready at http://127.0.0.1:8888" |
+| 16 | claude-plugins | jq + lint + dry-run install | `jq . plugins/*/plugin.json` + `node scripts/lint-marketplace.js` + `claude plugin install <name> --dry-run` per MCP | N/A | jq exit 0 + lint exit 0 + dry-run no FAIL |
+| 17 | n24q02m profile | markdownlint + linkcheck + secret-scan | `npx markdownlint-cli '**/*.md'` + link-check CLAUDE.md/MEMORY.md + grep for inline secrets | N/A | markdown lint 0 + no broken links + no secret matches |
 
-## 3. Per-Config Procedure (uniform 9 steps for configs #1-20)
+## 3. Per-Config Procedure (uniform 9 steps for configs #1-12)
 
 ```
 [pre]  Clean state (see clean-state.md): run `clean_state <server>`
@@ -77,7 +69,7 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
            relay form tại `http://127.0.0.1:<port>/authorize` (xem `feedback_stdio_fallback_local_only.md`).
            USER PHẢI mở browser + fill MỌI field giống mode http-local-relay +
            submit. KHÔNG skip như http mode. Exception duy nhất: server không
-           dùng relay (godot #19/#20) hoặc config đã có ở session khác của
+           dùng relay (godot #13) hoặc config đã có ở session khác của
            CÙNG matrix run (không clean giữa mode của cùng server = vi phạm
            clean-state rule).
 
@@ -99,11 +91,11 @@ Từ 2026-04-20: **FULL MATRIX** — test **ALL modes** per server. Tổng cộn
 [9]    Teardown: kill server process, preserve config.enc for stdio-proxy mode test next
 ```
 
-Configs #21-24 (non-MCP): custom steps per repo — xem `non-mcp-repos.md` chi tiết.
+Configs #14-17 (non-MCP): custom steps per repo — xem `non-mcp-repos.md` chi tiết.
 
 ## 4. ALL GREEN Gate
 
-**24/24 PASS bắt buộc** trước khi exit Phase 3. Bất kỳ config nào fail -> **back to Phase 1 (`backlog-clearance.md`)**, không được skip forward hay "fix sau". Root cause fix + re-run scenario (tuân `feedback_fix_root_cause_verify.md`).
+**17/17 PASS bắt buộc** trước khi exit Phase 3. Bất kỳ config nào fail -> **back to Phase 1 (`backlog-clearance.md`)**, không được skip forward hay "fix sau". Root cause fix + re-run scenario (tuân `feedback_fix_root_cause_verify.md`).
 
 ## 5. Checkpoint Marker (Resumable Cascade)
 
@@ -130,10 +122,10 @@ Configs #21-24 (non-MCP): custom steps per repo — xem `non-mcp-repos.md` chi t
 
 ## 7. Rule Summary
 
-- **20 MCP configs** × 9 steps uniform + **4 non-MCP configs** × custom steps = **24 total**.
+- **13 MCP configs** × 9 steps uniform + **4 non-MCP configs** × custom steps = **17 total**.
 - All MCP configs require user interaction for credential step (except stdio modes reuse prior cred from config.enc — vẫn phải có step [4] state verify).
 - Clean state per server **before each config** — bao gồm mode khác nhau của cùng 1 server.
-- **NEVER skip to Phase 4 with <24 green.**
+- **NEVER skip to Phase 4 with <17 green.**
 - Relay flow -> config saved -> restart server -> MCP protocol test. One continuous chain per `feedback_relay_then_protocol.md`.
 
 ## 8. Cross-References
