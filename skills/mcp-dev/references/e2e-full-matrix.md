@@ -67,6 +67,15 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 - HTTP transport của cùng server được verify qua remote-* config (cùng `streamablehttp_client` code path): notion `#1 remote-oauth`, email `#3 remote-relay`, telegram `#5 remote-relay`, wet/mnemo/crg `#8/#10/#12 remote-relay self-host`.
 - godot `#13` không cred → chỉ chạy `bun run test:live` cover cả stdio + http qua live test.
 
+## 2.6 Pre-Matrix Smoke: catch shared transport bugs EARLY
+
+BẮT BUỘC trước khi chạy config #1: verify `run_smart_stdio_proxy` (Python) + `runSmartStdioProxy` (TS) mỗi cái OK với 1 server tượng trưng. Mục đích: bắt regression dùng chung (vd `httpx_sse` Accept override → FastMCP 406, xem `feedback_httpx_sse_accept_override.md`) trước khi tốn thời gian chạy toàn bộ matrix.
+
+- **Python smoke (1 phút)**: `uvx <any-python-mcp>` + `mcp stdio_client` → `tools/list`. Nếu lỗi `Initial POST /mcp returned 406` → fix mcp-core smart_stdio, KHÔNG tiếp tục matrix. Python servers: wet, mnemo, crg, telegram, imagine.
+- **TS smoke (1 phút)**: `node bin/cli.mjs` (stdio) + `mcp stdio_client` → `tools/list`. TS servers: notion, email, godot.
+
+Nếu smoke fail: fix root cause + re-run smoke. Chỉ khi CẢ 2 smoke PASS mới bắt đầu matrix config #1.
+
 ## 3. Per-Config Procedure (uniform 10 steps for configs #1-13)
 
 ```
