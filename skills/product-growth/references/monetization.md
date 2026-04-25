@@ -147,7 +147,7 @@ CREATE TABLE webhook_events (
 - [ ] Dodo Payments production KYC (domain verify + tax)?
 - [ ] Customer Portal link tren website?
 - [ ] Test coverage >= 95%?
-- [ ] Infisical secrets migrated from PADDLE_* to DODO_*?
+- [ ] skret SSM secrets migrated from PADDLE_* to DODO_*?
 
 ## Migration from Paddle (15/03/2026)
 
@@ -155,7 +155,7 @@ CREATE TABLE webhook_events (
 |------|-------------|--------|
 | 1 | Update all documentation | DONE |
 | 2 | Create Dodo account + 2 brands | TODO |
-| 3 | Migrate Infisical secrets (PADDLE_* -> DODO_*) | TODO |
+| 3 | Migrate skret SSM secrets (PADDLE_* -> DODO_*) | TODO |
 | 4 | Update Go webhook handler (Aiora) | TODO |
 | 5 | Update Go webhook handler (KnowledgePrism) | TODO |
 | 6 | Replace Paddle.js with Dodo SDK on /pricing | TODO |

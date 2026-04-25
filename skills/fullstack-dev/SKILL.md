@@ -80,4 +80,4 @@ Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 - Firebase Auth: WIF (no service account). Chi can `APP_FIREBASE_PROJECT_ID`.
 - Dodo Payments: Web checkout (KHONG Apple IAP). Expo/RN SDK available.
 - 3-Environment: dev (localhost) / staging (api-staging) / production (api).
-- Secrets: Infisical (app), Doppler (infra). KHONG commit .env files.
+- Secrets: skret (AWS SSM, region `ap-southeast-1`). Per-app namespace `/<app>/prod/*`. KHONG commit .env files.

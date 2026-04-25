@@ -1,13 +1,13 @@
 ---
 name: security-practices
-description: "Bảo mật ứng dụng và infrastructure. Sử dụng khi quản lý secrets (Doppler/Infisical), bảo mật Docker, dependency scanning, Cloudflare Access, Firebase Auth security."
+description: "Bảo mật ứng dụng và infrastructure. Sử dụng khi quản lý secrets (skret + AWS SSM), bảo mật Docker, dependency scanning, Cloudflare Access, Firebase Auth security."
 ---
 
 # Security Practices Guide
 
 ## Khi Nào Dùng
 
-- Quản lý secrets với Doppler (infra) hoặc Infisical (app)
+- Quản lý secrets với skret CLI → AWS SSM Parameter Store (infra + app + runtime)
 - Bảo mật Docker containers và images
 - Setup dependency scanning (Semgrep, Renovate)
 - Cấu hình Cloudflare Access cho services
@@ -28,17 +28,30 @@ description: "Bảo mật ứng dụng và infrastructure. Sử dụng khi quả
 
 ## Secrets Management
 
-### Hierarchy
+### Hierarchy (post-2026-04-24 skret migration)
 
 | Layer | Tool | Scope | Khi nào dùng |
 |-------|------|-------|-------------|
-| Infrastructure | Doppler | VM-level env vars | Docker Compose, system services |
-| Application | Infisical | App-level secrets (ALL projects) | API keys, DB credentials, deploy tokens |
-| CI/CD | GitHub Secrets (auto-sync from Infisical) | Workflow secrets | Infisical prod -> GitHub Secrets (overwrite mode) |
-| Runtime | Platform secrets (GCloud Secret Manager, Modal) | Container runtime | Bổ sung Infisical, không thay thế |
-| Local Dev | `.env` files | Developer machine | **KHÔNG commit vào git** |
+| All secrets | `skret` CLI → AWS SSM Parameter Store (ap-southeast-1) | Infra + app + runtime | Source of truth cho mọi secret (VM, app, CI) |
+| CI/CD | GitHub Actions secrets (synced from SSM via `skret sync --to-github`) | Workflow secrets | SSM `/<app>/prod/*` → GH Actions secrets |
+| Runtime | Platform secrets (GCloud Secret Manager, Modal) | Container runtime | Bổ sung, không thay thế skret |
+| Local Dev | `.secrets.dev.yaml` (skret local provider) | Developer machine | **KHÔNG commit vào git** |
 
-> **BẮT BUỘC**: Mọi project (public lẫn private) đều dùng Infisical làm source of truth cho secrets. Infisical prod auto-sync sang GitHub Secrets (overwrite mode). Platform secrets (GCloud Secret Manager, Modal) dùng cho runtime nếu platform yêu cầu.
+> **BẮT BUỘC (2026-04-24+)**: Mọi project dùng skret làm source of truth. Doppler + Infisical đang trong soak window + decommission — KHÔNG dùng cho repo mới. SSM prod auto-sync sang GitHub Actions qua `skret sync`. Xem `skret-project.md` + `feedback_env_taxonomy.md` trong memory để hiểu migration status + secret-env vs runtime-env taxonomy.
+
+### Env naming policy
+
+**Distinguish secret-env from runtime-env — they're orthogonal.**
+
+- **Secret-env (namespace in skret / Infisical / Doppler / SSM)** = **`dev` + `prod` ONLY**
+  - `dev` — local laptop developer use only (`skret run -e dev -- <cmd>`)
+  - `prod` — consumed by BOTH prod AND staging cloud runtimes
+  - Never create a 3rd `staging` secret namespace. Import tooling that creates one by default (Infisical → skret migration observed 2026-04-24) must be configured to skip staging or the imported namespace pruned.
+- **Runtime-env (GHCR tag, CD target, compose profile, URL auto-detect)** = `dev` + `staging` + `prod` (all real deploys, independent of secret-env)
+  - Staging deploy reads from the `prod` secret-env with keys that differ under a `<PREFIX>_STAGING_<NAME>` suffix. Example from KP: `/KnowledgePrism/prod/KLPRISM_DB_PASSWORD` (prod default) vs `/KnowledgePrism/prod/KLPRISM_STAGING_DB_PASSWORD` (staging override). Docker-compose / CD workflow picks the right one at deploy time by runtime-env.
+  - Test Mode / Live Mode credentials (Dodo, Stripe, Firebase test project) follow the same pattern: live keys under normal names in `prod`, test-mode keys under `_STAGING` suffix in `prod`.
+- skret (tool) chấp nhận BẤT KỲ env string nào qua `--env=<name>` và `.skret.yaml` → tự do design-level. User policy (n24q02m repos): chỉ `prod` + `dev` secret-env. Rule áp dụng khi tạo namespace mới trong SSM hoặc thêm env trong `.skret.yaml`. Nếu thấy `--env=staging` hoặc `put-parameter --name /<project>/staging/*` trong any n24q02m repo → flag + correct.
+- Xem memory `feedback_env_taxonomy.md` cho rationale đầy đủ.
 
 ### Rules BẮT BUỘC
 
@@ -58,54 +71,96 @@ description: "Bảo mật ứng dụng và infrastructure. Sử dụng khi quả
 - Dùng `os.environ` / `process.env` — truyền qua environment variables
 - Rotate secrets định kỳ (90 ngày cho production)
 
-### Doppler (Infrastructure)
+### skret (CLI runtime injection)
 
 ```bash
-# Setup
-doppler setup --project oci-vm-infra --config prd
+# Setup (một lần per laptop / VM)
+aws configure  # region: ap-southeast-1
+skret list -e prod --path=/<namespace>/prod  # smoke test
 
 # Inject vào Docker Compose
-doppler run -- docker compose up -d
+skret run -e prod -- docker compose up -d
 
 # Inject vào script
-doppler run -- ./scripts/backup.sh
+skret run -e prod -- ./scripts/backup.sh
+
+# Multi-namespace pattern (nhiều app trên cùng host)
+COMBINED=$(mktemp); for app in app1 app2; do skret env -e prod --path=/$app/prod --format=dotenv >> $COMBINED; done; set -a; . $COMBINED; set +a; docker compose up -d
 ```
 
-### Infisical (Application)
+### skret (SDK fetch trong code — chỉ khi `skret run` không khả dụng)
 
 ```python
-# Python SDK
-from infisical_sdk import InfisicalSDKClient
-
-client = InfisicalSDKClient(host="https://infisical.n24q02m.com")
-client.auth.universal_auth.login(
-    client_id=os.environ["INFISICAL_CLIENT_ID"],
-    client_secret=os.environ["INFISICAL_CLIENT_SECRET"],
+# Python — boto3 SSM SDK trực tiếp
+import boto3
+ssm = boto3.client("ssm", region_name="ap-southeast-1")
+resp = ssm.get_parameters_by_path(
+    Path="/<app>/prod/",
+    Recursive=True,
+    WithDecryption=True,
 )
-
-secrets = client.secrets.list(
-    project_id="project-id",
-    environment="prod",
-    secret_path="/",
-)
+secrets = {p["Name"].rsplit("/", 1)[1]: p["Value"] for p in resp["Parameters"]}
 ```
 
 ```go
-// Go SDK
-import infisical "github.com/infisical/go-sdk"
+// Go — AWS SDK v2
+import (
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/aws/aws-sdk-go-v2/service/ssm"
+    "github.com/aws/aws-sdk-go-v2/service/ssm/types"
+)
 
-client := infisical.NewInfisicalClient(context.Background(), infisical.Config{
-    SiteURL: "https://infisical.n24q02m.com",
-})
-
-client.Auth().UniversalAuthLogin("client-id", "client-secret")
-
-secrets, _ := client.Secrets().List(infisical.ListSecretsOptions{
-    ProjectID:   "project-id",
-    Environment: "prod",
-    SecretPath:  "/",
+cfg, _ := config.LoadDefaultConfig(ctx, config.WithRegion("ap-southeast-1"))
+client := ssm.NewFromConfig(cfg)
+resp, _ := client.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{
+    Path:           aws.String("/<app>/prod/"),
+    Recursive:      aws.Bool(true),
+    WithDecryption: aws.Bool(true),
 })
 ```
+
+> **Ưu tiên `skret run --` luôn**, chỉ fall back sang SDK nếu container/runtime không cho phép spawn external process trước app start.
+
+### Public vs Private OAuth Client Secrets — Google "Desktop/Installed app" pattern
+
+**Nguyên tắc**: không phải mọi chuỗi trông-như-secret trong source code đều là secret cần rotate.
+
+**Google OAuth 2.0 Client Types**:
+| Application type | Client secret | Rotation cần thiết khi leak? |
+|---|---|---|
+| **Web application** | PRIVATE — server-side only | YES — rotate ngay |
+| **Desktop app / Installed app** | PUBLIC — Google coi là public | NO — rotation vô nghĩa |
+| **iOS/Android** | Không có client secret | N/A |
+| **Service account key** | PRIVATE | YES — rotate ngay |
+
+Quote official Google docs ([OAuth 2.0 for Installed Applications](https://developers.google.com/identity/protocols/oauth2#installed)):
+> *"Installed applications are considered public clients and they cannot protect client secrets. Therefore, the secret is not treated as a secret..."*
+
+**Pattern nhận biết Desktop/Installed client**:
+- App distributed to end-users (CLI, uvx-installable, desktop binary)
+- Client secret hardcoded default trong source / config
+- Flow dùng `urn:ietf:wg:oauth:2.0:oob` hoặc `localhost:PORT` redirect
+- `GOCSPX-...` prefix (dùng cho cả Web và Desktop — phân biệt qua app type ở GCP Console)
+
+**Hệ quả cho security audit**:
+1. Secret scanner alert (GitGuardian/Gitleaks/TruffleHog) match `GOCSPX-...` trong source Desktop app → FALSE POSITIVE. Dismiss với lý do "Google Desktop OAuth public client — acknowledged per Google policy".
+2. KHÔNG propose rotation — user cài binary sẽ luôn có secret, rotate không giải quyết gì.
+3. Pentesters/auditors phải hỏi GCP Console app type trước khi kêu "leak".
+4. Code review thấy hardcoded `GOCSPX-...` + flow là Installed → OK, không block.
+
+**Ví dụ thực tế trong monorepo**:
+- `wet-mcp` (uvx-installable, GDrive sync cho local storage): hardcoded `google_drive_client_secret = "GOCSPX-..."` trong `config.py` = PUBLIC pattern, OK.
+- `mnemo-mcp` (same distribution): default empty, user set env = conservative, OK.
+- `better-notion-mcp` (server-side deployed OAuth relay): `NOTION_OAUTH_CLIENT_SECRET` qua skret SSM = PRIVATE, leak = rotate.
+
+**Phân biệt wet vs mnemo**: cả 2 repo đều có GDrive sync code, NHƯNG chỉ wet-mcp hardcoded secret default (ship as zero-config UX). mnemo-mcp chọn pattern an toàn hơn: default empty + user cung cấp. Khác nhau là design choice, KHÔNG phải bug.
+
+**Flag thật sự cần rotate**:
+- Web app client secret (flow redirect về `https://example.com/callback`) leak → rotate
+- Service account `.json` key leak → rotate + audit usage
+- OAuth access/refresh tokens của user (không phải client secret) leak → revoke session
+
+Ghi memory mỗi khi xác định false positive để giảm audit noise: `feedback_google_oauth_desktop_public.md`.
 
 ---
 
@@ -397,11 +452,11 @@ async def get_current_user(
 
 ### Bảo vệ Selfhost Services
 
-Dùng CF Access để bảo vệ **selfhost services** (Infisical UI). **KHÔNG** bảo vệ API endpoints (API dùng Firebase Auth). MLflow dùng built-in auth — KHÔNG cần CF Access.
+Dùng CF Access để bảo vệ **selfhost admin UIs** (DBGate, Qdrant UI, Falkor browser, MLflow). **KHÔNG** bảo vệ API endpoints (API dùng Firebase Auth). MLflow built-in auth + CF Access OTP cho external.
 
 | Service | Auth Method | Policy |
 |---------|-------------|--------|
-| Infisical UI | OTP (email) | Allowed emails |
+| Selfhost admin UIs | OTP (email) | Allowed emails |
 | API (app) | Service Token | Machine-to-machine |
 
 > **MLflow**: Built-in authentication (username/password). Apps trên VM access qua internal IP (`http://mlflow:5000`), không cần CF Access headers. External access (local dev) qua `https://mlflow.n24q02m.com` với basic auth (`MLFLOW_TRACKING_USERNAME` / `MLFLOW_TRACKING_PASSWORD`).

@@ -67,12 +67,15 @@ include:
   - services/<tên-service>/docker-compose.yml
 ```
 
-### Bước 4: Cấu hình Doppler secrets
+### Bước 4: Cấu hình skret secrets
 
-| Environment | Doppler Project |
-|-------------|-----------------|
-| Infrastructure | `oci-vm-infra` |
-| Production | `oci-vm-prod` |
+| Environment    | skret namespace          |
+|----------------|--------------------------|
+| Infrastructure | `/oci-vm-infra/prod/*`   |
+| Production     | `/oci-vm-prod/prod/*`    |
+| Per-app        | `/<app>/prod/*`          |
+
+Set value qua `skret set <KEY> <value> -e prod --path=/<namespace>/prod`.
 
 ### Bước 5: Cấu hình Caddy (nếu expose)
 
@@ -108,7 +111,6 @@ make logs-<tên-service>
 | FalkorDB | 2 GB | Graph DB |
 | Dragonfly | 1.5 GB | Cache |
 | MLflow | 2 GB | Observability (Tracing + Experiment Tracking) |
-| Infisical | 1 GB | Secrets |
 | Alloy | 0.25 GB | Monitoring Agent |
 | Node Exporter | 0.05 GB | Monitoring Agent |
 | Vector | 0.25 GB | Log Collector |
@@ -147,7 +149,7 @@ make logs-<tên-service>
 
 | DB | Service | Purpose |
 |----|---------|---------|
-| 0 | Infisical | Session/cache |
+| 0 | (available) | - |
 | 1 | LiteLLM | Proxy cache |
 | 2 | KnowledgePrism (prod) | App cache |
 | 3 | KnowledgePrism (staging) | App cache |
@@ -157,7 +159,7 @@ make logs-<tên-service>
 ### Qdrant Collection
 ```bash
 # Mint JWT token cho app (prefix-based access)
-doppler run -- uv run ./scripts/auth/qdrant_mint.py <app_name>
+skret run -e prod -- uv run ./scripts/auth/qdrant_mint.py <app_name>
 ```
 
 Collection naming: `<app_name>_*` (prefix pattern)
@@ -176,7 +178,7 @@ Collection naming: `<app_name>_*` (prefix pattern)
 - [ ] Tạo `services/<tên-service>/docker-compose.yml`
 - [ ] Set `mem_limit` phù hợp
 - [ ] Include vào root docker-compose
-- [ ] Thêm secrets vào Doppler
+- [ ] Thêm secrets vào skret SSM (`/<namespace>/prod/*`)
 - [ ] Cấu hình Caddy reverse proxy (nếu expose)
 - [ ] Cấu hình CF Access (nếu cần auth)
 - [ ] Allocate resources (Dragonfly DB, Qdrant collection, etc.)

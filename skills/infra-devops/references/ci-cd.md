@@ -541,6 +541,52 @@ Add any other context or screenshots about the feature request here.
 
 ---
 
+## Cloudflare Pages Deploy — Token Gotchas
+
+Public/static sites (skret docs, KP landing, etc.) deploy to CF Pages from CD via `cloudflare/wrangler-action@v3`. Two secrets must be present on the repo:
+
+- `CLOUDFLARE_API_TOKEN` — fine-grained API token with `Account > Cloudflare Pages > Edit` (plus `Account Settings: Read` if listing projects).
+- `CLOUDFLARE_ACCOUNT_ID` — account hex ID (32 chars). Which account hosts which project: see memory `feedback_cf_global_token.md`.
+
+### Validation pitfall: `/user/tokens/verify` vs token reality
+
+Fine-grained tokens (prefix `cfat_`) scoped only to Pages do **NOT** include the `User Details: Read` scope. Hitting `GET /client/v4/user/tokens/verify` returns:
+
+```json
+{"success":false,"errors":[{"code":1000,"message":"Invalid API Token"}]}
+```
+
+This is NOT proof the token is invalid — only that the token can't read user details. Before panicking and asking the user to re-issue, validate via the scope the token actually has:
+
+```bash
+# List accounts the token can see
+curl -sS "https://api.cloudflare.com/client/v4/accounts" \
+  -H "Authorization: Bearer $CF_TOKEN" | jq '.success, .result[].id'
+
+# Hit the exact endpoint the CD workflow uses
+curl -sS "https://api.cloudflare.com/client/v4/accounts/$CF_ACCT/pages/projects" \
+  -H "Authorization: Bearer $CF_TOKEN" | jq '.success, .result[].name'
+```
+
+If these return `.success: true`, the token is fine — `/user/tokens/verify` is a red herring. Documented incident: skret 2026-04-20 (`feedback_cf_token_verify_pitfall.md`).
+
+### Code 9106 on `pages deploy`
+
+```
+Authentication failed (status: 400) [code: 9106]
+```
+
+Token is revoked, expired, or the wrong value was pasted into the GH secret. Re-paste fresh token, then:
+
+```bash
+gh secret set CLOUDFLARE_API_TOKEN --repo <owner>/<repo> --body "$NEW_TOKEN"
+gh workflow run cd.yml --ref main --repo <owner>/<repo>
+```
+
+DO NOT paste token values into CLAUDE.md / skill files / commit messages. Memory dir (project-local, not synced to public repo) is the only place secret values may live.
+
+---
+
 ## CD Workflow (.github/workflows/cd.yml)
 
 Pattern chung cho tất cả repos, dùng python-semantic-release v10 + workflow_dispatch:
@@ -953,7 +999,7 @@ on:
 > **Dùng `pull_request` (không `pull_request_target`)**: Đã có trong ci.yml. Fork PRs không có secrets → notification sẽ skip (chấp nhận — solo dev, fork PRs hiếm).
 > **Gmail SMTP**: Cần App Password (không phải password thường). Tạo tại myaccount.google.com → Security → 2-Step Verification → App passwords.
 > **Secrets cần thêm vào GitHub** (mỗi repo): `SMTP_USERNAME` (Gmail address), `SMTP_PASSWORD` (App Password), `NOTIFY_EMAIL` (email nhận thông báo).
-> **Tách riêng khỏi Infisical**: Secrets email là cross-cutting concern, thêm trực tiếp vào GitHub Secrets (không cần Infisical auto-sync vì không dùng ở runtime).
+> **Tách riêng khỏi skret SSM**: Secrets email là cross-cutting concern, thêm trực tiếp vào GitHub Secrets (không cần `skret sync --to=github` vì không dùng ở runtime container).
 
 ---
 
