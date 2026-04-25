@@ -56,14 +56,14 @@ Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 - Dataset card neu release data (source attribution, license, stats, language distribution, PII scrubbing proof)
 - Eval tren public benchmarks reproducible (BEIR, MMEB, MIRACL, MMDocIR, ViDoRe, AudioCaps, CMTEB)
 - License: Apache-2.0 cho code + weights, CC-BY-4.0 hoac ODC-BY cho datasets
-- KHONG hardcode Infisical project ID, Modal workspace name, internal MLflow URL, personal email vao artifact
+- KHONG hardcode AWS account ID, IAM user prefix, skret SSM full path, Modal workspace name, internal MLflow URL, personal email vao artifact
 
 ## Quy tac chung
 
 - **DataFrames**: `polars` only (KHONG pandas).
-- **LLM calls**: Direct SDK (OpenAI, Cohere, google-genai) voi per-app Bearer token tu Infisical. KHONG proxy middleware.
+- **LLM calls**: Direct SDK (OpenAI, Cohere, google-genai) voi per-app Bearer token tu skret SSM (`/<app>/prod/*` namespace). KHONG proxy middleware.
 - **Comments/docstrings**: Tieng Viet.
 - **Test Coverage**: >= 95%.
 - **Reproducibility**: Set explicit random seeds, log hyperparameters + git commit hash vao MLflow.
 - **Output format**: safetensors cho model checkpoints, JSONL cho datasets.
-- **Experiment tracking**: MLflow self-hosted noi bo. Eval results copy sang HF model card khi release public.
+- **Experiment tracking**: MLflow tren infra-vnic (noi bo). Eval results copy sang HF model card khi release public.

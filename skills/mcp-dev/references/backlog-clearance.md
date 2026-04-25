@@ -13,7 +13,7 @@ Xử lý theo đúng thứ tự dưới đây. KHÔNG nhảy bước — securit
    - Sentinel CRITICAL/HIGH PRs (bot mở PR fix vulnerability)
    - Dependabot alerts (`gh api repos/<repo>/dependabot/alerts --jq '[.[] | select(.state=="open")]'`)
    - CodeQL / secret-scanning alerts đang open
-   - Credential rotation pending (Google OAuth Web, Infisical machine identity, CF token, v.v.)
+   - Credential rotation pending (Google OAuth Web, AWS IAM access keys, CF token, v.v.)
 2. **Bot PRs** (extra scrutiny — xem case study section 5)
    - Bolt (performance optimization)
    - Daisy / Jules (test / fix / cache / cleanup)

@@ -1,6 +1,6 @@
 ---
 name: infra-devops
-description: "Infrastructure, DevOps, CI/CD, security. OCI VM, Docker, Caddy, monitoring (Grafana, Alloy, Loki, Vector), MLflow, Doppler, Infisical, GitHub Actions, pre-commit, mise, PSR, Renovate, security audit."
+description: "Infrastructure, DevOps, CI/CD, security. OCI VM, Docker, Caddy, monitoring (Grafana, Alloy, Loki, Vector), MLflow, skret (AWS SSM), GitHub Actions, pre-commit, mise, PSR, Renovate, security audit."
 ---
 
 # Infrastructure & DevOps
@@ -12,7 +12,7 @@ description: "Infrastructure, DevOps, CI/CD, security. OCI VM, Docker, Caddy, mo
 - Allocate resources (Dragonfly DB, Qdrant collection, FalkorDB)
 - Monitoring: Grafana Selfhost, Alloy, Loki, Vector, Node Exporter
 - MLflow tracing (AI/LLM) va experiment tracking
-- Secrets management: Doppler (infra), Infisical (app)
+- Secrets management: skret (AWS SSM Parameter Store, region `ap-southeast-1`)
 - Docker security: multi-stage build, BuildKit cache, non-root user
 - Dependency scanning: Semgrep, Renovate, Trivy
 - CI/CD: GitHub Actions, PSR v10, pre-commit hooks
@@ -26,14 +26,14 @@ EDGE: Cloudflare Pages (Static Next.js)
          | CF Tunnel
 VM 2 (Prod): FastAPI + Echo, Docker Compose (3 OCPU, 16GB, 50GB)
          |   Repo: https://github.com/n24q02m/oci-vm-prod
-VM 1 (Infra): PostgreSQL, Qdrant, FalkorDB, Dragonfly, Infisical, MLflow (3 OCPU, 16GB, 150GB)
+VM 1 (Infra): PostgreSQL, Qdrant, FalkorDB, Dragonfly, MLflow (3 OCPU, 16GB, 150GB)
               Repo: https://github.com/n24q02m/oci-vm-infra
 
 MONITORING: Grafana + Loki selfhost (Alloy, Node Exporter, Vector) tren VM Infra
 ```
 
 - **Ingress**: CF Tunnel + Caddy. **CF Access**: Chi bao ve selfhost services (KHONG bao ve API).
-- **Secrets**: Doppler (Infra), Infisical (App). **Auth**: Firebase Auth.
+- **Secrets**: skret (AWS SSM Parameter Store, region `ap-southeast-1`). **Auth**: Firebase Auth.
 
 ## Storage (Polyglot Persistence)
 
@@ -47,7 +47,7 @@ MONITORING: Grafana + Loki selfhost (Alloy, Node Exporter, Vector) tren VM Infra
 
 ## Dev Tools (Mise)
 
-Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, Infisical, Doppler, GitHub, Wrangler.
+Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, skret, AWS CLI, GitHub, Wrangler.
 
 **Fixed Versions**: Python 3.13, Node 24, Java 21. Cac tool khac: latest.
 
@@ -55,7 +55,7 @@ Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, Infisical, Doppler
 
 - `references/oci-vm.md` -- VM architecture, deploy workflow, memory limits, resource allocation scripts, backup
 - `references/observability.md` -- Grafana Selfhost, Alloy, Vector, Loki, MLflow tracing/tracking, alerting
-- `references/security.md` -- Secrets management (Doppler/Infisical), Docker security, dependency scanning, auth, rate limiting
+- `references/security.md` -- Secrets management (skret + AWS SSM), Docker security, dependency scanning, auth, rate limiting
 - `references/repo-structure.md` -- Repository standards, mise tasks, pre-commit, Git branching, README format, Renovate, Docker build
 - `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), PR title check, Semgrep, Qodo Merge, email notify
 - `references/semantic-release.md` -- PSR v10 config (Python/TS/Rust/Go), monorepo, beta/stable, troubleshooting
@@ -69,8 +69,8 @@ Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 **FEEDBACK → SPEC + PLAN**: Khi user dua feedback thay doi scope/requirements/decisions, PHAI cap nhat spec + plan document TRUOC, KHONG chi ghi memory. Memory la ghi chu bo sung, spec + plan la source of truth. Thu tu: feedback → (1) update spec/plan → (2) ghi memory → (3) implement.
 
 **Public-ready artifacts**: Khi viet docs/plans/terraform modules/dockerfiles voi kha nang release public (OS repo, blog post, conference talk), BAT BUOC:
-- Khong hardcode hostname noi bo hay tailscale IPs — dung placeholder `<infra-host>`, `<prod-host>`
-- Khong expose Infisical project ID, Doppler config names, CF account ID
+- Khong hardcode hostname noi bo (`infra-vnic`, `prod-vnic`, tailscale IPs) — dung placeholder `<infra-host>`, `<prod-host>`
+- Khong expose AWS account ID, IAM user prefix, skret SSM full path, CF account ID
 - Khong leak secret paths hay API key format tu environment
 - Terraform/Dockerfile: tach module public-safe voi module co secrets
 - License: Apache-2.0 mac dinh cho code + docs

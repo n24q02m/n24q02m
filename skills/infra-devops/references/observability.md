@@ -382,7 +382,7 @@ curl -X POST http://litellm:4000/key/generate \
 ### Checklist thêm LLM vào app mới
 
 - [ ] Lấy virtual key từ LiteLLM (đừng tạo mới nếu đã có)
-- [ ] Set `LITELLM_API_KEY` trong secrets (GitHub Secrets / Doppler)
+- [ ] Set `LITELLM_API_KEY` trong secrets (skret SSM `/<app>/prod/` → sync sang GitHub Actions)
 - [ ] `base_url` = `http://litellm:4000/v1` (internal) hoặc `https://litellm.n24q02m.com/v1` (external)
 - [ ] KHÔNG hardcode hoặc fallback sang direct LLM API key
 

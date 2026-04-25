@@ -83,7 +83,7 @@ project/
 │   │   └── main.json
 │   ├── best_practices.md                # Custom prompt/coding standards cho Qodo Merge
 │   └── CODEOWNERS
-├── .infisical.json                      # Infisical project link (KHONG gitignore)
+├── .skret.yaml                          # skret config (project, default_env, provider, region, path)
 ├── .pr_agent.toml                       # Qodo Merge config (model, fallback)
 ├── .mise.toml                           # Tool versions (thay thế asdf)
 ├── .pre-commit-config.yaml              # Pre-commit hooks
@@ -99,7 +99,7 @@ project/
 > **Public repos**: AGENTS.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md là **BẮT BUỘC**. Private repos: không cần.
 > **PSR config**: Python repos dùng `[tool.semantic_release]` trong `pyproject.toml`. Non-Python repos dùng `semantic-release.toml` (standalone).
 > **Templates**: Issue/PR templates là **BẮT BUỘC** cho tất cả repos. PR template generic (không chứa repo-specific test commands).
-> **Infisical**: `.infisical.json` **PHẢI** được commit (KHÔNG gitignore). Chỉ chứa `workspaceId` (không nhạy cảm). Tất cả secrets qua Infisical (auto-sync → GitHub), KHÔNG dùng `gh secret set` trực tiếp.
+> **skret**: `.skret.yaml` **PHẢI** được commit (KHÔNG gitignore). Chỉ chứa namespace metadata (không nhạy cảm — provider, region, path). Tất cả secrets ở SSM `/<app>/prod/*`; sync sang GitHub Actions qua `skret sync --to=github`, KHÔNG dùng `gh secret set` trực tiếp.
 > **MCP server repos**: thêm `server.json` (MCP Registry metadata), `.claude-plugin/plugin.json` + `marketplace.json` (Claude Code plugin manifest), `hooks/hooks.json` (optional), `skills/` (optional guided workflows), `docs/{tool-name}.md` (per-tool docs load bởi `help` tool). Xem skill `fullstack-dev/references/mcp-server.md` cho tool layout chuẩn (N domain + `help` + `config`) và Phase 7 Plugin Packaging.
 
 ---
@@ -359,8 +359,7 @@ bun = "latest"
 
 # CLI tools (latest, chỉ thêm khi cần)
 # github-cli = "latest"
-# infisical = "latest"
-# doppler = "latest"
+# skret = "latest"
 # wrangler = "latest"
 # golangci-lint = "latest"   # Go: external tool, không có trong go modules
 ```
@@ -1164,8 +1163,8 @@ project/
 - [ ] `.github/PULL_REQUEST_TEMPLATE.md` có mặt (generic, không repo-specific)?
 - [ ] `.github/workflows/ci.yml` cho PR title check + commit message check + lint + test + Qodo Merge AI PR Review + email notify?
 - [ ] `.github/workflows/cd.yml` với `workflow_dispatch` (beta/stable) + PSR?
-- [ ] Infisical project: `infisical init` đã link repo? `.infisical.json` KHÔNG bị gitignore?
-- [ ] Infisical secrets (prod): `SMTP_USERNAME`, `SMTP_PASSWORD`, `NOTIFY_EMAIL`, `CODECOV_TOKEN`, `GEMINI_API_KEY`, `GH_PAT` (auto-sync → GitHub)?
+- [ ] skret project: `.skret.yaml` đã link repo (project + default_env + namespace path)? KHÔNG gitignore?
+- [ ] skret SSM secrets (prod) ở `/<app>/prod/`: `SMTP_USERNAME`, `SMTP_PASSWORD`, `NOTIFY_EMAIL`, `CODECOV_TOKEN`, `GEMINI_API_KEY`, `GH_PAT` (sync → GitHub Actions qua `skret sync --to=github`)?
 - [ ] `.github/CODEOWNERS` cho code review assignment?
 - [ ] `.pr_agent.toml` configure model + `.github/best_practices.md` cho Qodo Merge?
 - [ ] `README.md`: Bold one-liner giữa title và badges?
