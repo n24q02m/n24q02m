@@ -112,6 +112,7 @@ Done
 - `references/client-integration-test.md` — Phase 6 Test B: Claude Code + Copilot plugin install verify
 - `references/non-mcp-repos.md` — qwen3-embed / web-core / claude-plugins / n24q02m checks
 - `references/readme-parity.md` — README tier + parity across Productions/Scripts Stars lists (27 repos)
+- `references/multi-user-pattern.md` — PUBLIC_URL + per-JWT-sub credential storage recipe (added 2026-04-26 with 4-server migration cascade)
 
 ## Memory (incident log — why history)
 

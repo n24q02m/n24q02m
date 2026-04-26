@@ -2,6 +2,8 @@
 
 Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**, chạy TRƯỚC release. Entered sau khi Phase 2 (clean-state reset — xem `clean-state.md`) complete. Exit khi **19/19 configs PASS** (post-imagine-mcp 2026-04-24).
 
+**2026-04-26 update — T0/T2 driver overlay**: Configs này được automation hoá qua `mcp-core/scripts/e2e/` driver theo mode-matrix.md section 7 (16-config 3-axis taxonomy). T0 (5 configs no-upstream) chạy auto trong CI/precommit. T2 (11 configs có cred) chạy local manual `make e2e-full` — driver auto fill relay form, in user-gate URL ra stderr cho upstream OAuth/OTP/device-code (KHÔNG automation per `feedback_relay_fill_all_fields.md`). Manual procedure section 3 dưới đây vẫn là source of truth khi driver fail hoặc cần debug từng step. Spec + plan canonical: `.superpower/mcp-core/{specs,plans}/2026-04-25-e2e-framework-and-multi-user-migration.md`. Multi-user remote (PUBLIC_URL) deployment property mới — xem `multi-user-pattern.md`.
+
 **Test A scope**: Server từ source code (`uv run <server>` / `bun run build && node bin/cli.mjs`). Client = em via Python MCP SDK (`mcp.ClientSession` + `stdio_client` / `streamablehttp_client`). Verify protocol works end-to-end BEFORE publishing broken binary.
 
 **NOT this phase**: Plugin install trên Claude Code CLI / VS Code Copilot. Đó là **Test B (Phase 6)** — xem `client-integration-test.md`. 2026-04-21 violation: em gộp Test A + Test B, user corrected: "Test qua mcprotocol đã, rồi mới release stable, thì mới có cái mà test với plugin".
@@ -42,7 +44,7 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 | 10 | mnemo-mcp | remote-relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx mnemo-mcp` | Same 4-field form, remote | `state=configured` after form submit |
 | 11 | better-code-review-graph | daemon (default) | `uvx better-code-review-graph` (stdio) or http — same daemon | 4 password fields; fill ALL | `state=configured` after form submit; test both transports |
 | 12 | better-code-review-graph | remote-relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx better-code-review-graph` | Same 4-field form, remote | `state=configured` after form submit |
-| 13 | imagine-mcp | daemon (default) | `uvx imagine-mcp` (stdio) or http — same daemon | 3 password fields (GOOGLE_AI_STUDIO / OPENAI / XAI), all `required: false`; fill ALL với cred thật per `feedback_relay_fill_all_fields.md` | `state=configured` after form submit; test both transports |
+| 13 | imagine-mcp | daemon (default) | `uvx imagine-mcp` (stdio) or http — same daemon | 3 password fields (GEMINI / OPENAI / XAI; renamed 2026-04-26 `GOOGLE_AI_STUDIO_API_KEY` → `GEMINI_API_KEY`), all `required: false`; fill ALL với cred thật per `feedback_relay_fill_all_fields.md` | `state=configured` after form submit; test both transports |
 | 14 | imagine-mcp | remote-relay (self-host) | `MCP_MODE=remote-relay MCP_RELAY_URL=<url> uvx imagine-mcp` | Same 3-field form, remote | `state=configured` after form submit |
 | 15 | better-godot-mcp | local (default) | `npx @n24q02m/better-godot-mcp` (stdio) or http | No credentials | `state=configured` on launch (immediate); verify both transports |
 | 16 | qwen3-embed | pytest + smoke | `cd ~/projects/qwen3-embed && uv run pytest -m "not integration"` + embed smoke | N/A (library) | `pytest exit 0` + smoke returns shape `(1, N)` |
