@@ -4,6 +4,15 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 
 **2026-04-26 update — T0/T2 driver overlay**: Configs này được automation hoá qua `mcp-core/scripts/e2e/` driver theo mode-matrix.md section 7 (16-config 3-axis taxonomy). T0 (5 configs no-upstream) chạy auto trong CI/precommit. T2 (11 configs có cred) chạy local manual `make e2e-full` — driver auto fill relay form, in user-gate URL ra stderr cho upstream OAuth/OTP/device-code (KHÔNG automation per `feedback_relay_fill_all_fields.md`). Manual procedure section 3 dưới đây vẫn là source of truth khi driver fail hoặc cần debug từng step. Spec + plan canonical: `.superpower/mcp-core/{specs,plans}/2026-04-25-e2e-framework-and-multi-user-migration.md`. Multi-user remote (PUBLIC_URL) deployment property mới — xem `multi-user-pattern.md`.
 
+**2026-04-27 update — HARNESS-FIRST gate trước khi run matrix**: Trước khi `make e2e-full` hoặc start bất kỳ T2 config nào, BẮT BUỘC qua "Harness Readiness checklist" (xem memory `feedback_harness_first_no_run_fix_cycle.md`):
+
+1. Read latest `<memory>/e2e-execution-audit-*.md` failure-mode catalog (16+ modes accumulated 2 tuần qua).
+2. Verify driver source cover hết: per-flow timeout (device-code 900s / oauth-redirect 300s / browser-form 600s), health probe pre-prompt, live elapsed/remaining display 30s/lần, echo poll body, graceful timeout teardown (capture container logs + setup-status TRƯỚC `docker compose down`), one-time setup checklist banner ở batch start, driver dispatch theo `flow:` field, creds shape adapter per-server.
+3. Cấm pattern "start config N → bug → fix → restart → config N+1 → bug khác → fix → restart". Gặp failure mode mới giữa session: STOP, append catalog, fix harness, restart từ config 1.
+4. Cấm config require user out-of-band setup mỗi run (register `http://127.0.0.1:<port>/callback` ở Notion app, pin port vào dashboard, grant account, ...) — xem memory `feedback_no_out_of_band_test_setup.md`. 3 lựa chọn valid: (a) prod-stable callback + tunnel, (b) driver-controlled tunnel + provider DCR API, (c) loopback OAuth provider chấp nhận `http://127.0.0.1:<any>` (Google Desktop). Không thoả mãn → reclassify khỏi T2 matrix.
+
+Status report cấm "X/N PASS, stuck ở config K" khi chưa qua Harness Readiness. Phải là "Harness Readiness M/M PASS → bắt đầu E2E sequential" hoặc "Harness Readiness K/M, blocker: ..., chưa start matrix".
+
 **Test A scope**: Server từ source code (`uv run <server>` / `bun run build && node bin/cli.mjs`). Client = em via Python MCP SDK (`mcp.ClientSession` + `stdio_client` / `streamablehttp_client`). Verify protocol works end-to-end BEFORE publishing broken binary.
 
 **NOT this phase**: Plugin install trên Claude Code CLI / VS Code Copilot. Đó là **Test B (Phase 6)** — xem `client-integration-test.md`. 2026-04-21 violation: em gộp Test A + Test B, user corrected: "Test qua mcprotocol đã, rồi mới release stable, thì mới có cái mà test với plugin".
