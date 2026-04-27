@@ -49,6 +49,7 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | better-code-review-graph | #339 | `callers_of`/`callees_of` `not_found` ambiguous (not indexed vs zero callers) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #340 | `review`/`tests_for` untested-function over-reports on cross-lang + integration repos | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #341 | Promote `callers_of`/`impact`/`search` to first-class `action=` values | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
+| better-code-review-graph | #365 | Orphan daemon + lock-format-version-skew causes 401 on stdio-proxy reconnect | long-running | Affects upgrade path when an old daemon is still running; workaround: kill stale daemon process / wait for next stdio reconnect. Auto-recover fix in mcp-core stdio-proxy queued for next minor cycle (separate session, not blocking this release). | 2026-04-27 | 2026-07-27 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
