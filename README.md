@@ -44,7 +44,7 @@ These 8 principles are applied consistently across all 8 MCP servers and the rel
 |---------|-------------|---------|
 | [mcp-core](https://github.com/n24q02m/mcp-core) | Unified MCP Streamable HTTP 2025-11-25 transport, OAuth 2.1 AS, lifecycle, install automation, shared embedding daemon | `npm i @n24q02m/mcp-core` / `pip install n24q02m-mcp-core` |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Lightweight ONNX inference for Qwen3 embedding and reranking models | `pip install qwen3-embed` |
-| [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure: SSRF-safe HTTP, SearXNG search, multi-strategy scraping, stealth browsers | `pip install git+https://github.com/n24q02m/web-core.git` |
+| [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure: SSRF-safe HTTP, SearXNG search, multi-strategy scraping, stealth browsers | `pip install n24q02m-web-core` |
 
 ## Tools
 
