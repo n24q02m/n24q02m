@@ -13,6 +13,8 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 
 Status report cấm "X/N PASS, stuck ở config K" khi chưa qua Harness Readiness. Phải là "Harness Readiness M/M PASS → bắt đầu E2E sequential" hoặc "Harness Readiness K/M, blocker: ..., chưa start matrix".
 
+**2026-04-29 update — E2E PER RELEASE, không chỉ baseline**: Mọi release ship code path mới — bao gồm addendum, hotfix, patch trên cùng đợt — BẮT BUỘC re-run E2E full matrix trước. KHÔNG skip với lý do "đã test baseline ở Wave 6/7". Reasoning: nếu code path từ baseline release đến current release có ≥1 thay đổi → re-run. Vi phạm 2026-04-29 session `rollback-d18-plugin-daemon`: Wave 6 baseline E2E PASS → Wave 7 release `mcp-core 1.11.1` OK; sau đó D17/D18 addendum ship Wave 9-11 (`mcp-core 1.11.3`) **không re-chạy E2E** → D18 eager-relay double-open browser, bridge respawn loop = spam tabs vô tận user machine. Re-run T2 interaction notion+email config sau Wave 11 sẽ catch trong 5 giây đầu. CD pipeline auto-version (PSR) ≠ tested. CI green ≠ tested. Real-plugin-test sau release CHỈ smoke validation user surface, KHÔNG thay E2E gate. Xem memory `feedback_e2e_per_release_strict.md`.
+
 **Test A scope**: Server từ source code (`uv run <server>` / `bun run build && node bin/cli.mjs`). Client = em via Python MCP SDK (`mcp.ClientSession` + `stdio_client` / `streamablehttp_client`). Verify protocol works end-to-end BEFORE publishing broken binary.
 
 **NOT this phase**: Plugin install trên Claude Code CLI / VS Code Copilot. Đó là **Test B (Phase 6)** — xem `client-integration-test.md`. 2026-04-21 violation: em gộp Test A + Test B, user corrected: "Test qua mcprotocol đã, rồi mới release stable, thì mới có cái mà test với plugin".

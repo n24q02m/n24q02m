@@ -4,7 +4,9 @@ Phase 4-5 của mcp-dev cascade. **CHỈ bước vào sau khi Phase 3 (E2E full 
 
 Nếu Phase 3 còn bất kỳ config nào chưa PASS → QUAY LẠI fix, KHÔNG được dispatch. Nếu session còn bất kỳ PR/issue/security alert nào open trên TẤT CẢ 13 repo trong scope → QUAY LẠI `backlog-allowlist.md`, KHÔNG được dispatch.
 
-Cross-ref: `feedback_work_order_fix_test_release.md` (FIX → TEST → RELEASE bất biến), `feedback_test_before_release.md` (merge trước, E2E trên main, release cuối).
+**Per-release gate (2026-04-29)**: Phase 3 E2E gate áp dụng cho MỌI release dispatch — bao gồm baseline release, addendum, hotfix, patch trên cùng đợt. Không có "đã E2E ở Wave 6 rồi, addendum chỉ cần unit test → ship". Vi phạm session `rollback-d18-plugin-daemon` 2026-04-29: skip E2E sau Wave 9-11 D17/D18 addendum → ship `mcp-core 1.11.3` với D18 spam tabs P0. Xem `e2e-full-matrix.md` "E2E PER RELEASE" + memory `feedback_e2e_per_release_strict.md`.
+
+Cross-ref: `feedback_work_order_fix_test_release.md` (FIX → TEST → RELEASE bất biến), `feedback_test_before_release.md` (merge trước, E2E trên main, release cuối), `feedback_e2e_per_release_strict.md` (E2E per release).
 
 ---
 
