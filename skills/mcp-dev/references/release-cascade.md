@@ -1,12 +1,51 @@
-# Release Cascade — Phase 4-5 Dispatch Protocol
+# Release Cascade — Phase 2 BETA + Phase 5 STABLE Dispatch Protocol
 
-Phase 4-5 của mcp-dev cascade. **CHỈ bước vào sau khi Phase 3 (E2E full matrix) show 19/19 green** (post-imagine-mcp 2026-04-24). Release dispatch là **LAST action của session** — không có exception, không release giữa chừng.
+**2026-04-30 update — v3 work order**: Cascade now has **TWO release dispatches** per session, not one. BETA release runs as **Phase 2** (after backlog clear, BEFORE E2E). STABLE release runs as **Phase 5** (after E2E + Test B both PASS). This solves the chicken-and-egg where stdio-direct configs need published `:beta` artifacts to test (`uvx <plugin>==<beta>`).
 
-Nếu Phase 3 còn bất kỳ config nào chưa PASS → QUAY LẠI fix, KHÔNG được dispatch. Nếu session còn bất kỳ PR/issue/security alert nào open trên TẤT CẢ 13 repo trong scope → QUAY LẠI `backlog-allowlist.md`, KHÔNG được dispatch.
+**v3 phase order (BẤT BIẾN)**:
+
+```
+Phase 1: Clear backlog / feat / fix          [backlog-allowlist.md, backlog-clearance.md]
+   |
+   v
+Phase 2: RELEASE BETA                        [this file, sections 2-3]
+   |    mcp-core BETA → 8 plugin BETA cascade
+   |    Publish :beta to PyPI/npm/Docker
+   v
+Phase 3: E2E full matrix với :beta           [e2e-full-matrix.md]
+   |    T0 (auto CI) + T2 via mcp-core/scripts/e2e/driver.py
+   |    Pin :beta versions for stdio-direct configs
+   v
+Phase 4: Test B trên 3 IDE                   [real-plugin-verification.md, client-integration-test.md]
+   |    Claude Code (mandatory) + VS Code Copilot + Cursor
+   |    8 meaningful tool calls per plugin
+   v
+Phase 5: RELEASE STABLE                      [this file, sections 4-7]
+   |    Same mcp-core → plugins order, release_type=stable
+   v
+Phase 6: Post-release verify                 [this file, section 8]
+        User install :latest, re-run Test B sample
+```
+
+**Anti-patterns (CẤM)** beyond legacy list:
+
+- **Skip BETA, release STABLE directly** — without published `:beta`, stdio-direct E2E configs cannot test new code (resolve to OLD `:latest`). Test B harness behavior never verified before user-facing :latest. Vi phạm 2026-04-30 session 2d88d796 USER #123/124: dispatched `mcp-core CD STABLE` after only ad-hoc Python SDK manual stdio-direct test, skip T0/T2 HTTP/Test B.
+- **"Em đã verify N stdio-direct manual qua Python SDK ≈ E2E driver"** — KHÔNG. `e2e.driver` runs full container lifecycle, transient relay, real OAuth/relay-form per `relay-flow.md`. Manual `stdio_client` chỉ verify protocol initialize, miss everything else.
+- **Test B before BETA release** — impossible since Test B installs published artifact via plugin marketplace; without `:beta` publish, marketplace pin resolves to `:latest` (old code).
+- **Mix BETA + STABLE dispatch in same phase** — race condition: if mcp-core stable cuts before plugin :beta E2E completes, downstream pin floats to a stable that hasn't been E2E'd against the specific plugin :beta code path.
+
+Phase 5 STABLE chỉ được dispatch khi:
+
+1. Phase 1 backlog gate green (PRs=0 + issues=allowlist + alerts=0 trên 13 repo).
+2. Phase 2 BETA cascade complete (mcp-core :beta + 8 plugin :beta all published).
+3. Phase 3 E2E matrix full PASS (T0 auto + T2 manual via `e2e.driver`, all configs).
+4. Phase 4 Test B 100% PASS trên ≥1 IDE (Claude Code mandatory; Cursor/Copilot user-driven manual).
+
+Nếu bất kỳ phase nào chưa green → QUAY LẠI phase đó, KHÔNG được dispatch STABLE.
 
 **Per-release gate (2026-04-29)**: Phase 3 E2E gate áp dụng cho MỌI release dispatch — bao gồm baseline release, addendum, hotfix, patch trên cùng đợt. Không có "đã E2E ở Wave 6 rồi, addendum chỉ cần unit test → ship". Vi phạm session `rollback-d18-plugin-daemon` 2026-04-29: skip E2E sau Wave 9-11 D17/D18 addendum → ship `mcp-core 1.11.3` với D18 spam tabs P0. Xem `e2e-full-matrix.md` "E2E PER RELEASE" + memory `feedback_e2e_per_release_strict.md`.
 
-Cross-ref: `feedback_work_order_fix_test_release.md` (FIX → TEST → RELEASE bất biến), `feedback_test_before_release.md` (merge trước, E2E trên main, release cuối), `feedback_e2e_per_release_strict.md` (E2E per release).
+Cross-ref: `feedback_work_order_v3_beta_first.md` (v3 BETA-first flow, 2026-04-30 — primary), `feedback_work_order_fix_test_release.md` (legacy FIX → TEST → RELEASE), `feedback_test_before_release.md` (merge trước, E2E trên main, release cuối), `feedback_e2e_per_release_strict.md` (E2E per release).
 
 ---
 
