@@ -69,6 +69,36 @@ applyTo: '**'
 <important if="user references prior session by name, mentions previous conversation, says 'session trước', 'đã nói', 'đề xuất đã được nói', 'như đã chốt', hoặc cần recall điều gì đã trao đổi ở session khác">
 - **SESSION LOG LOOKUP**: Invoke skill `session-transcript-extraction` (đã cover: tìm session JSONL, parse, extract user+assistant đầy đủ, output transcript+history). KHÔNG hỏi user "session nào?" trước khi tự tìm. Check MEMORY.md `session-*-transcript.md` index trước — có thể đã summary sẵn. Memory `feedback_session_log_lookup.md`.
 </important>
+<important if="run E2E config có user_gate (browser-form / device-code / oauth-redirect) — HOẶC sắp response 'anh xem terminal' / 'browser sẽ tự mở' / 'driver đang đợi user action'">
+- **EXTRACT USER_GATE URL/CODE TỪ DRIVER LOG, paste vào response**: BẮT BUỘC pattern khi run E2E user_gate config:
+  1. Spawn driver với `tee /tmp/<config>.log` (KHÔNG `| tail -N` — buffer never flushes mid-run)
+  2. Poll log 60-120s grep URL hoặc user_code:
+     - browser-form: `http://127.0.0.1:<port>/authorize?...`
+     - device-code: `https://www.google.com/device` hoặc `https://microsoft.com/devicelogin` + `User code: XXX-XXX-XXX`
+     - oauth-redirect: authorization URL với state + PKCE
+  3. Paste vào response cho user với markdown emphasis (header `# ⚠️ <CONFIG>` + URL trong code block + code in `**` emphasis)
+  4. Sau user complete → driver poll → nếu config có matrix `local` + `remote` → repeat extraction cho iteration sau
+
+  **Anti-patterns CẤM**: "Khi browser hoặc terminal hỏi OTP, anh paste vào" / "Driver đang đợi, anh xem terminal" / "Browser tự mở". User KHÔNG thấy terminal (Claude Code own), KHÔNG biết URL nào. Driver poll output bị buffer through `| tail -N` → 0 bytes file, user nothing. Vi phạm 525c9518 + 2026-04-30 session 2d88d796 USER L3037 — em đã làm sai pattern này nhiều session liên tiếp. Memory `feedback_extract_user_gate_url_code.md`.
+</important>
+<important if="cite memory feedback file làm fact để claim 'X blocked' / 'Y broken' / 'Z requires manual setup' — đặc biệt feedback file >3 ngày tuổi">
+- **GREP CODE TRƯỚC KHI CITE STALE MEMORY**: Memory feedback file có system-reminder header "Memories are point-in-time observations, not live state — verify against current code before asserting as fact". BẮT BUỘC: (1) Memory >3 ngày = DEFAULT STALE; (2) Cite "skret missing X" → grep code cho fallback/default; (3) Cite "upstream bug" → check current source PR merge status; (4) Cite "blocked on Azure/Notion/Microsoft register" → grep cho bundled public client ID pattern; (5) Cite file:line → Read file verify line still match.
+
+  Vi phạm 2026-04-30 session 2d88d796 USER L3057: em cite `feedback_e2e_5_blocked_configs.md` (2026-04-27) "email-outlook blocked vì skret thiếu OUTLOOK_CLIENT_ID, cần Azure register". Code thực tế `better-email-mcp/src/tools/helpers/oauth2.ts:87-95` có bundled public client ID `d56f8c71-9f7c-43f4-9934-be29cb6e77b0` (Thunderbird pattern) — `OUTLOOK_CLIENT_ID` env chỉ optional override. KHÔNG blocked. Anti-pattern: trust memory mà không grep code = nói linh tinh.
+
+  Memory `feedback_grep_code_not_old_memory.md`. Cross-ref `feedback_pushback_reaudit_reflex.md`.
+</important>
+<important if="script/test/build/E2E fail vì missing dependency runtime (Docker daemon offline, AWS SSO `LoginRefreshRequired`, gh auth expired, npm login expired, mise shim missing) — HOẶC sắp report user 'anh start Docker giúp' / 'anh login giúp'">
+- **AUTO-LAUNCH DEPENDENCIES, KHÔNG bắt user chờ**: Khi detect missing-dep error, BẮT BUỘC tự execute recovery command + retry, KHÔNG dừng để user chạy thủ công. Map cụ thể:
+  - Docker daemon offline (`docker compose ... non-zero exit`, `daemon socket`) → `"/c/Program Files/Docker/Docker/Docker Desktop.exe" &` (Windows) / `open -a Docker` (Mac) → đợi `docker ps` OK → retry
+  - AWS SSO expired (`LoginRefreshRequired`, `Please reauthenticate using 'aws login'`) → `aws login` (browser auto-opens, user 1-click) → `aws sts get-caller-identity` verify → retry
+  - gh auth expired → `gh auth login --web` (browser 1-click) → retry
+  - npm login expired → `npm whoami` check → `npm login` (CHỈ exception nếu cần OTP)
+
+  **Lý do**: User L3009 session 2d88d796 — "tự mở docker, tự chạy cli login để tự bump trên màn hình nhắc tôi mà đỡ phải yêu cầu tôi chạy xong lại chờ mất thời gian". Mỗi lần dừng-nhắc-chờ = idle 5-15 phút. 1 session E2E + release dễ cần 3-5 lần re-auth → 30+ phút wasted nếu manual.
+
+  **Anti-patterns CẤM**: "Docker chưa chạy, anh launch giúp" / "AWS SSO expired, anh `aws login` giúp" / "Em không cancel mid-run được". Browser-flow tools (aws/gh login --web) vẫn count là auto-launch — em launch CLI, browser tự mở, user effort = 1 click. Khác với `feedback_dont_defer_to_user.md` (defer = không làm gì, chờ user); auto-launch = chủ động launch dùm rồi continue. Xem memory `feedback_auto_launch_dependencies.md`.
+</important>
 <important if="cần CLI auth state hoặc test account (Firebase, gh, gcloud, wrangler, aws, skret, npm, vercel, dodo, ...) hoặc sắp hỏi user 'đã login chưa?' / 'cần creds gì?'">
 - **CLI ALREADY LOGGED IN + TEST ACCOUNTS PERSIST**: Auth state của CLI tools (Firebase `firebase login`, gh `gh auth status`, gcloud `gcloud auth list`, wrangler `wrangler whoami`, aws `aws sts get-caller-identity`, skret reads `~/.aws/credentials`) DUY TRÌ ACROSS SESSIONS — KHÔNG hỏi user "đã login chưa". Tự kiểm tra trước qua command (`<cli> auth status` / `whoami` / `login:list`). Test accounts (Firebase test users, Stripe/Dodo test customers, e2e accounts) đã được đăng ký/đăng nhập sẵn — credentials lưu ở memory entry tương ứng (e.g. `e2e-test-credentials.md`). Nếu chưa có entry: tự register/create + LƯU NGAY vào memory để session sau dùng lại, KHÔNG ask user mỗi lần. Workflow: (1) check CLI auth state via command; (2) check memory cho test account creds; (3) nếu thiếu → create + save memory + use; (4) chỉ ask user khi service mới chưa có account (như Yoti SDK signup). Vi phạm 2026-04-18 — hỏi "Firebase user nào?" trong khi CLI đã login + e2e user đã tồn tại nhiều lần. Xem memory `feedback_cli_state_test_accounts_persist.md`.
 </important>
