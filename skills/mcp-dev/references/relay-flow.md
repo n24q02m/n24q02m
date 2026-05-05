@@ -105,6 +105,39 @@ Trước khi merge PR hay release, audit cả 2 modes:
 
 5. **Behavioral**: paste same creds vào cả 2 URLs → cả 2 phải validate + land success identical (chỉ khác: local ghi `config.enc`, remote trả JWT).
 
+## 6.5. OAuth redirect_url gate (2026-04-22 bug)
+
+Trên thành công `POST /authorize`, mcp-core server trả `{ok: true, redirect_url: "<client_redirect_uri>?code=...&state=..."}`. **Form JS BẮT BUỘC `window.location.replace(data.redirect_url)`** khi `redirect_url` present + no interactive `next_step`. Nếu form chỉ `showStatus("success", "close tab")` mà không navigate → external OAuth client (test harness, Claude Code CLI Bearer, desktop app, Python SDK) **callback server không bao giờ nhận được code → handshake hang vô thời hạn**. User thấy trang xanh "Connected" nhưng test client retry tới retry, user resubmit form lặp nhiều lần mà không work.
+
+**Audit trigger**: khi diff credential-form.ts / credential_form.py, grep `redirect_url` trong success branch. Nếu success branch không có `window.location.*` → reject PR. Apply cho bootstrap `/callback-done` flow (server-internal redirect) lẫn external client OAuth.
+
+**Incident 2026-04-22**: session `relay-consolidation-form-schema` Phase 3 Config #2 (notion http local-relay) — form chỉ show static success, Python MCP SDK test client hang 3 cycles, log cho thấy 3 lần "Notion token received via /authorize and saved" mà callback 8765 không fire một lần. Fix landed core-ts `credential-form.ts:732-745` + core-py `credential_form.py` parity: `else if (data.redirect_url) window.location.replace(data.redirect_url)`. Áp dụng cả chính path (after submit) và OTP multi-step post-verify.
+
+**Test requirement**: credential-form test suite PHẢI có case `{ok:true, redirect_url:"http://x.y/cb?code=c&state=s"}` → assert JS source contains `window.location.replace`. Unit string-check tối thiểu; headless browser assertion (Playwright/Puppeteer) nếu có để confirm navigation thực tế.
+
+### 6.5.1. Custom forms + async completion (2026-04-22 email follow-up)
+
+Một số MCP override credential form (`customCredentialFormHtml` option): `better-email-mcp` có `renderEmailCredentialForm` multi-account Gmail/Outlook; `better-telegram-mcp` form phone+OTP 2-step; `wet-mcp` có OTP/password chain với GDrive device code. Form custom OVERRIDE form default nên fix ở mcp-core (section 6.5) KHÔNG áp dụng tự động cho chúng.
+
+**Mọi custom form PHẢI**:
+1. Khai báo `var pendingRedirectUrl = null;` trong scope form.
+2. Trong `.then(data => ...)` của POST /authorize: `if (typeof data.redirect_url === "string" && data.redirect_url.length > 0) pendingRedirectUrl = data.redirect_url;`.
+3. Non-async branch (không có next_step): `window.location.replace(pendingRedirectUrl)` nếu set, else "close tab".
+4. Mọi async completion branch (device code poll `*="complete"`, OTP verify success, 2FA done, v.v.): `window.location.replace(pendingRedirectUrl)` nếu set, else "close tab".
+5. Fallback "close tab" CHỈ dùng khi `pendingRedirectUrl` null (bootstrap `/` flow nội bộ).
+
+**OAuth flow semantics reminder**: Relay form's "success/green" là feedback tạm thời, KHÔNG phải end state. End state của OAuth 2.1 là khi browser đến được external client's `redirect_uri` (test harness, Claude CLI, Cursor, desktop app). Client tự render done page của riêng nó. Form relay chỉ có trách nhiệm issue code + redirect về client callback, rồi buông.
+
+**Bootstrap vs OAuth client**:
+- Bootstrap (user gõ URL tay, client_id=local-browser + redirect_uri nội bộ `/callback-done`): form success + "close tab" ĐÚNG.
+- External OAuth client (external `redirect_uri` như `http://127.0.0.1:8765/callback`, `http://localhost:3000/auth`): form PHẢI navigate về redirect_uri. Show "close tab" ở đây = bug.
+
+**Incident 2026-04-22**: Config #4 (email http remote-relay) — user submitted Gmail + Outlook, completed Outlook device code, form green "Setup complete!" nhưng test client hang. Root: `better-email-mcp/src/credential-form.ts` polling `outlook === "complete"` chỉ update text, không navigate. Fix `better-email-mcp#464`: stash + follow pattern như trên.
+
+**Audit trigger**: review mọi PR touch `src/credential-form.ts` / `renderEmailCredentialForm` / `renderTelegramCredentialForm` / custom render. Grep `redirect_url` trong async branches (after `setInterval` poll, `.then(verifyOtp)`, v.v.). Missing `window.location.*` ở async completion = reject.
+
+Xem memory `feedback_relay_form_must_follow_redirect.md`.
+
 ## 7. Case Study: better-email-mcp (2026-04-19, session 80d829f6)
 
 **Bug**: `src/transports/http.ts` rẽ nhánh 2 code paths:

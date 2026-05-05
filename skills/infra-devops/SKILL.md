@@ -51,6 +51,18 @@ Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, skret, AWS CLI, Gi
 
 **Fixed Versions**: Python 3.13, Node 24, Java 21. Cac tool khac: latest.
 
+## Local Machine Install Priority
+
+Khi cai dat ung dung / CLI / runtime tren may local (Windows/Mac), theo thu tu uu tien:
+
+1. **scoop (Windows) / brew (Mac)** — desktop apps + dev CLI user-scope. Khong can admin, isolated, du uninstall sach.
+2. **mise** — language runtime (Python, Node, Go, Rust, Java) + project-level tools.
+3. **winget (Windows) / apt (Linux)** — CHI fallback cho driver, system service, OEM software, Microsoft Store apps.
+
+**Khong dual-install** cung 1 app o nhieu nguon — dau-ra orphan binary khi cleanup. Truoc khi propose `winget install`, check `scoop search` truoc. Audit duplicate: uu tien giu scoop. Apps installer-pattern (Discord, Epic Games, Steam) co the mat binary khi go winget — `scoop reinstall` de recover.
+
+Xem memory `feedback_install_priority_scoop_first.md` cho incident log + recovery procedure.
+
 ## References (doc on demand)
 
 - `references/oci-vm.md` -- VM architecture, deploy workflow, memory limits, resource allocation scripts, backup
@@ -59,6 +71,7 @@ Terraform, uv, ruff, ty, pnpm, biome, golangci-lint, gofumpt, skret, AWS CLI, Gi
 - `references/repo-structure.md` -- Repository standards, mise tasks, pre-commit, Git branching, README format, Renovate, Docker build
 - `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), PR title check, Semgrep, Qodo Merge, email notify
 - `references/semantic-release.md` -- PSR v10 config (Python/TS/Rust/Go), monorepo, beta/stable, troubleshooting
+- `references/cf-tunnel-management.md` -- CF Tunnel ingress + DNS CNAME via direct API (wrangler khong co route mgmt); 3-part hyphen naming; <SERVICE>_DOMAIN in /oci-vm-prod skret
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 

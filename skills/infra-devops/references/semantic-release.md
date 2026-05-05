@@ -433,3 +433,31 @@ semantic-release version --noop --verbosity=DEBUG
     uv build
   """
   ```
+
+---
+
+## Anti-pattern: Tự pick version số trong spec/plan/PR
+
+**Triệu chứng**: Spec hoặc plan ghi "release v1.0.0", "Cut v0.1.0", "Phase 11: release v1.0.0", "When v1.0 ready". CHÚNG SAI.
+
+**Tại sao SAI**:
+- PSR đọc commit history để tự compute version (`fix:` → patch, `feat:` → minor).
+- User pick số → conflict với PSR computed → CD fail / wrong tag pushed / changelog gap / downstream pin drift.
+- Major bump (`v0.x → v1.0`) yêu cầu commit prefix `feat!:` hoặc `BREAKING CHANGE:` footer — vi phạm rule "no `!` breaking change" của user.
+
+**Bắt buộc**:
+1. KHÔNG đề xuất số version cụ thể trong spec/plan/PR/issue/changelog/docs. Dùng placeholder `<auto>`, `<next>`, `<computed>`, `<stable>`.
+2. README install snippets sau release: dùng `latest` trong URL (`https://github.com/<owner>/<repo>/releases/latest`) HOẶC fetch via `gh release list --limit 1` runtime, KHÔNG hardcode.
+3. Verify version SAU PSR run: `gh release list --limit 1` → lấy actual tag → update docs nếu cần inline số.
+4. Major bump: chỉ trigger khi commit prefix `feat!:` hoặc `BREAKING CHANGE:` footer (đều cấm theo rule). Nếu thật sự cần promote major → discussion với user EXPLICIT.
+5. Plan tổng/spec gateway "release v1.0.0" = ANTI-PATTERN. Phải nói "release stable cut bởi PSR" + criteria readiness, KHÔNG bind số.
+
+**Lịch sử vi phạm**:
+- 2026-04-18 session `cloudflare-pages-deployment-setup` continuation: đề xuất "Phase 11: Cut v1.0.0 release" trong skret plan. User correction: "do PSR quyết định, lỗi này đã lặp lại, note thêm vào rule/skill".
+- Vi phạm trước đó: nhiều spec MCP server, kcore, web-core đề xuất "v1.0.0" thủ công.
+
+**Workflow trước khi save spec/plan**:
+- Search regex `v\d\.\d\.\d` trong nháp → replace bằng placeholder TRƯỚC khi save.
+- Success criteria: "release tagged" thay vì "release v1.0.0 tagged".
+- README badge: dùng `latest` placeholder trong URL.
+- Khi user hỏi "khi nào release v1.0?" → trả lời "khi commit history accumulate đủ feat: cho PSR bump tới major" + criteria readiness, KHÔNG hứa số.

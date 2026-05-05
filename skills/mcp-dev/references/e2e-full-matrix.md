@@ -1,6 +1,16 @@
-# E2E Full Matrix — Phase 3 (Test A: MCP Protocol, Pre-Release)
+# E2E Full Matrix — Phase 3 (Test A: MCP Protocol, Post-BETA, Pre-STABLE)
 
-Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**, chạy TRƯỚC release. Entered sau khi Phase 2 (clean-state reset — xem `clean-state.md`) complete. Exit khi **19/19 configs PASS** (post-imagine-mcp 2026-04-24).
+**2026-04-30 update — v3 work order, BETA-first prerequisite**: Phase 3 entered sau khi Phase 2 = **CD BETA cascade complete** (mcp-core :beta + 8 plugin :beta published to PyPI/npm/Docker). Stdio-direct configs (wet/mnemo/crg/imagine/telegram) BẮT BUỘC test với pinned `:beta` version (`uvx <plugin>==<version>b<N>` hoặc `npx -p @n24q02m/<plugin>@<version>-beta.<N>`), KHÔNG `:latest` (resolve old code) và KHÔNG `file:` local pin (không reflect published artifact). Vi phạm 2026-04-30 session 2d88d796 USER #123/124: chạy stdio-direct manual qua Python SDK trên file:// local, KHÔNG qua driver, KHÔNG pin :beta → claim PASS không có ý nghĩa.
+
+Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên :BETA ARTIFACTS**, chạy TRƯỚC STABLE release. Entered sau khi Phase 2 (CD BETA cascade) complete + clean-state reset (`clean-state.md`). Exit khi **toàn bộ matrix PASS** (post-imagine-mcp 2026-04-24, post-multi-mode 2026-04-30; xem table 2 để cập nhật config count).
+
+**BETA-first invariants**:
+
+1. **Pin :beta explicit, KHÔNG @latest**: Per `feedback_uvx_cache_transitive_pin.md` + `feedback_npx_cache_transitive_pin.md`, package managers cache transitive deps. `uvx <plugin>@latest` resolves to OLD `:latest` PyPI tag, KHÔNG `:beta` mới publish. Driver matrix entries cho stdio-direct configs PHẢI có explicit version field (vd `version: "2.29.0b1"`) hoặc resolve dynamically từ `gh release list --limit 1`.
+2. **Driver chạy via `mcp-core/scripts/e2e/driver.py`, KHÔNG ad-hoc Python SDK**: Manual `mcp.ClientSession + stdio_client` script chỉ verify protocol initialize, miss container lifecycle / transient relay / OAuth callback / multi-user JWT. Vi phạm "verify N stdio-direct manual ≈ E2E driver" = anti-pattern.
+3. **Test B BẮT BUỘC sau Phase 3 + TRƯỚC Phase 5 STABLE**: Phase 4 (`real-plugin-verification.md` + `client-integration-test.md`) installs :beta plugin via marketplace, calls 8 meaningful tools per plugin trên Claude Code (mandatory) + Cursor + VS Code Copilot (user-driven). KHÔNG được dispatch STABLE khi Test B chưa complete trên ≥1 IDE.
+
+Cross-ref: `release-cascade.md` (v3 phase order, BETA dispatch), `feedback_work_order_v3_beta_first.md` (BETA-first rationale), `feedback_real_plugin_test_strict.md` (Test B evidence requirements).
 
 **2026-04-26 update — T0/T2 driver overlay**: Configs này được automation hoá qua `mcp-core/scripts/e2e/` driver theo mode-matrix.md section 7 (16-config 3-axis taxonomy). T0 (5 configs no-upstream) chạy auto trong CI/precommit. T2 (11 configs có cred) chạy local manual `make e2e-full` — driver auto fill relay form, in user-gate URL ra stderr cho upstream OAuth/OTP/device-code (KHÔNG automation per `feedback_relay_fill_all_fields.md`). Manual procedure section 3 dưới đây vẫn là source of truth khi driver fail hoặc cần debug từng step. Spec + plan canonical: `.superpower/mcp-core/{specs,plans}/2026-04-25-e2e-framework-and-multi-user-migration.md`. Multi-user remote (PUBLIC_URL) deployment property mới — xem `multi-user-pattern.md`.
 
@@ -12,6 +22,8 @@ Phase 3 của mcp-dev cascade. **Test A — MCP PROTOCOL E2E trên SOURCE CODE**
 4. Cấm config require user out-of-band setup mỗi run (register `http://127.0.0.1:<port>/callback` ở Notion app, pin port vào dashboard, grant account, ...) — xem memory `feedback_no_out_of_band_test_setup.md`. 3 lựa chọn valid: (a) prod-stable callback + tunnel, (b) driver-controlled tunnel + provider DCR API, (c) loopback OAuth provider chấp nhận `http://127.0.0.1:<any>` (Google Desktop). Không thoả mãn → reclassify khỏi T2 matrix.
 
 Status report cấm "X/N PASS, stuck ở config K" khi chưa qua Harness Readiness. Phải là "Harness Readiness M/M PASS → bắt đầu E2E sequential" hoặc "Harness Readiness K/M, blocker: ..., chưa start matrix".
+
+**2026-04-29 update — E2E PER RELEASE, không chỉ baseline**: Mọi release ship code path mới — bao gồm addendum, hotfix, patch trên cùng đợt — BẮT BUỘC re-run E2E full matrix trước. KHÔNG skip với lý do "đã test baseline ở Wave 6/7". Reasoning: nếu code path từ baseline release đến current release có ≥1 thay đổi → re-run. Vi phạm 2026-04-29 session `rollback-d18-plugin-daemon`: Wave 6 baseline E2E PASS → Wave 7 release `mcp-core 1.11.1` OK; sau đó D17/D18 addendum ship Wave 9-11 (`mcp-core 1.11.3`) **không re-chạy E2E** → D18 eager-relay double-open browser, bridge respawn loop = spam tabs vô tận user machine. Re-run T2 interaction notion+email config sau Wave 11 sẽ catch trong 5 giây đầu. CD pipeline auto-version (PSR) ≠ tested. CI green ≠ tested. Real-plugin-test sau release CHỈ smoke validation user surface, KHÔNG thay E2E gate. Xem memory `feedback_e2e_per_release_strict.md`.
 
 **Test A scope**: Server từ source code (`uv run <server>` / `bun run build && node bin/cli.mjs`). Client = em via Python MCP SDK (`mcp.ClientSession` + `stdio_client` / `streamablehttp_client`). Verify protocol works end-to-end BEFORE publishing broken binary.
 

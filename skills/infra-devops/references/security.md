@@ -121,6 +121,46 @@ resp, _ := client.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{
 
 > **Ưu tiên `skret run --` luôn**, chỉ fall back sang SDK nếu container/runtime không cho phép spawn external process trước app start.
 
+### CLI usage rules — `skret` exclusive, never raw `aws ssm`
+
+**Rule** (added 2026-04-28): Mọi op secret (read/write/list) BẮT BUỘC đi qua `skret`:
+
+| Use case | Đúng | SAI |
+|---|---|---|
+| Read 1 key | `skret env -e prod --path=/<ns>/prod \| grep ^KEY=` | `aws ssm get-parameter --name /<ns>/prod/KEY` |
+| Write 1 key | `skret put -e prod --path=/<ns>/prod/KEY --value=...` | `aws ssm put-parameter --name /<ns>/prod/KEY ...` |
+| List keys | `skret env -e prod --path=/<ns>/prod \| awk -F= '{print $1}'` | `aws ssm describe-parameters --parameter-filters Key=Name,Option=BeginsWith,Values=/<ns>/prod` |
+| Inject vào cmd | `skret run -e prod -- <cmd>` | `eval $(aws ssm get-parameters-by-path ... \| jq ...)` |
+
+**Why**:
+- skret = abstraction; backend có thể migrate (Doppler → Infisical → SSM → Vault) mà không phải sửa scripts.
+- skret enforce path policy + uniform `dotenv` formatting + audit log dưới tên `skret-vm-runtime` IAM user. Direct `aws ssm` xài raw API key + bypass policy.
+- `aws ssm describe-parameters` có thể list keys ngoài scope sandbox đã grant.
+
+**Git Bash trên Windows**: path `--path=/foo/bar` bị mangle thành `C:/Program Files/Git/foo/bar`. Dùng `MSYS_NO_PATHCONV=1 skret env -e prod --path=/foo/bar ...` hoặc chạy từ PowerShell. KHÔNG fallback `aws ssm` để tránh path quirk.
+
+**Empty namespace = empty backend**: `skret env --path=/global/prod --format=dotenv` trả 0 dòng → namespace thật sự trống. KHÔNG cross-check qua `aws ssm describe-parameters` (skret đọc cùng SSM, kết quả giống nhau).
+
+### App namespace boundary — runtime-only
+
+**Rule** (added 2026-04-28): `/<app>/prod` chứa chỉ secret app code đọc lúc runtime.
+
+| Loại credential | Có ở `/<app>/prod`? | Nơi đúng |
+|---|---|---|
+| DB DSN, OAuth client secret app exchange, API key app gọi upstream, R2 keys app upload | ✅ | `/<app>/prod` |
+| DNS zone:edit (CF/Route53/etc) | ❌ | User dashboard (one-off) hoặc admin namespace `/admin-cf-zones/prod/CLOUDFLARE_ZONE_EDIT_<ZONE>` (recurring) |
+| CF account-wide token | ❌ | Admin only — never store account-wide token; mint scoped tokens per-zone/per-project |
+| GitHub org-admin PAT | ❌ | Admin namespace, IAM gated |
+| Cloud root keys (AWS root, GCP super-admin) | ❌ | Never stored, MFA-protected only |
+| Domain registrar API, billing API | ❌ | Admin namespace |
+
+**Why**: app namespace IAM grants ANY runtime container the right to read those keys. Runtime exploit (SSRF, RCE, stolen env dump) → DNS hijack / org-admin escalation if zone:edit / org PAT live there. Strict least-privilege boundary protects blast radius.
+
+**Hunt protocol**: trước khi grep skret cho 1 credential, tự hỏi: **"App runtime code có CALL credential này không?"**. Nếu KHÔNG → không hunt app namespace, chọn 1 trong:
+1. User edit dashboard 30 giây (one-off DNS edit, custom domain attach to branch alias).
+2. User mint scoped token paste 1 lần cho command.
+3. Tạo dedicated admin namespace `/admin-<scope>/prod/<KEY>` nếu thao tác recurring (CD pipeline edits DNS) — IAM grant scoped đến đó.
+
 ### Public vs Private OAuth Client Secrets — Google "Desktop/Installed app" pattern
 
 **Nguyên tắc**: không phải mọi chuỗi trông-như-secret trong source code đều là secret cần rotate.
