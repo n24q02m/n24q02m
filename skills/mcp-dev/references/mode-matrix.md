@@ -114,3 +114,63 @@ Trước 2026-04-20: E2E test CHỈ cover default mode mỗi server (7 configs).
 Từ 2026-04-20: E2E cover **full matrix** = 20 MCP configs (mỗi server x mỗi mode nó hỗ trợ) + 4 non-MCP configs (mcp-core TS/Python lib, qwen3-embed server, web-core shared package, claude-plugins manifest). Mỗi config clean-state test qua relay/OAuth flow thật, không shortcut env var. Chi tiết procedure: xem `e2e-full-matrix.md`. Audit gh commands cho empty-backlog gate: xem `audit-commands.md`.
 
 Rationale: release cascade (mcp-core bump -> 7 MCP bumps) dễ breakage ở non-default modes vì CI green chỉ verify default. User chạy `MCP_MODE=local-relay` trên production server có OAuth config -> gặp bug không ai test. Full matrix E2E trước mỗi stable release cascade ngăn drift giữa modes.
+
+## 7. E2E Matrix Re-classification 2026-04-25 — 16 Configs (3 Axes)
+
+Section 1 trên là **deployment matrix** (8 servers × các mode mỗi server hỗ trợ). Section này là **E2E test matrix** — chiếu xuống 3 axes (auth / interaction / tier) để driver script chạy.
+
+**3 Axes**:
+- **Auth flow** (3 values): `none` / `oauth` / `relay`. Chỉ notion remote dùng `oauth` (delegated upstream Notion OAuth + DCR). Tất cả relay/device-code/OTP đều quy về `relay`.
+- **Interaction**: `non-interaction` (driver fill xong, no upstream gate) / `interaction` (driver fill xong, user click upstream gate).
+- **Tier**: `T0` (precommit + CI auto) / `T2` (local manual `make e2e-full`).
+
+**Multi-user là DEPLOYMENT PROPERTY của remote mode** — KHÔNG phải config test riêng. Test isolation 1 lần ở mcp-core fixture (concurrent 2-user, JWT sub separation), smoke test per-server.
+
+### 16 Configs
+
+**T0-only (5)** — CI/precommit, no upstream:
+1. mcp-core CI (unit + integration)
+2. qwen3-embed CI (Modal worker tests)
+3. web-core CI (build + lint)
+4. claude-plugins CI (skill validation)
+5. better-godot-mcp stub mode (no exe)
+
+**T2 non-interaction (6)** — driver pre-fills relay form, tools active no gate:
+
+| # | Server | Auth | Test ở |
+|---|---|---|---|
+| 6 | better-notion-mcp (paste integration token) | relay | local |
+| 7 | better-email-mcp Gmail (paste app password) | relay | local + remote |
+| 8 | better-telegram-mcp bot (paste bot token) | relay | local + remote |
+| 9 | better-code-review-graph (paste optional cloud keys) | relay | local + remote |
+| 10 | imagine-mcp (paste LLM provider keys) | relay | local + remote |
+| 11 | better-godot-mcp with-exe (auto-detect PATH) | none | local |
+
+**T2 interaction (5)** — driver fills, user clicks upstream gate:
+
+| # | Server | Auth | Test ở | User gate |
+|---|---|---|---|---|
+| 12 | better-notion-mcp delegated-oauth | **oauth** | remote | Click Notion consent |
+| 13 | better-email-mcp Outlook | relay + device-code | local + remote | Click Microsoft device-code |
+| 14 | better-telegram-mcp user mode | relay + OTP + 2FA | local + remote | Type OTP + 2FA password |
+| 15 | wet-mcp (sync mandatory) | relay + GDrive device-code | local + remote | Click GDrive device-code |
+| 16 | mnemo-mcp (sync mandatory) | relay + GDrive device-code | local + remote | Click GDrive device-code |
+
+### Anti-patterns mới (CẤM)
+
+- **Tách `local-bot` + `remote-bot` thành 2 configs** cho cùng pattern auth. Bot mode pattern giống nhau ở local + remote, multi-user là property → 1 config "test ở local + remote".
+- **Tách `wet-no-sync` + `wet-with-sync`** — sync mandatory cho wet/mnemo (`sync_enabled: bool = True`), KHÔNG có "no-sync" mode test.
+- **Gọi device-code / OTP / 2FA là "auth mode"** — chúng là post-paste user gates trong relay flow, không phải auth modes riêng.
+- **Đếm "delegated-oauth-app" pattern là 1 mode user-facing** — đó là mcp-core internal serving relay/oauth, không tách config.
+- **Test multi-user như 1 config riêng** — multi-user là deployment property của remote, test isolation 1 lần ở mcp-core fixture.
+
+### Skret namespace (per-server, best-practice)
+
+```
+/<server>-mcp/prod/MCP_DCR_SERVER_SECRET   # per-server JWT signing key
+/<server>-mcp/prod/<dynamic-creds>         # user-provided secrets
+```
+
+Per-server thay vì shared 1 secret cho 7 MCPs: JWT signing key độc lập (compromise isolation), independent rotation cadence.
+
+**Spec + plan canonical**: `.superpower/mcp-core/{specs,plans}/2026-04-25-e2e-framework-and-multi-user-migration.md`.
