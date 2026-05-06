@@ -25,7 +25,6 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | wet-mcp | #913 | [Epic] Phase 1 — web-core migration + search polish | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
 | wet-mcp | #849 | feat: upgrade to qwen3-embed v2.0.0 — tiny local models | upstream-blocked | Blocked on qwen3-embed#495 training | 2026-04-20 | 2026-07-20 |
 | wet-mcp | #1043 | chore: bump n24q02m-web-core to 1.3.11 | upstream-blocked | CD-issued tracker; PR #1022 closed due to test failures, Renovate will recreate non-major batch when web-core transitive issue resolves | 2026-05-06 | 2026-08-06 |
-| better-godot-mcp | #597 | Default is not stdio | user-education | Verified 2026-05-06: published v1.16.0 bundle correctly defaults to stdio (bin/cli.mjs:4110 `isHttp = ... === "http"`, falls through to stdio). Reporter likely has stale npx cache. Awaiting reporter response with `npx ... --version` to confirm | 2026-05-06 | 2026-06-06 |
 | mnemo-mcp | #474 | Phase 3 v2.0.0 — temporal KG + entity resolution | roadmap | Breaking release tracker | 2026-04-20 | 2026-07-20 |
 | mnemo-mcp | #473 | Phase 2 — LLM compression + S3 passport + E2E encryption | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
 | mnemo-mcp | #472 | Phase 1 — smart capture + retrieval polish + hygiene | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
