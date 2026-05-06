@@ -24,6 +24,8 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | wet-mcp | #914 | [Epic] Phase 2 — Context7-level docs search | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
 | wet-mcp | #913 | [Epic] Phase 1 — web-core migration + search polish | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
 | wet-mcp | #849 | feat: upgrade to qwen3-embed v2.0.0 — tiny local models | upstream-blocked | Blocked on qwen3-embed#495 training | 2026-04-20 | 2026-07-20 |
+| wet-mcp | #1043 | chore: bump n24q02m-web-core to 1.3.11 | upstream-blocked | CD-issued tracker; PR #1022 closed due to test failures, Renovate will recreate non-major batch when web-core transitive issue resolves | 2026-05-06 | 2026-08-06 |
+| better-godot-mcp | #597 | Default is not stdio | user-education | Verified 2026-05-06: published v1.16.0 bundle correctly defaults to stdio (bin/cli.mjs:4110 `isHttp = ... === "http"`, falls through to stdio). Reporter likely has stale npx cache. Awaiting reporter response with `npx ... --version` to confirm | 2026-05-06 | 2026-06-06 |
 | mnemo-mcp | #474 | Phase 3 v2.0.0 — temporal KG + entity resolution | roadmap | Breaking release tracker | 2026-04-20 | 2026-07-20 |
 | mnemo-mcp | #473 | Phase 2 — LLM compression + S3 passport + E2E encryption | roadmap | Minor release tracker | 2026-04-20 | 2026-07-20 |
 | mnemo-mcp | #472 | Phase 1 — smart capture + retrieval polish + hygiene | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
@@ -33,10 +35,6 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | better-code-review-graph | #324 | [Epic] Phase 1 v1.6.x — LLM summaries + graph export | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
 | better-code-review-graph | #266 | feat: upgrade to qwen3-embed v2.0.0 | upstream-blocked | Blocked on qwen3-embed#495 | 2026-04-20 | 2026-07-20 |
 | qwen3-embed | #495 | feat: v2.0.0 — tiny-embed + tiny-reranker models | long-running | Training run (distillation) | 2026-04-20 | 2026-07-20 |
-| mcp-core | #58 | chore(deps): update @types/node to v25 | long-running | HOLD — major devDep, defer post-E2E | 2026-04-20 | 2026-07-20 |
-| mcp-core | #62 | chore(deps): update typescript to v6 | long-running | HOLD — major devDep, defer post-E2E downstream | 2026-04-20 | 2026-07-20 |
-| better-godot-mcp | #525 | Bolt: scene-parser regex→string | long-running | HOLD — needs benchmark evidence + edge case verify | 2026-04-20 | 2026-07-20 |
-| mcp-core | #57 | chore(deps): update non-major dependencies | long-running | Pending Renovate rebase after conflict; will auto-update | 2026-04-20 | 2026-04-27 |
 | better-code-review-graph | #315 | Auto-truncate impact output to avoid token-limit overflow | long-running | External FR from @hoiung, covered by epic #324 Closes #315 | 2026-04-20 | 2026-07-20 |
 | better-code-review-graph | #316 | Auto-resolve single-candidate File+Function ambiguity | long-running | External FR from @hoiung, covered by epic #324 Closes #316 | 2026-04-20 | 2026-07-20 |
 | better-code-review-graph | #317 | Warn at search when embeddings_count=0 AND query not literal | long-running | External FR from @hoiung, covered by epic #324 Closes #317 | 2026-04-20 | 2026-07-20 |
@@ -46,10 +44,6 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | better-code-review-graph | #329 | `graph update` reviewer summary (functions_impacted) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #330 | `search`/`query` include embeddings_count + keyword-only header | long-running | External FR from @hoiung, covered by epic #324 (pairs with #317) | 2026-04-21 | 2026-07-21 |
 | better-code-review-graph | #331 | `callers_of` auto-flag dynamic-dispatch (to_thread/partial/decorators) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
-| better-code-review-graph | #339 | `callers_of`/`callees_of` `not_found` ambiguous (not indexed vs zero callers) | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
-| better-code-review-graph | #340 | `review`/`tests_for` untested-function over-reports on cross-lang + integration repos | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
-| better-code-review-graph | #341 | Promote `callers_of`/`impact`/`search` to first-class `action=` values | long-running | External FR from @hoiung, covered by epic #324 Phase 1 | 2026-04-21 | 2026-07-21 |
-| better-code-review-graph | #365 | Orphan daemon + lock-format-version-skew causes 401 on stdio-proxy reconnect | long-running | Affects upgrade path when an old daemon is still running; workaround: kill stale daemon process / wait for next stdio reconnect. Auto-recover fix in mcp-core stdio-proxy queued for next minor cycle (separate session, not blocking this release). | 2026-04-27 | 2026-07-27 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
