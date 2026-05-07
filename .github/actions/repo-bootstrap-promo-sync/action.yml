@@ -1,0 +1,44 @@
+name: 'repo-bootstrap-promo-sync'
+description: 'Sync cross-promo block to all Productions public repos'
+author: 'n24q02m'
+
+inputs:
+  dry-run:
+    description: 'Print diffs without opening PRs (true | false)'
+    required: false
+    default: 'false'
+  repos:
+    description: 'Comma-separated subset of repo names (default: all 14 Productions public)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout n24q02m profile repo (for scripts)
+      uses: actions/checkout@v4
+      with:
+        repository: n24q02m/n24q02m
+        ref: main
+        path: .repo-bootstrap-tools
+
+    - name: Setup Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Run promo sync
+      shell: bash
+      run: |
+        DRY_RUN_ARG=""
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          DRY_RUN_ARG="--dry-run"
+        fi
+        REPOS_ARG=""
+        if [ -n "${{ inputs.repos }}" ]; then
+          REPOS_ARG="--repos=${{ inputs.repos }}"
+        fi
+
+        python .repo-bootstrap-tools/scripts/repo-bootstrap/promo_sync.py \
+          $DRY_RUN_ARG \
+          $REPOS_ARG

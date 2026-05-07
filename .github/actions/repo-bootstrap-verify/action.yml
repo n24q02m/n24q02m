@@ -1,0 +1,100 @@
+name: 'repo-bootstrap-verify'
+description: 'CI gate: re-run audit + check pre-commit/CD wiring for n24q02m repo standards'
+author: 'n24q02m'
+
+inputs:
+  repo:
+    description: 'owner/name (auto-detect from caller workspace git remote if "auto")'
+    required: false
+    default: 'auto'
+  format:
+    description: 'Output format: json | table | markdown'
+    required: false
+    default: 'table'
+  tier:
+    description: 'Force tier (1 or 2). Auto-detect from Stars list otherwise.'
+    required: false
+    default: ''
+  fail-on-fail:
+    description: 'Exit non-zero if any check fails (true | false)'
+    required: false
+    default: 'true'
+  skip-audit:
+    description: 'Skip audit checks; only run wiring checks (faster)'
+    required: false
+    default: 'false'
+
+outputs:
+  report:
+    value: ${{ steps.verify.outputs.report }}
+    description: 'Verify report content'
+  passed-count:
+    value: ${{ steps.verify.outputs.passed }}
+    description: 'Number of PASS checks'
+  failed-count:
+    value: ${{ steps.verify.outputs.failed }}
+    description: 'Number of FAIL checks'
+  skipped-count:
+    value: ${{ steps.verify.outputs.skipped }}
+    description: 'Number of SKIP checks'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout n24q02m profile repo (for scripts)
+      uses: actions/checkout@v4
+      with:
+        repository: n24q02m/n24q02m
+        ref: main
+        path: .repo-bootstrap-tools
+
+    - name: Setup Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Run verify
+      id: verify
+      shell: bash
+      run: |
+        TIER_ARG=""
+        if [ -n "${{ inputs.tier }}" ]; then
+          TIER_ARG="--tier=${{ inputs.tier }}"
+        fi
+        SKIP_AUDIT_ARG=""
+        if [ "${{ inputs.skip-audit }}" = "true" ]; then
+          SKIP_AUDIT_ARG="--skip-audit"
+        fi
+
+        python .repo-bootstrap-tools/scripts/repo-bootstrap/verify.py \
+          --repo='${{ inputs.repo }}' \
+          --format='${{ inputs.format }}' \
+          --repo-root='${{ github.workspace }}' \
+          $TIER_ARG \
+          $SKIP_AUDIT_ARG \
+          --output-file="$GITHUB_WORKSPACE/.verify-output.txt" \
+          --counts-file="$GITHUB_WORKSPACE/.verify-counts.json" || true
+
+        {
+          echo "report<<EOF_REPORT"
+          cat "$GITHUB_WORKSPACE/.verify-output.txt"
+          echo "EOF_REPORT"
+        } >> "$GITHUB_OUTPUT"
+
+        if [ -f "$GITHUB_WORKSPACE/.verify-counts.json" ]; then
+          PASSED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['passed'])" "$GITHUB_WORKSPACE/.verify-counts.json")
+          FAILED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['failed'])" "$GITHUB_WORKSPACE/.verify-counts.json")
+          SKIPPED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['skipped'])" "$GITHUB_WORKSPACE/.verify-counts.json")
+        else
+          PASSED=0; FAILED=0; SKIPPED=0
+        fi
+        echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
+        echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
+        echo "skipped=$SKIPPED" >> "$GITHUB_OUTPUT"
+
+    - name: Fail if any check failed
+      if: ${{ inputs.fail-on-fail == 'true' && steps.verify.outputs.failed != '0' }}
+      shell: bash
+      run: |
+        echo "::error title=repo-bootstrap-verify::${{ steps.verify.outputs.failed }} check(s) failed"
+        exit 1

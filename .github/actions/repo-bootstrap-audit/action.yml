@@ -1,0 +1,91 @@
+name: 'repo-bootstrap-audit'
+description: 'Run 6-medium GitHub-detail audit for n24q02m repo standards'
+author: 'n24q02m'
+
+inputs:
+  repo:
+    description: 'owner/name of repo to audit (default: caller repo)'
+    required: false
+    default: ${{ github.repository }}
+  format:
+    description: 'Output format: json | table | markdown'
+    required: false
+    default: 'table'
+  tier:
+    description: 'Force tier (1 or 2). Auto-detect from Stars list otherwise.'
+    required: false
+    default: ''
+  fail-on-fail:
+    description: 'Exit non-zero if any check fails (true | false)'
+    required: false
+    default: 'true'
+
+outputs:
+  report:
+    description: 'Audit report content'
+    value: ${{ steps.audit.outputs.report }}
+  passed-count:
+    description: 'Number of PASS checks'
+    value: ${{ steps.audit.outputs.passed }}
+  failed-count:
+    description: 'Number of FAIL checks'
+    value: ${{ steps.audit.outputs.failed }}
+  skipped-count:
+    description: 'Number of SKIP checks'
+    value: ${{ steps.audit.outputs.skipped }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout n24q02m profile repo (for scripts)
+      uses: actions/checkout@v4
+      with:
+        repository: n24q02m/n24q02m
+        ref: main
+        path: .repo-bootstrap-tools
+
+    - name: Setup Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Run audit
+      id: audit
+      shell: bash
+      run: |
+        cd .repo-bootstrap-tools
+        TIER_ARG=""
+        if [ -n "${{ inputs.tier }}" ]; then
+          TIER_ARG="--tier=${{ inputs.tier }}"
+        fi
+        python scripts/repo-bootstrap/audit.py \
+          --repo='${{ inputs.repo }}' \
+          --format='${{ inputs.format }}' \
+          $TIER_ARG \
+          --output-file="$GITHUB_WORKSPACE/.audit-output.txt" \
+          --counts-file="$GITHUB_WORKSPACE/.audit-counts.json" || true
+
+        # Set outputs
+        {
+          echo "report<<EOF_REPORT"
+          cat "$GITHUB_WORKSPACE/.audit-output.txt"
+          echo "EOF_REPORT"
+        } >> "$GITHUB_OUTPUT"
+
+        if [ -f "$GITHUB_WORKSPACE/.audit-counts.json" ]; then
+          PASSED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['passed'])" "$GITHUB_WORKSPACE/.audit-counts.json")
+          FAILED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['failed'])" "$GITHUB_WORKSPACE/.audit-counts.json")
+          SKIPPED=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['skipped'])" "$GITHUB_WORKSPACE/.audit-counts.json")
+        else
+          PASSED=0; FAILED=0; SKIPPED=0
+        fi
+        echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
+        echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
+        echo "skipped=$SKIPPED" >> "$GITHUB_OUTPUT"
+
+    - name: Fail if any check failed
+      if: ${{ inputs.fail-on-fail == 'true' && steps.audit.outputs.failed != '0' }}
+      shell: bash
+      run: |
+        echo "::error title=repo-bootstrap-audit::${{ steps.audit.outputs.failed }} check(s) failed"
+        exit 1
