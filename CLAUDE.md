@@ -114,11 +114,11 @@ applyTo: '**'
 </important>
 
 <important if="publishing package to PyPI/npm/cargo/MCP Registry/Scoop bucket/Homebrew tap/Nix flake/Aqua/mise registry, OR adding Docker Hub publish step">
-- **README MUST sync into registry**: Per registry table in `infra-devops/references/repo-structure.md` "Package Registry README Sync" section. Failure mode: PyPI/npm/Docker Hub page shows "No description" or stale tagline. Pre-commit lint (`scripts/repo-bootstrap/verify-readme-sync.sh`) catches missing fields; CD gate (`verify-readme-sync` job) catches release-time drift. KHÔNG publish package without these gates wired up. Memory `feedback_package_readme_sync.md`.
+- **README MUST sync into registry**: Per registry table in `infra-devops/references/repo-structure.md` "Package Registry README Sync" section. Failure mode: PyPI/npm/Docker Hub page shows "No description" or stale tagline. Pre-commit lint (`scripts/repo-bootstrap/verify_readme_sync.py`) catches missing fields; CD gate (`verify-readme-sync` job) catches release-time drift. KHÔNG publish package without these gates wired up. Memory `feedback_package_readme_sync.md`.
 </important>
 
 <important if="creating new repo, scaffolding standard files, OR auditing existing repo for compliance with n24q02m repo standards">
-- **REPO INIT/AUDIT/RETROFIT via bootstrap scripts**: Use `n24q02m/n24q02m/scripts/repo-bootstrap/{init,audit,apply,verify,promo-sync}.sh`. 6-medium GitHub-detail audit scope (About + Code security + Settings + Webhooks + Templates + Discussions + Community Standards + Root files + README). CI gate via composite action `n24q02m/n24q02m/.github/actions/repo-bootstrap-verify@main`. Idempotent: re-running `apply.sh` is noop on aligned files. KHÔNG manual-copy template files; KHÔNG skip audit on init. Memory `feedback_repo_init_bootstrap.md`.
+- **REPO INIT/AUDIT/RETROFIT via bootstrap scripts**: Use `n24q02m/n24q02m/scripts/repo-bootstrap/{init,audit,apply,verify,promo_sync}.py` (Python 3.13+, pure stdlib). G1 ships read-side (`audit`/`verify`/`verify_readme_sync`/`promo_sync`); G2 deferred for write-side (`init`/`apply`). 6-medium GitHub-detail audit scope (About + Code security + Settings + Webhooks + Templates + Discussions + Community Standards + Root files + README). CI gate via composite action `n24q02m/n24q02m/.github/actions/repo-bootstrap-verify@main`. Idempotent: re-running `apply.py` is noop on aligned files. KHÔNG manual-copy template files; KHÔNG skip audit on init. Memory `feedback_repo_init_bootstrap.md`.
 </important>
 
 <important if="task có ≥3 aspect độc lập (research đa chiều, competing hypotheses, cross-layer coordination, parallel modules) VÀ không phải quick single-file fix">
