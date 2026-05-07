@@ -113,6 +113,14 @@ applyTo: '**'
 - **RELEASE EARLY, ITERATE PUBLICLY**: Vertical wedge (1 use case end-to-end working) + retention loop (email/push + re-engagement) + compliance basics (ToS + DMCA + age-gate nếu NSFW) = **ship điều kiện đủ**. KHÔNG cần feature parity với ChatGPT/Claude/Perplexity ở launch. Pre-release "polish forever" = anti-pattern → mất thị trường. Agent đề xuất "delay launch để add X" → PHẢI challenge: "X có phải launch blocker cho vertical wedge không? Có phải compliance blocker không?". Nếu không → defer post-launch. Spec phải explicit launch MVP vs v1.1/v1.2/v1.5 defer boundary, KHÔNG gộp "Phase 1" blurry. User (anh) hay bị delay vì dev full trước release — challenge mindset này trong mọi scope discussion. Xem memory `feedback_release_early_iterate_public.md`.
 </important>
 
+<important if="publishing package to PyPI/npm/cargo/MCP Registry/Scoop bucket/Homebrew tap/Nix flake/Aqua/mise registry, OR adding Docker Hub publish step">
+- **README MUST sync into registry**: Per registry table in `infra-devops/references/repo-structure.md` "Package Registry README Sync" section. Failure mode: PyPI/npm/Docker Hub page shows "No description" or stale tagline. Pre-commit lint (`scripts/repo-bootstrap/verify-readme-sync.sh`) catches missing fields; CD gate (`verify-readme-sync` job) catches release-time drift. KHÔNG publish package without these gates wired up. Memory `feedback_package_readme_sync.md`.
+</important>
+
+<important if="creating new repo, scaffolding standard files, OR auditing existing repo for compliance with n24q02m repo standards">
+- **REPO INIT/AUDIT/RETROFIT via bootstrap scripts**: Use `n24q02m/n24q02m/scripts/repo-bootstrap/{init,audit,apply,verify,promo-sync}.sh`. 6-medium GitHub-detail audit scope (About + Code security + Settings + Webhooks + Templates + Discussions + Community Standards + Root files + README). CI gate via composite action `n24q02m/n24q02m/.github/actions/repo-bootstrap-verify@main`. Idempotent: re-running `apply.sh` is noop on aligned files. KHÔNG manual-copy template files; KHÔNG skip audit on init. Memory `feedback_repo_init_bootstrap.md`.
+</important>
+
 <important if="task có ≥3 aspect độc lập (research đa chiều, competing hypotheses, cross-layer coordination, parallel modules) VÀ không phải quick single-file fix">
 - **AGENT TEAM CHỦ ĐỘNG**: Đề xuất tạo team 3-5 teammate (sweet spot, ≥6 diminishing) thay vì chỉ subagent. 4 patterns + Windows constraints + token cost: `~/.claude/skills/superpower-private-repo/references/agent-team-patterns.md`. Memory `feedback_agent_teams_proactive.md`.
 </important>

@@ -44,6 +44,7 @@ CLI / marketplace / tool (3): `skret`, `claude-plugins`, `jules-task-archiver`
 | Hero logo + title | Yes | Title only |
 | Tagline one-liner | Yes | Yes |
 | 2-row badges | Yes | Yes |
+| Cross-promo `<details>` block (auto-generated, 14 Productions public) | Yes | — |
 | Nav links (Docs · Install · Quick · Community) | Yes | — |
 | Example code | Yes | — |
 | Demo gif (VHS) | Yes | — |
@@ -89,6 +90,19 @@ MCP server repos must also include:
 3. **Config example** in Quick Start
 4. **Tool surface** — list of N tools exposed (plus infra tools `help` + `config`) per `tool-layout.md`
 5. **Relay screenshot** if the server supports relay mode
+
+## Common docs site (`mcp.n24q02m.com`)
+
+8 MCP server READMEs + mcp-core README MUST link to common docs site at `mcp.n24q02m.com/servers/<name>/`. Per-repo `docs/setup-manual.md` and `docs/setup-with-agent.md` files migrate to `claude-plugins/plugins/<name>/{setup,setup-with-agent}.md` (single source of truth, no nested `docs/`).
+
+Agent install snippet (mandatory in every server README):
+
+```
+> Install MCP server `<name>` following the steps at
+> https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/<name>/setup-with-agent.md
+```
+
+See `common-docs-site.md` for full migration rules + agent-feed pattern + mcp-core "Foundation" framing.
 
 ## Roll-out flow
 
