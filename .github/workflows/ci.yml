@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Verify dependency-map.yml is valid YAML
-        run: python3 -c "import yaml; yaml.safe_load(open('dependency-map.yml'))"
+        run: python3 -c "import yaml; yaml.safe_load(open('infra/dependency-map.yml'))"
 
       - name: Verify README is non-empty
         run: |

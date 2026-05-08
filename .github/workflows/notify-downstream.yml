@@ -40,7 +40,7 @@ jobs:
           # Parse dependency map with python (available on ubuntu-latest)
           read -r PACKAGE DOWNSTREAM <<< "$(python3 -c "
           import yaml, json, sys
-          with open('dependency-map.yml') as f:
+          with open('infra/dependency-map.yml') as f:
               data = yaml.safe_load(f)
           core = data['cores'].get('${CORE}')
           if not core:
