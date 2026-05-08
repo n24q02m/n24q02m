@@ -142,14 +142,14 @@ def splice_block(readme_text: str, new_block: str) -> str:
     lines = readme_text.splitlines()
     last_badge_idx = -1
     for i, ln in enumerate(lines):
-        if "img.shields.io" in ln or "github.com/.../actions/workflows" in ln:
+        if "https://img.shields.io/" in ln or "https://github.com/n24q02m/" in ln and "/actions/workflows" in ln:
             last_badge_idx = i
 
     if last_badge_idx >= 0:
         # Find the closing of the badge block (next blank line or non-badge)
         insert_at = last_badge_idx + 1
         while insert_at < len(lines) and (
-            "img.shields.io" in lines[insert_at]
+            "https://img.shields.io/" in lines[insert_at]
             or lines[insert_at].strip().startswith(("</p>", "<p"))
         ):
             insert_at += 1

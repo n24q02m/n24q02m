@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 # Allow running directly OR as module
 if __package__ is None:
@@ -170,7 +171,10 @@ def check_homepage(ctx: AuditContext) -> CheckResult:
                 "About panel", "homepage_set", "FAIL",
                 "Tier 1 repo missing homepage URL",
             )
-        if not (".n24q02m.com" in url or url.startswith("https://github.com/n24q02m/")):
+        host = (urlparse(url).hostname or "").lower()
+        is_n24q02m = host == "n24q02m.com" or host.endswith(".n24q02m.com")
+        is_github = host == "github.com" and urlparse(url).path.startswith("/n24q02m/")
+        if not (is_n24q02m or is_github):
             return CheckResult(
                 "About panel", "homepage_set", "FAIL",
                 f"Homepage should point to n24q02m.com or github (got {url})",
@@ -462,7 +466,7 @@ def check_codecov(ctx: AuditContext) -> CheckResult:
     if _gh_file_exists(ctx, "codecov.yml") or _gh_file_exists(ctx, ".codecov.yml"):
         return CheckResult("Webhooks", "codecov_app_installed", "PASS", "codecov config present")
     readme = _gh_file_content(ctx, "README.md") or ""
-    if "codecov.io" in readme:
+    if "https://codecov.io/" in readme or "https://app.codecov.io/" in readme:
         return CheckResult("Webhooks", "codecov_app_installed", "PASS", "Codecov badge in README")
     return CheckResult(
         "Webhooks", "codecov_app_installed", "FAIL",
