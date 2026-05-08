@@ -148,11 +148,39 @@ resp, _ := client.GetParametersByPath(ctx, &ssm.GetParametersByPathInput{
 | Loại credential | Có ở `/<app>/prod`? | Nơi đúng |
 |---|---|---|
 | DB DSN, OAuth client secret app exchange, API key app gọi upstream, R2 keys app upload | ✅ | `/<app>/prod` |
-| DNS zone:edit (CF/Route53/etc) | ❌ | User dashboard (one-off) hoặc admin namespace `/admin-cf-zones/prod/CLOUDFLARE_ZONE_EDIT_<ZONE>` (recurring) |
-| CF account-wide token | ❌ | Admin only — never store account-wide token; mint scoped tokens per-zone/per-project |
+| DNS zone:edit (CF/Route53/etc) | ❌ | User dashboard (one-off) hoặc full-access dev token `/n24q02m/dev/CF_DEV_TOKEN` (recurring agent ops) |
+| CF account-wide token | ❌ | **Stored at `/n24q02m/dev/CF_DEV_TOKEN`** (label "Edit almost everything resource" — Pages + Zone + DNS + Workers + R2 cross all n24q02m zones). NOT in app namespace, NOT in tap repos. Use for dashboard-replacement agent ops. See `feedback_cf_global_token.md`. |
 | GitHub org-admin PAT | ❌ | Admin namespace, IAM gated |
 | Cloud root keys (AWS root, GCP super-admin) | ❌ | Never stored, MFA-protected only |
 | Domain registrar API, billing API | ❌ | Admin namespace |
+
+### CF Token 3-Category Framework (added 2026-05-08)
+
+| Category | Skret namespace | Scope | Use case |
+|---|---|---|---|
+| **Project token** | `/<App>/<env>/<APP>_CF_PAGES_API_TOKEN` | Single project Pages | CD deploy của 1 project (Aiora/KP/QS/skret/mcp) |
+| **Infra token** | `/oci-vm-{infra,prod}/{prd,prod}/CF_R2_*` + `CF_TUNNEL_TOKEN` | R2 + Tunnel + Account-Read | VM ops, R2 storage, CF Tunnel exposure |
+| **Full-access dev token** | `/n24q02m/dev/CF_DEV_TOKEN` | Pages + Zone + DNS + Workers + R2 cross all zones | Dashboard-replacement: add CNAME, create Pages project + custom domain, list zones, account-wide audit |
+
+**Retrieval**:
+
+```bash
+MSYS_NO_PATHCONV=1 AWS_REGION=ap-southeast-1 \
+  aws ssm get-parameter \
+    --name /n24q02m/dev/CF_DEV_TOKEN \
+    --with-decryption \
+    --query 'Parameter.Value' \
+    --output text
+```
+
+**Verify validity** (per `feedback_cf_token_verify_pitfall.md`): hit real endpoint, NEVER `/user/tokens/verify`:
+
+```bash
+curl -sS "https://api.cloudflare.com/client/v4/zones?name=n24q02m.com" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq .success
+```
+
+**Rule**: NEVER ask user paste CF token khi token đã trong skret. Phân loại 3 categories trước khi xử lý task. Nếu task cross-zone hoặc cross-project hoặc dashboard-replacement → full-access dev token. Nếu chỉ Pages CD 1 project → project token. Nếu R2/Tunnel → infra token.
 
 **Why**: app namespace IAM grants ANY runtime container the right to read those keys. Runtime exploit (SSRF, RCE, stolen env dump) → DNS hijack / org-admin escalation if zone:edit / org PAT live there. Strict least-privilege boundary protects blast radius.
 
