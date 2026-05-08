@@ -30,6 +30,10 @@ Each entry must have: repo, issue #, title, type, reason, date added, review-by 
 | mnemo-mcp | #472 | Phase 1 — smart capture + retrieval polish + hygiene | roadmap | Patch release tracker | 2026-04-20 | 2026-07-20 |
 | mnemo-mcp | #433 | feat: upgrade to qwen3-embed v2.0.0 | upstream-blocked | Blocked on qwen3-embed#495 | 2026-04-20 | 2026-07-20 |
 | qwen3-embed | #495 | feat: v2.0.0 — tiny-embed + tiny-reranker models | long-running | Training run (distillation) | 2026-04-20 | 2026-07-20 |
+| better-code-review-graph | #324 | [Epic] Phase 1 v1.6.x — LLM summaries + graph export | roadmap | Plan: 2026-05-08-phase-1-implementation-plan.md (private). Graph export shipped in aaa1f08; LLM summaries pending. | 2026-05-08 | 2026-08-08 |
+| better-code-review-graph | #325 | [Epic] Phase 2 v1.7.x — Cross-repo federation | roadmap | Plan: 2026-05-08-phase-2-implementation-plan.md (private). Blocked on Phase 1 close. | 2026-05-08 | 2026-08-08 |
+| better-code-review-graph | #326 | [Epic] Phase 3 v2.0.0 — Security-aware nodes + Temporal tracking (BREAKING) | roadmap | Plan: 2026-05-08-phase-3-implementation-plan.md (private). Blocked on Phase 1+2 close. | 2026-05-08 | 2026-08-08 |
+| better-code-review-graph | #266 | feat: upgrade to qwen3-embed v2.0.0 | upstream-blocked | Blocked on qwen3-embed#495 | 2026-04-20 | 2026-07-20 |
 
 ### Allowed types
 - `long-running` — work spans multiple sessions, actively tracked
