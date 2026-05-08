@@ -27,7 +27,15 @@ function needsBlockWrapper(code: string): boolean {
   return false;
 }
 
-/** Wrap code for page.evaluate(), using async IIFE with block or expression body as needed. */
+/**
+ * Wrap code for page.evaluate(), using async IIFE with block or expression body as needed.
+ *
+ * The browse tool's purpose is to evaluate caller-supplied JS in a browser page —
+ * the same operation an AI agent debugging via DevTools would perform interactively.
+ * The "code" parameter is by-design developer/agent input, not external user data,
+ * so codeql/js/bad-code-sanitization is a structural false positive here.
+ */
+// codeql[js/bad-code-sanitization]
 function wrapForEvaluate(code: string): string {
   if (!hasAwait(code)) return code;
   const trimmed = code.trim();
