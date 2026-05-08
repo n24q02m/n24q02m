@@ -59,16 +59,19 @@ echo "=== Sync ~/.claude/ → n24q02m repo ==="
 echo "Mode: ${DRY_RUN:-LIVE}"
 echo ""
 
-echo "Step 1: Sync CLAUDE.md + AGENTS.md"
-run "cp $CL/CLAUDE.md $N24/CLAUDE.md"
-run "cp $CL/AGENTS.md $N24/AGENTS.md"
+echo "Step 0: Ensure claude/ subdir structure exists (Pattern A reorg)"
+mkdir -p "$N24/claude/skills" "$N24/claude/claude-code/scripts" 2>/dev/null || true
 echo ""
 
-echo "Step 2: Sync 10 personal skills"
-mkdir -p "$N24/skills" 2>/dev/null || true
+echo "Step 1: Sync CLAUDE.md + AGENTS.md to claude/"
+run "cp $CL/CLAUDE.md $N24/claude/CLAUDE.md"
+run "cp $CL/AGENTS.md $N24/claude/AGENTS.md"
+echo ""
+
+echo "Step 2: Sync 10 personal skills to claude/skills/"
 for skill in "${PERSONAL_SKILLS[@]}"; do
   src="$CL/skills/$skill"
-  dst="$N24/skills/$skill"
+  dst="$N24/claude/skills/$skill"
   if [[ -d "$src" ]]; then
     run "rm -rf $dst"
     run "cp -r $src $dst"
@@ -76,12 +79,11 @@ for skill in "${PERSONAL_SKILLS[@]}"; do
 done
 echo ""
 
-echo "Step 3: Sync distillation tools to claude-code/scripts/"
-mkdir -p "$N24/claude-code/scripts" 2>/dev/null || true
+echo "Step 3: Sync distillation tools to claude/claude-code/scripts/"
 for script in "${DISTILLATION_SCRIPTS[@]}"; do
   src="$CL/scripts/$script"
   if [[ -f "$src" ]]; then
-    run "cp $src $N24/claude-code/scripts/$script"
+    run "cp $src $N24/claude/claude-code/scripts/$script"
   fi
 done
 echo ""

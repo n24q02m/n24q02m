@@ -307,38 +307,77 @@ def _summarize(results: list[CheckResult]) -> dict[str, int]:
 
 
 def extract_readme_tagline(readme_text: str) -> str | None:
-    """Best-effort extract of tagline (first substantive prose line) from README.
+    """Best-effort extract of tagline (first substantive bold/prose line) from README.
 
-    Strategy:
-    - Strip HTML comments
-    - Strip <h1>...</h1> blocks (multi-line) and markdown `#` headers
-    - For each remaining line: strip HTML tags + markdown emphasis/badges/links/inline code
-    - First non-empty line with ≥10 chars wins
+    Strategy (priority order):
+    1. First **bold** OR <strong> line (canonical brand tagline in skret-style hero)
+    2. First substantive prose line ≥ 10 chars (after stripping h1, badges, metadata)
 
-    Returns None if cannot parse.
+    Skips:
+    - <h1>...</h1> blocks + markdown `#` headers
+    - HTML comments
+    - Image / linked-badge lines
+    - MCP Registry metadata lines (e.g. `mcp-name: io.github.n24q02m/foo`)
+    - Code fence lines
     """
     # Remove HTML comments
     text = re.sub(r"<!--.*?-->", "", readme_text, flags=re.DOTALL)
-    # Remove <h1>...</h1> blocks (any attributes, multi-line)
+    # Remove <h1>...</h1> blocks
     text = re.sub(r"<h1\b[^>]*>.*?</h1>", "", text, flags=re.DOTALL | re.IGNORECASE)
     # Remove markdown `# ...` h1 lines
     text = re.sub(r"^#\s+.*$", "", text, flags=re.MULTILINE)
 
-    for raw_line in text.splitlines():
-        # Image badges: ![alt](url)
-        cleaned = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", raw_line)
-        # Linked badges: [![alt](badge)](href)
+    METADATA_PREFIXES = (
+        "mcp-name:", "version:", "license:", "homepage:", "author:",
+        "name:", "description:", "type:",
+    )
+
+    def clean_line(raw: str) -> str:
+        cleaned = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", raw)
         cleaned = re.sub(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)", " ", cleaned)
-        # Markdown links → keep visible text only
         cleaned = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", cleaned)
-        # Strip remaining HTML tags
         cleaned = re.sub(r"<[^>]+>", " ", cleaned)
-        # Markdown emphasis (**bold**, *italic*)
         cleaned = re.sub(r"\*+([^*]+?)\*+", r"\1", cleaned)
-        # Inline code `x`
         cleaned = re.sub(r"`([^`]+)`", r"\1", cleaned)
-        # Collapse whitespace
-        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        return re.sub(r"\s+", " ", cleaned).strip()
+
+    def is_metadata(line: str) -> bool:
+        low = line.strip().lower()
+        return any(low.startswith(p) for p in METADATA_PREFIXES)
+
+    def is_list_or_quote(line: str) -> bool:
+        stripped = line.strip()
+        return stripped.startswith(("- ", "* ", "+ ", "> ", ">"))
+
+    # Pass 1: first bold (<strong> or **...**) line — canonical brand tagline
+    bold_re = re.compile(r"(?:<strong>[^<]+?</strong>|\*\*[^*]+?\*\*)")
+
+    in_code_fence = False
+    for raw_line in text.splitlines():
+        if raw_line.strip().startswith("```"):
+            in_code_fence = not in_code_fence
+            continue
+        if in_code_fence:
+            continue
+        if is_metadata(raw_line) or is_list_or_quote(raw_line):
+            continue
+        if not bold_re.search(raw_line):
+            continue
+        cleaned = clean_line(raw_line)
+        if cleaned and len(cleaned) >= 10:
+            return cleaned
+
+    # Pass 2: first substantive non-metadata non-list prose line
+    in_code_fence = False
+    for raw_line in text.splitlines():
+        if raw_line.strip().startswith("```"):
+            in_code_fence = not in_code_fence
+            continue
+        if in_code_fence:
+            continue
+        if is_metadata(raw_line) or is_list_or_quote(raw_line):
+            continue
+        cleaned = clean_line(raw_line)
         if cleaned and len(cleaned) >= 10:
             return cleaned
     return None
