@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "dev/**"]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-title:
+    name: PR Title Lint
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            fix
+            feat
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject must not start with an uppercase character.
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+  test:
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Run tests with coverage
+        shell: bash
+        run: |
+          go test -race -coverprofile=coverage.out -covermode=atomic ./internal/...
+          go test -race -coverprofile=coverage-pkg.out -covermode=atomic ./pkg/{{repo_name}}/...
+      - name: Check internal coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          echo "Internal coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "Internal coverage ${COVERAGE}% is below 90% threshold"
+            exit 1
+          fi
+      - name: Check pkg/{{repo_name}} coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          COVERAGE=$(go tool cover -func=coverage-pkg.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          echo "pkg/{{repo_name}} coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 95" | bc -l) )); then
+            echo "pkg/{{repo_name}} coverage ${COVERAGE}% is below 95% threshold"
+            exit 1
+          fi
+      - name: Run E2E tests
+        shell: bash
+        run: go test -count=1 ./tests/e2e/...
+      - uses: codecov/codecov-action@v6
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          file: ./coverage.out
+          fail_ci_if_error: false
+      - uses: actions/upload-artifact@v7
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: coverage
+          path: coverage.out
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          BINARY={{repo_name}}
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY={{repo_name}}.exe
+          fi
+          go build -ldflags="-s -w -X github.com/n24q02m/{{repo_name}}/internal/version.Version=ci-${{ github.sha }}" -o $BINARY ./cmd/{{repo_name}}
+
+  # CodeQL handled by GitHub default setup (repo Settings > Security > Code
+  # Scanning). Running an advanced workflow here would clash with default
+  # setup ("CodeQL analyses from advanced configurations cannot be processed
+  # when the default setup is enabled"). If we later need custom query
+  # packs, flip default setup off and restore the advanced workflow.
+
+  installer-lint:
+    name: Installer scripts lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: ShellCheck install.sh
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: "."
+          additional_files: "install.sh"
+          severity: warning
+      - name: PSScriptAnalyzer install.ps1
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          Invoke-ScriptAnalyzer -Path install.ps1 -Severity Warning -EnableExit
+
+  installer-smoke:
+    name: Installer smoke test (${{ matrix.os }})
+    # Gate behind workflow_dispatch for PRs: the scripts hit the live GitHub API
+    # for the latest release tag, and we do not want a PR's CI to block on external
+    # reachability or hit rate limits on every push. Run on demand or on tag.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install via install.sh (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          ./install.sh --user --quiet
+          "$HOME/.local/bin/{{repo_name}}" --version
+      - name: Install via install.ps1 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\install.ps1 -Quiet
+          & "$env:LOCALAPPDATA\Programs\{{repo_name}}\{{repo_name}}.exe" --version
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: always

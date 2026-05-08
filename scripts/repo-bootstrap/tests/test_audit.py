@@ -141,9 +141,10 @@ def test_check_squash_only_with_merge_fails():
 
 def test_check_secret_scanning_enabled():
     ctx = make_ctx()
+    # check_secret_scanning calls _get_security_and_analysis which calls ctx.gh.api(f"repos/{repo}")
     with patch.object(
-        GhClient, "repo_view",
-        return_value={"securityAndAnalysis": {"secret_scanning": {"status": "enabled"}}},
+        GhClient, "api",
+        return_value={"security_and_analysis": {"secret_scanning": {"status": "enabled"}}},
     ):
         result = audit.check_secret_scanning(ctx)
     assert result.status == "PASS"
@@ -152,8 +153,8 @@ def test_check_secret_scanning_enabled():
 def test_check_secret_scanning_disabled():
     ctx = make_ctx()
     with patch.object(
-        GhClient, "repo_view",
-        return_value={"securityAndAnalysis": {"secret_scanning": {"status": "disabled"}}},
+        GhClient, "api",
+        return_value={"security_and_analysis": {"secret_scanning": {"status": "disabled"}}},
     ):
         result = audit.check_secret_scanning(ctx)
     assert result.status == "FAIL"

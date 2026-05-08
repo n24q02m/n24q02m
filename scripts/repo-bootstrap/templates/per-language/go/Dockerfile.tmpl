@@ -1,0 +1,4 @@
+FROM alpine:3.23
+RUN apk add --no-cache ca-certificates
+COPY {{repo_name}} /usr/local/bin/{{repo_name}}
+ENTRYPOINT ["{{repo_name}}"]
