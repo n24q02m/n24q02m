@@ -14,17 +14,23 @@ Marketplace install path adds friction during Test B and was the surface for rep
 
 Direct `mcpServers` config bypasses ALL of these. One restart, predictable state, easy to inspect.
 
-## Fixture shape
+## Fixture shape — 20 cells (not 24)
 
-8 plugin × 3 method = **24 entries** in `~/.claude.json mcpServers` (or `~/.claude/settings.json mcpServers`). One CC restart loads tất cả.
+Per `feedback_godot_crg_method1_only.md` (2026-05-03): godot + crg cần host godot.exe / host repo path → exempt Method 2/3. Counts:
+- Method 1 stdio uvx/npx: **8/8** plugins
+- Method 2 HTTP (deployed VM): **6/8** plugins (skip godot + crg)
+- Method 3 stdio Docker: **6/8** plugins (skip godot + crg)
+- **Total: 20 cells** in `~/.claude.json mcpServers`. One CC restart loads tất cả.
 
-3 methods per plugin:
+3 methods per plugin (godot + crg → Method 1 only):
 
 | # | Method | Settings entry shape | What it verifies |
 |---|---|---|---|
-| 1 | stdio uvx (Python) / npx (TS) — default install equivalent | `{"command": "uvx", "args": [..., "--from", "<plugin>==<beta>", "<plugin>"], "env": {...}}` | Default install path users actually use; uvx/npx cache transitive pin correctness |
-| 2 | HTTP Docker | pre-spin `docker run -d -p <port>:8080 ghcr.io/n24q02m/<plugin>:<beta>`, settings entry `{"type": "http", "url": "http://localhost:<port>/mcp"}` | HTTP transport + multi-user PUBLIC_URL deployment (per-JWT-sub credential storage) |
+| 1 | stdio uvx (Python) / npx (TS) — default install equivalent | `{"command": "uvx" \| "npx", "args": [..., "<plugin>==<beta>"], "env": {...}}` | Default install path users actually use; uvx/npx cache transitive pin |
+| 2 | **HTTP DEPLOYED VM** | `{"type": "http", "url": "https://<server>.n24q02m.com/mcp"}` — KHÔNG local Docker `127.0.0.1:<port>` | HTTP transport via real production endpoint (OAuth callback registered prod-only, multi-user PUBLIC_URL) |
 | 3 | stdio Docker | `{"command": "docker", "args": ["run", "-i", "--rm", "-e", "MCP_TRANSPORT", "-e", "<KEY>", "ghcr.io/n24q02m/<plugin>:<beta>"], "env": {"MCP_TRANSPORT": "stdio", "<KEY>": "..."}}` | Container build correctness via stdio path |
+
+**WHY HTTP = DEPLOYED VM, KHÔNG local Docker** (per `feedback_no_out_of_band_test_setup.md`): Notion App dashboard chỉ accept production-stable callback URL (`https://notion-mcp.n24q02m.com/callback` registered one-time). Local random/dynamic port → user phải edit dashboard mỗi run = anti-pattern. Em chỉ test deployed `*.n24q02m.com` URLs cho 6 HTTP cells.
 
 ### Naming convention for entry IDs
 
@@ -111,6 +117,32 @@ cp ~/.claude.json.bak-<ts> ~/.claude.json
 ```
 
 (Or keep matrix entries if dev workflow benefits from having them around — anh quyết.)
+
+## Plugin marketplace install vs matrix-in-settings — coexist via /plugin disable
+
+**Anh dùng plugin marketplace install bình thường** (Method 1 default cho 8 plugins) cho daily work; **matrix-in-settings là dev-time fixture** chỉ active khi run Test B.
+
+Per `feedback_cc_plugin_endpoint_match.md`: 3 methods endpoint khác nhau (npx/uvx ≠ docker ≠ HTTP url) → CC load song song nếu cả plugin install + user mcpServers entry cùng active = duplicate spawn = spam.
+
+**Trước Test B restart**:
+```
+/plugin disable better-godot-mcp
+/plugin disable better-code-review-graph
+... etc cho mọi plugin có install qua marketplace
+```
+
+**Sau Test B xong (Step G restore)**:
+```
+/plugin enable better-godot-mcp
+/plugin enable better-code-review-graph
+... etc
+```
+
+KHÔNG `/plugin uninstall` — giữ install để daily work tiếp tục dùng. `disable` tạm tắt MCP server spawn từ plugin scope; `enable` lại resumes. Per design intent:
+- 2 plugins Method 1 only (godot, crg) → daily dùng plugin install
+- 6 plugins HTTP available (notion, email, telegram, imagine, wet, mnemo) → daily dùng OCI VM self-hosted deployed `*.n24q02m.com`
+
+Matrix-in-settings là test fixture, KHÔNG thay thế daily install path.
 
 ## What's fundamentally different vs T2 driver matrix (DROPPED)
 
