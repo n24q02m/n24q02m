@@ -1,6 +1,6 @@
-# Work Order v3 — BACKLOG → BETA → E2E → TEST B → STABLE → POST-VERIFY
+# Work Order v3 — BACKLOG → BETA → TEST A (T0) → TEST B → STABLE → POST-VERIFY
 
-(Locked 2026-04-30, BẤT BIẾN)
+(Locked 2026-04-30, **updated 2026-05-03 drop T2**, BẤT BIẾN)
 
 Trong session multi-step có fix + release, 6 phase BẮT BUỘC theo thứ tự, KHÔNG skip, KHÔNG đổi order.
 
@@ -15,28 +15,42 @@ Verify qua:
 
 ## Phase 2 — Release BETA
 
-CD dispatch `release_type=beta` cho mcp-core trước, rồi cascade plugins. `:beta` artifacts publish lên PyPI/npm/Docker để E2E pin và Test B install.
+CD dispatch `release_type=beta` cho mcp-core trước, rồi cascade plugins. `:beta` artifacts publish lên PyPI/npm/Docker để Test B install.
 
-## Phase 3 — E2E full matrix với :beta artifacts
+## Phase 3 — Test A: T0 ONLY (precommit + CI auto)
 
-Qua `mcp-core/scripts/e2e/driver.py` (KHÔNG ad-hoc Python SDK script).
+`feedback_drop_t2_for_test_b.md` (2026-05-03): T2 driver matrix DROPPED. Code-driven test KHÔNG validate được real CC integration (relay browser flow + plugin.json env block + OAuth/JWT round-trip + transport switch). Test B trong CC cover toàn bộ.
 
-- T0 (auto CI)
-- T2 stdio-direct (`uvx <plugin>==<beta>`)
-- T2 HTTP non-interaction
-- T2 HTTP interaction
+T0 keeps:
+- Code-path coverage: transport_check, credential_state, SearXNG runner, stdio handlers
+- No upstream identity needed
+- Run automatically via precommit hook + CI on every push/PR
 
-Mọi config PASS trước khi tiếp.
+KHÔNG chạy `make e2e-full` hoặc bất kỳ T2 driver config nào (email-gmail, telegram-bot, imagine, godot-with-exe, email-outlook, telegram-user, notion-oauth, wet-full, mnemo-full, *-stdio-direct). Re-run T2 = vi phạm `feedback_drop_t2_for_test_b.md`.
 
-## Phase 4 — Test B trên 3 IDE
+## Phase 4 — Test B trên 3 IDE (matrix-in-settings)
 
-Claude Code + VS Code Copilot + Cursor (CC bắt buộc, Cursor/Copilot user manual).
+`feedback_settings_matrix_skip_plugin.md` (2026-05-03): Test B fixture = 8 plugin × 3 method = 24 entries TRỰC TIẾP trong `~/.claude.json mcpServers`, KHÔNG qua plugin marketplace install (stale cache + version drift + env block reset + /reload-plugins unreliable). 1 CC restart loads tất cả 24.
 
-Per `feedback_real_plugin_test_strict.md`: 8 meaningful tool calls với evidence table (tool name + non-trivial input + result text trong transcript). ToolSearch resolve / httpx probe / `__help` KHÔNG count.
+3 methods per plugin:
+- Method 1: stdio uvx (default install equivalent) — `command: uvx, args: [...prerelease=allow, --from, <plugin>==<beta>, <plugin>]`, env: skret creds
+- Method 2: HTTP Docker — pre-spin `docker run -p <port>` ghcr image, settings entry `type: http, url: http://localhost:<port>/mcp`
+- Method 3: stdio Docker — `command: docker, args: [run, -i, --rm, -e MCP_TRANSPORT, -e <skret>, ghcr.io/n24q02m/<plugin>:<beta>]`, env: skret
+
+Per `real-plugin-verification.md` 4 yêu cầu:
+- Step 0: uvx/npx cache version match latest published
+- Step 1: `read_config(server_name)` trả secret
+- Step 2: ≥1 DOMAIN tool call PER ENTRY qua `mcp__plugin_<plugin>_<server>__<tool>` Claude Code MCP harness, evidence table có input + result excerpt
+- Step 3: 1 daemon per server, cleanup stale lock files
+- Step 4: single + multi-user mode (qua deployment property)
+
+Clients: Claude Code (mandatory), Cursor/Copilot (user-driven manual).
+
+ToolSearch resolve / httpx probe / `__help` KHÔNG count = sloppy verify.
 
 ## Phase 5 — Release STABLE
 
-CHỈ khi Test B PASS. CD dispatch `release_type=stable`. mcp-core trước, 8 plugin parallel sau. Verify downstream auto-issues + marketplace sync.
+CHỈ khi Test B 24/24 PASS. CD dispatch `release_type=stable`. mcp-core trước, 8 plugin parallel sau. Verify downstream auto-issues + marketplace sync.
 
 ## Phase 6 — Post-release verify
 

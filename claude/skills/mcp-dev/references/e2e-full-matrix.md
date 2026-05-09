@@ -1,3 +1,13 @@
+# E2E Full Matrix — DEPRECATED 2026-05-03 cho T2
+
+**STATUS**: T2 driver matrix DROPPED per `feedback_drop_t2_for_test_b.md` (2026-05-03). KHÔNG chạy `make e2e-full`, KHÔNG chạy bất kỳ T2 config nào. Chỉ T0 (precommit + CI auto) còn active per `references/work-order-v3.md` Phase 3.
+
+**Test B canonical fixture**: `references/test-b-matrix-in-settings.md` (24-entry mcpServers config).
+
+**Phần dưới đây giữ làm reference history cho T0 list + per-config procedure documentation, KHÔNG là active workflow**.
+
+---
+
 # E2E Full Matrix — Phase 3 (Test A: MCP Protocol, Post-BETA, Pre-STABLE)
 
 **2026-04-30 update — v3 work order, BETA-first prerequisite**: Phase 3 entered sau khi Phase 2 = **CD BETA cascade complete** (mcp-core :beta + 8 plugin :beta published to PyPI/npm/Docker). Stdio-direct configs (wet/mnemo/crg/imagine/telegram) BẮT BUỘC test với pinned `:beta` version (`uvx <plugin>==<version>b<N>` hoặc `npx -p @n24q02m/<plugin>@<version>-beta.<N>`), KHÔNG `:latest` (resolve old code) và KHÔNG `file:` local pin (không reflect published artifact). Vi phạm 2026-04-30 session 2d88d796 USER #123/124: chạy stdio-direct manual qua Python SDK trên file:// local, KHÔNG qua driver, KHÔNG pin :beta → claim PASS không có ý nghĩa.
