@@ -29,14 +29,18 @@ applyTo: '**'
 </important>
 
 <important if="về dispatch CD workflow (cd.yml) cho release_type=stable/beta, OR auto-extending pipeline tiếp theo phase user chỉ định">
-- **STABLE DISPATCH PHẢI USER EXPLICIT, KHÔNG TỰ NỐI ĐUÔI SAU TEST**: User chỉ thị "beta", "test", "ship", "release" KHÔNG tự động extend sang stable. CHỈ dispatch `cd.yml -f release_type=stable` khi user nói RÕ một trong: "stable", "release stable", "ship stable", "stable đi", "dispatch stable", "v<N>.0 stable". Vi phạm 2026-05-08 session: anh nói "Beta rồi test đi", em dispatch beta → E2E test PASS → tự dispatch stable v3.15.0 không xin phép, anh phản ứng "Tôi có nhắc đến release stable hả?" + "Nhắc bao lần mà vẫn không làm đúng??". Pattern lặp lại từ session 525c9518 (4 lần "scope creep" trong 1 session). Sau test PASS → STOP + report → đợi user nói "stable đi" → mới dispatch. Áp dụng cả khi cycle có vẻ "logic next step" — work-order-v3 có 6 phases nhưng MỖI phase là 1 explicit gate, không auto-flow. Memory `feedback_no_auto_stable_dispatch.md`.
+- **STABLE DISPATCH = USER EXPLICIT**: "beta"/"test"/"ship"/"release" KHÔNG = stable. CHỈ dispatch `cd.yml -f release_type=stable` khi user nói rõ "stable"/"release stable"/"ship stable"/"stable đi"/"dispatch stable"/"v<N>.0 stable". Sau test PASS → STOP + report → đợi user. Work-order-v3 6 phases mỗi phase = explicit gate, KHÔNG auto-flow. Memory `feedback_no_auto_stable_dispatch.md`.
+</important>
+
+<important if="auditing/editing/setting up cd.yml deploy-web step cho repo Next.js + CF Pages (apps/web với deploy:cf script), HOẶC khi BETA dispatch xong mà user thử staging URL `staging.<domain>` không resolve">
+- **CF PAGES STAGING SEPARATION BẮT BUỘC**: `wrangler pages deploy --branch staging` cho beta (default = production), build env switch 3 vars (API_URL/SITE_URL/ALTERNATE_SITE_URL), DNS `staging.<domain>` + `en-staging.<domain>` + custom domain registration, secret `<APP>_STAGING_*` trong `prod` namespace, strip non-ASCII trong commit msg (CF code 8000111). Pattern canonical + checklist + verify: memory `feedback_cf_pages_staging_separation.md` + `feedback_env_taxonomy.md`.
 </important>
 
 <important if="về Test A (E2E driver matrix) trong work-order-v3, đặc biệt T2 driver-driven configs (email-gmail/telegram-bot/imagine/email-outlook/telegram-user/notion-oauth/wet-full/mnemo-full/godot-with-exe + *-stdio-direct)">
-- **T2 DRIVER MATRIX = DROPPED 2026-05-03, KHÔNG CHẠY, KHÔNG REFERENCE**: Phase 3 (Test A) hiện tại CHỈ giữ T0 (precommit + CI auto: code-path coverage không cần upstream identity — transport_check/credential_state/SearXNG runner/stdio handlers). T2 driver matrix (compose Docker spin-up + driver-fill relay + protocol POST) DROPPED hoàn toàn vì code-driven test KHÔNG validate được real CC integration (relay browser flow + plugin.json env block + OAuth/JWT round-trip + transport switch). Test B trong CC cover toàn bộ T2 từng cố verify. Vi phạm 2026-05-09 session: chạy 5 T2 configs + tạo 5 mcp-core PR (#193-#197) fix driver/matrix → user "Hình như có lần nào tôi bảo test a sẽ chỉ còn giữ t0 tự động, còn lại là bỏ". Memory `feedback_drop_t2_for_test_b.md` (2026-05-03). Update spec/skill ngay khi feedback land — KHÔNG để rule chỉ ở memory rồi vi phạm tiếp.
+- **T2 DRIVER MATRIX DROPPED 2026-05-03**: Test A CHỈ giữ T0 (precommit/CI auto: code-path coverage không cần upstream identity). T2 driver matrix (compose+relay+protocol) DROPPED hoàn toàn — Test B trong CC cover. KHÔNG run, KHÔNG reference, KHÔNG fix driver. Memory `feedback_drop_t2_for_test_b.md`.
 </important>
 <important if="về Test B (client integration test) trong work-order-v3 cascade, hoặc claim plugin verified trên Claude Code/VS Code">
-- **TEST B 4 YÊU CẦU + MATRIX-IN-SETTINGS = 20 CELLS, HTTP=DEPLOYED VM, /plugin disable KHÔNG uninstall**: Per `~/.claude/skills/mcp-dev/references/test-b-matrix-in-settings.md` + `real-plugin-verification.md`, Test B BẮT BUỘC 4 steps trên CC thật: (0) uvx/npx cache match latest published, (1) `read_config(server)` trả secret, (2) tool call THROUGH `mcp__<entry>__<tool>` CC harness with evidence table (KHÔNG httpx/uvx-direct/E2E driver), (3) 1 daemon/server, (4) single+multi-user. **Fixture = 20 cells (KHÔNG 24)** per `feedback_godot_crg_method1_only.md`: godot+crg cần host godot.exe / host repo path → Method 1 only. Counts: M1 stdio 8/8 + M2 HTTP 6/8 + M3 stdio Docker 6/8 = 20. **Method 2 HTTP = deployed VM `https://<server>.n24q02m.com/mcp`**, KHÔNG local Docker `127.0.0.1:<port>` (Notion App callback prod-only registered, dynamic local port = anti-pattern per `feedback_no_out_of_band_test_setup.md`). **Plugin marketplace install + matrix-in-settings cùng tồn tại** (anh dùng plugin install bình thường + matrix-in-settings dev-time): trước Test B restart, `/plugin disable better-godot-mcp` + `/plugin disable better-code-review-graph` (giữ install, KHÔNG uninstall) để tránh duplicate spawn — sau Test B `/plugin enable` lại. Per `feedback_cc_plugin_endpoint_match.md` 3 methods endpoint khác nhau → CC load song song nếu cả plugin + user entry cùng active. Memory: `feedback_test_b_no_implicit.md` + `feedback_drop_t2_for_test_b.md` + `feedback_settings_matrix_skip_plugin.md` + `feedback_godot_crg_method1_only.md` + `feedback_cc_plugin_endpoint_match.md` + `feedback_no_out_of_band_test_setup.md` + `feedback_3_start_methods.md`.
+- **TEST B = 4 REQUIREMENTS + 20-CELL MATRIX + HTTP=DEPLOYED VM**: Per `~/.claude/skills/mcp-dev/references/test-b-matrix-in-settings.md` + `real-plugin-verification.md`. CẤM uvx-direct/httpx/E2E driver thay tool call qua `mcp__<entry>__<tool>`. Method 2 HTTP = `https://<server>.n24q02m.com/mcp` KHÔNG local Docker. Pre-restart `/plugin disable` (giữ install). Memory: `feedback_test_b_no_implicit.md` + `feedback_godot_crg_method1_only.md` + `feedback_cc_plugin_endpoint_match.md` + `feedback_no_out_of_band_test_setup.md`.
 </important>
 <important if="merging, closing, or approving ANY pull request or issue — đặc biệt bot PRs (Jules/Sentinel/Bolt/Daisy/Renovate/Dependabot)">
 - **PR/ISSUE REVIEW PHẢI THẬT**: 6-item checklist (diff / inline-comments / linked issues / CI logs / commit msg / scope map) + bulk-close rule. Detail: `~/.claude/skills/mcp-dev/references/pr-issue-review.md`. Memory `feedback_pr_review_must_be_real.md` + `feedback_never_bulk_close.md`.
@@ -160,30 +164,23 @@ applyTo: '**'
 |------|---------|---------|
 | Plan/spec writing | `superpowers:writing-plans` | MCP work → `mcp-dev` first |
 | Brainstorming | `superpowers:brainstorming` | — |
-| Plan ambition review | `gstack:plan-ceo-review` | — |
-| Plan engineering review | `gstack:plan-eng-review` | — |
 | Feature design | `feature-dev:code-architect` agent | — |
 | Codebase exploration | `feature-dev:code-explorer` agent | — |
-| Code review (local) | `gstack:review` | Heavy → `pr-review-toolkit:review-pr` |
-| PR specialized | `pr-review-toolkit` agents (silent-failure-hunter / type-design-analyzer / pr-test-analyzer / comment-analyzer / code-simplifier) | — |
+| Code review (PR) | `pr-review-toolkit:review-pr` | Specialized → `pr-review-toolkit` agents (silent-failure-hunter / type-design-analyzer / pr-test-analyzer / comment-analyzer / code-simplifier) |
 | Security review | `security-guidance` hook + `/security-review` | — |
 | Debugging | `superpowers:systematic-debugging` | — |
 | TDD | `superpowers:test-driven-development` | — |
 | Plan execution | `superpowers:executing-plans` OR `subagent-driven-development` | — |
 | Skill writing | `superpowers:writing-skills` | — |
-| Plugin packaging | `plugin-dev` | — |
-| Hook building | `hookify` | — |
+| Hook building | Manual edit `~/.claude/settings.json` | Patterns: `infra-devops/references/claude-authoring.md` |
 | CLAUDE.md update | Manual edit | Bulk → `claude-md-management:claude-md-improver` |
-| UI/frontend gen | `frontend-design` plugin | Personal → `gstack:design-*` or `ui-ux-pro-max` |
+| UI/frontend gen | `frontend-design` plugin / `ui-ux-pro-max` | — |
 | MCP server work | `mcp-dev` | — |
 | Infra/CI/CD | `infra-devops` | — |
 | AI/ML/RAG | `ai-ml` | — |
-| Headless QA | `gstack:qa` / `gstack:qa-only` | — |
-| Bug bounty | `claude-bug-bounty` (vendor install) | — |
-| Browser debug | `chrome-devtools-mcp:*` | — |
-| Loop runner | `ralph-loop:*` or native `/loop` | — |
+| Browser/QA | `chrome-devtools-mcp:*` / `playwright` MCP | — |
+| Loop runner | native `/loop` | — |
 | Session log lookup | `session-transcript-extraction` | — |
-| Ship workflow | `gstack:ship` | — |
 
 ## 1.6. NGUYÊN TẮC CODING (KARPATHY)
 - **Surface assumptions, KHÔNG pick silently**: Trước khi code, state assumption; nếu có nhiều interpretation, liệt kê tất cả và hỏi, KHÔNG tự chọn một hướng rồi code 200 dòng.
@@ -210,7 +207,7 @@ applyTo: '**'
 - **DÙNG `skret`, KHÔNG `aws ssm` TRỰC TIẾP**: Mọi secret op (read/write/list) BẮT BUỘC qua `skret env`/`skret run`/`skret put`. CẤM `aws ssm get-parameter`, `aws ssm put-parameter`, `aws ssm describe-parameters` (bypass abstraction → backend coupling, audit gap, expose keys ngoài scope sandbox). Git Bash mangle path `--path=/foo` thành `C:/Program Files/Git/foo` → dùng `MSYS_NO_PATHCONV=1` prefix HOẶC chạy từ PowerShell, KHÔNG fallback `aws ssm`. Skret trống = backend trống (skret đọc cùng SSM), KHÔNG "double-check" qua `aws ssm`. Xem memory `feedback_skret_not_aws_ssm.md`. Vi phạm 2026-04-28 KP CNAME hunt: chạy `aws ssm describe-parameters --parameter-filters Values=/global` để hunt CF zone-edit token.
 </important>
 <important if="cần admin-level credential (DNS zone edit, CF account-wide token, GitHub org-admin PAT, IAM bootstrap, billing/registrar API), HOẶC định grep skret app namespace cho token loại này">
-- **APP SKRET NAMESPACE = RUNTIME ONLY, KHÔNG hunt admin token ở đó**: `/<app>/prod` chỉ chứa secret app code ĐỌC LÚC RUNTIME (DB DSN, upstream API key app gọi, OAuth client secret app exchange, R2 keys app upload). Admin op (zone:edit, account-wide token, registrar API, billing API, org-admin PAT) KHÔNG nằm trong app namespace — putting them there expand blast radius (runtime exploit → DNS hijack). Trước khi grep skret, hỏi: "App runtime code có CALL credential này không?". Nếu KHÔNG → không hunt, chọn 1 trong: (a) user edit dashboard 30 giây, (b) user mint scoped token paste 1 lần, (c) tạo admin-only namespace `/admin-<scope>/prod` nếu recurring (vẫn không phải app namespace). Vi phạm 2026-04-28: hunt CF Zone:Edit token trong `/KnowledgePrism/prod` + `/oci-vm-infra/prod` + `/global/prod` (KP app không edit DNS — token không có ở đó). Xem memory `feedback_app_namespace_runtime_only.md` + `feedback_cf_global_token.md` (updated).
+- **APP SKRET NAMESPACE = RUNTIME ONLY**: `/<app>/prod` chỉ chứa secret app ĐỌC LÚC RUNTIME (DB DSN, upstream API, OAuth, R2 keys). Admin op (zone:edit, account-wide, registrar, billing, org-admin PAT) KHÔNG ở app namespace (blast radius). Pre-grep hỏi: "Runtime code CALL cred này?". Nếu KHÔNG → (a) user dashboard 30s, (b) user mint scoped paste 1 lần, (c) admin-only namespace `/admin-<scope>/prod`. Memory `feedback_app_namespace_runtime_only.md` + `feedback_cf_global_token.md`.
 </important>
 - **gh CLI list commands**: **LUÔN** pass `--limit 1000` cho `gh pr list`, `gh issue list`, `gh run list`, `gh release list`. Default 30/20 → miss items → sai metric. Với audit/security/release gates → dùng default = BUG. Xem memory `feedback_gh_cli_pagination.md`.
 - **Google OAuth "Desktop/Installed app" client_secret = PUBLIC secret**: Client secret `GOCSPX-...` dùng trong Desktop OAuth flow (wet-mcp GDrive sync, uvx-installable apps) được Google chính thức coi là **public** — không phải credential thật. Quote Google docs (https://developers.google.com/identity/protocols/oauth2#installed): *"Installed applications are considered public clients and they cannot protect client secrets."* Hệ quả: (a) KHÔNG mark là "leaked secret" khi thấy `GOCSPX-...` hardcoded trong source của installed/desktop app, (b) KHÔNG propose rotation (vô nghĩa — user cài local luôn có secret trong binary), (c) secret scanner alert cho Desktop OAuth client = FALSE POSITIVE, dismiss với lý do "Google Desktop public client pattern". PHÂN BIỆT với **Web server OAuth client_secret** (Notion OAuth server-delegation, v.v.) — cái đó PRIVATE thật, LEAK = rotate ngay. Kiểm tra type qua GCP Console → OAuth 2.0 Client IDs → "Application type: Desktop app" (public) vs "Web application" (private). wet-mcp GDrive sync dùng Desktop type → public, mnemo-mcp KHÔNG hardcode secret (default empty, user tự cung) → không liên quan. Xem memory `feedback_google_oauth_desktop_public.md`.

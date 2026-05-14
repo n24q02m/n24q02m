@@ -72,6 +72,7 @@ Xem memory `feedback_install_priority_scoop_first.md` cho incident log + recover
 - `references/ci-cd.md` -- CI/CD workflow templates (Python/TS/Go/Rust), PR title check, Semgrep, Qodo Merge, email notify
 - `references/semantic-release.md` -- PSR v10 config (Python/TS/Rust/Go), monorepo, beta/stable, troubleshooting
 - `references/cf-tunnel-management.md` -- CF Tunnel ingress + DNS CNAME via direct API (wrangler khong co route mgmt); 3-part hyphen naming; <SERVICE>_DOMAIN in /oci-vm-prod skret
+- `references/claude-authoring.md` -- Claude Code hook events / SKILL.md format / plugin structure / slash command + subagent frontmatter / hookify-equivalent regex watcher pattern (distilled from plugin-dev + hookify)
 
 Doc reference file tuong ung TRUOC KHI bat dau lam viec tren topic do.
 
