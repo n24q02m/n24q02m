@@ -32,6 +32,14 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: claude-md-size
+        name: Enforce claude/CLAUDE.md < 40 KiB hard limit
+        entry: python scripts/check-claude-md-size.py
+        language: system
+        pass_filenames: false
+        files: '^claude/CLAUDE\.md$'
+        stages: [pre-commit]
+
   # ============================================================================
   # Markdownlint on owned .md files (skills/ synced excluded via ignore file)
   # ============================================================================

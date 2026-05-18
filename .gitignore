@@ -1,3 +1,9 @@
-skills/ui-ux-pro-max/scripts/__pycache__/
+# Python tooling caches (synced skills run tests/scripts locally — never commit caches)
 __pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+*.pyo
+
+# Audit script scratch output
 _audit-output/
