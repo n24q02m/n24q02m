@@ -5,7 +5,7 @@
 
 ## Research
 
-- **ACTA** — *Cost-Amortised Knowledge-Graph Question Answering via Self-Distilling Neuro-Symbolic Cascades.* A three-tier cascade — a sound Datalog engine, a calibrated ComplEx link predictor, and an LLM teacher — with an online distillation loop that mines teacher answers into auditable Horn rules, amortising LLM cost while every symbolic answer ships a replayable proof tree. [code](https://github.com/n24q02m/acta) · preprint forthcoming.
+- **TACET** — *Cost-Amortised Knowledge-Graph Question Answering via Self-Distilling Neuro-Symbolic Cascades.* A three-tier cascade — a sound Datalog engine, a calibrated ComplEx link predictor, and an LLM teacher — with an online distillation loop that mines teacher answers into auditable Horn rules, amortising LLM cost while every symbolic answer ships a replayable proof tree. [code](https://github.com/n24q02m/tacet) · preprint forthcoming.
 
 ## MCP Servers & Plugins
 
