@@ -34,13 +34,13 @@ Then `/plugin install <name>@n24q02m-plugins`. All 8 MCP servers in one marketpl
 
 ### Design Philosophy
 
-These 8 principles are applied consistently across all 8 MCP servers and the relay infrastructure:
+Shared principles across the MCP servers, built on the mcp-core foundation. The credential-handling ones (1, 6, 8) apply to every server that talks to an upstream account; better-godot-mcp is the exception -- it runs locally with no credentials, so it skips the relay and auth layers entirely.
 
 1. **Zero-Knowledge Relay** -- E2E encryption (ECDH P-256 + AES-256-GCM). Relay server never sees plaintext credentials. URL fragment secrets stay client-side per RFC 3986.
-2. **Composite Tool Pattern** -- One tool per domain with action dispatch. 5-17 tools per server instead of 50+, saving LLM context tokens.
-3. **3-Tier Token Optimization** -- Compact descriptions (always loaded), help docs (on demand), MCP resources (deep reference). ~77% token overhead reduction.
+2. **Composite Tool Pattern** -- One tool per domain with action dispatch: 4-17 tools per server instead of dozens of thin endpoints, saving LLM context tokens.
+3. **3-Tier Token Optimization** -- Compact descriptions (always loaded), help docs (on demand), and MCP resources (deep reference) keep the always-on tool schema small.
 4. **Tool Annotations** -- `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` metadata so the LLM knows tool behavior before calling.
-5. **Security Defense-in-Depth** -- SSRF prevention, path traversal containment, XPIA boundary tags, error sanitization, rate limiting.
+5. **Security Defense-in-Depth** -- SSRF prevention, path-traversal containment, prompt-injection (XPIA) boundary tags around untrusted content, and error sanitization.
 6. **Multi-User HTTP Mode** -- Stateless DCR (HMAC-SHA256), per-user session isolation, AES-256-GCM credential encryption at rest, OAuth 2.1 + PKCE S256.
 7. **Degraded Mode** -- Server always starts, even without credentials. Help and config tools work. Data tools return setup instructions instead of crashing.
 8. **Zero-Config Relay Setup** -- Auto-open browser, user enters credentials, server receives config via encrypted relay, saves to local config.enc.
