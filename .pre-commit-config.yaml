@@ -1,0 +1,31 @@
+# Pre-commit Hooks Configuration
+# Installation: https://pre-commit.com/
+#
+# Quick start:
+#   1. Install pre-commit: pipx install pre-commit
+#   2. Install hooks: pre-commit install
+#   3. Run manually: pre-commit run --all-files
+#
+# Bypass checks: git commit --no-verify (use only in emergency)
+
+repos:
+  # ============================================================================
+  # Security: Secret Detection
+  # ============================================================================
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e # v8.30.1
+    hooks:
+      - id: gitleaks
+        name: gitleaks (detect secrets)
+
+  # ============================================================================
+  # Markdownlint on owned .md files (skills/ synced excluded via ignore file)
+  # ============================================================================
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.0
+    hooks:
+      - id: markdownlint-cli2
+        args:
+          - --config
+          - .markdownlint.json
+        exclude: '^(skills|commands|agents|output-styles|hooks|node_modules|\.superpower)/'
