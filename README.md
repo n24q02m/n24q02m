@@ -17,21 +17,15 @@ I'm interested in AI that stays **efficient, auditable, and reliable** — keepi
 /plugin marketplace add n24q02m/claude-plugins
 ```
 
-Then `/plugin install <name>@n24q02m-plugins`. All 9 MCP servers plus the agent-chat plugin in one marketplace.
+Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every server below plus the agent-chat plugin.
 
-### Servers
+### Active servers (CLI-first: each ships a native CLI plus an MCP server)
 
-| Server | Description | Agent Setup | Runtime |
+| Server | Description | Agent Setup | Install |
 |--------|-------------|-------------|---------|
-| [wet-mcp](https://github.com/n24q02m/wet-mcp) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet-mcp/setup-with-agent.md) | `uvx wet-mcp` |
-| [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo-mcp/setup-with-agent.md) | `uvx mnemo-mcp` |
-| [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Markdown-first Notion API with 10 composite tools | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-notion-mcp/setup-with-agent.md) | `npx @n24q02m/better-notion-mcp` |
-| [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) with multi-account and auto-discovery | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-email-mcp/setup-with-agent.md) | `npx @n24q02m/better-email-mcp` |
-| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine 4.x with 17 composite tools for scenes, scripts, and shaders | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-godot-mcp/setup-with-agent.md) | `npx @n24q02m/better-godot-mcp` |
-| [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram dual-mode (Bot API + MTProto) with 6 composite tools | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-telegram-mcp/setup-with-agent.md) | `uvx better-telegram-mcp` |
-| [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-code-review-graph/setup-with-agent.md) | `uvx better-code-review-graph` |
-| [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image and video understanding + generation across Gemini, OpenAI, and Grok | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/imagine-mcp/setup-with-agent.md) | `uvx imagine-mcp` |
-| [better-workspace-mcp](https://github.com/n24q02m/better-workspace-mcp) | Google Workspace (Docs, Drive, Calendar, Gmail, Sheets, Slides, Tasks, Chat, People, Forms) with multi-account support | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-workspace-mcp/setup-with-agent.md) | `npx @n24q02m/better-workspace-mcp` |
+| [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet-mcp/setup-with-agent.md) | `pip install wet-mcp` · CLI: `wet` · MCP: `uvx wet-mcp` |
+| [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo-mcp/setup-with-agent.md) | `pip install mnemo-mcp` · CLI: `mnemo` · MCP: `uvx mnemo-mcp` |
+| [crg](https://github.com/n24q02m/crg) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-code-review-graph/setup-with-agent.md) | `pip install better-code-review-graph` · CLI: `crg` · MCP: `uvx better-code-review-graph` |
 
 > **Setup any server:** Copy the Agent Setup guide link and send it to your AI agent with "Please set up this MCP server for me."
 
@@ -47,7 +41,6 @@ Then `/plugin install <name>@n24q02m-plugins`. All 9 MCP servers plus the agent-
 |---------|-------------|---------|
 | [mcp-core](https://github.com/n24q02m/mcp-core) | Streamable HTTP transport, OAuth 2.1, browser-based credential setup, lifecycle, and a shared embedding daemon | `npm i @n24q02m/mcp-core` / `pip install n24q02m-mcp-core` |
 | [fastretrieval](https://github.com/n24q02m/fastretrieval) | Multi-model retrieval runtime for dense, sparse, late-interaction, image, ColPali, and reranking workloads on ONNX or GGUF | `pip install fastretrieval` |
-| [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Legacy Qwen3 embedding and reranking package; new features land in [fastretrieval](https://github.com/n24q02m/fastretrieval) while consumers migrate | `pip install qwen3-embed` |
 | [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure: SSRF-safe HTTP, SearXNG search, multi-strategy scraping, stealth browsers | `pip install n24q02m-web-core` |
 
 ## Tools
@@ -55,9 +48,24 @@ Then `/plugin install <name>@n24q02m-plugins`. All 9 MCP servers plus the agent-
 | Tool | Description | Install |
 |------|-------------|---------|
 | [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
-| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI with Doppler/Infisical-grade DX. Zero lock-in, zero server. | `brew install n24q02m/tap/skret` |
-| [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync with `.driveignore` filters, multi-pair config, and a system-tray daemon. Wraps rclone. | `brew install n24q02m/tap/better-drive` |
 | [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards for orphan tags and registry collisions. Same config schema, same CLI, same Action interface. | `pip install better-semantic-release` |
+
+## Archived (read-only — replaced by CLI-first tools or native APIs)
+
+| Repository | Was | Successor / note |
+|------------|-----|------------------|
+| [wet-mcp](https://github.com/n24q02m/wet-mcp) | Web MCP server | Renamed to [wet](https://github.com/n24q02m/wet) (PyPI package stays `wet-mcp`) |
+| [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Memory MCP server | Renamed to [mnemo](https://github.com/n24q02m/mnemo) (PyPI package stays `mnemo-mcp`) |
+| [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Code-graph MCP server | Renamed to [crg](https://github.com/n24q02m/crg) (PyPI package stays `better-code-review-graph`) |
+| [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Notion MCP server | Use the official Notion API/SDK directly |
+| [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) MCP server | Use standard IMAP/SMTP tooling |
+| [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram MCP server | Use the official Telegram Bot API / MTProto clients |
+| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine MCP server | Use Godot's native scripting/CLI |
+| [better-workspace-mcp](https://github.com/n24q02m/better-workspace-mcp) | Google Workspace MCP server | Use Google Workspace APIs directly |
+| [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image/video understanding + generation MCP server | Use provider-native APIs (Gemini, OpenAI, Grok) |
+| [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) (`pip install qwen3-embed` still works) |
+| [skret](https://github.com/n24q02m/skret) | Secret-manager CLI | Use AWS SSM Parameter Store directly (store layout unchanged) |
+| [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Use [rclone](https://rclone.org) directly |
 
 ## Products
 
