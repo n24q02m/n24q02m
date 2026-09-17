@@ -29,6 +29,8 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every serve
 
 > **Setup any server:** Copy the Agent Setup guide link and send it to your AI agent with "Please set up this MCP server for me."
 
+> **Docs hub:** [docs.n24q02m.com](https://mcp.n24q02m.com) — unified documentation for MCP servers, skret, bsr and better-drive.
+
 ### Plugins
 
 | Plugin | Description | Install |
@@ -49,6 +51,8 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every serve
 |------|-------------|---------|
 | [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
 | [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards for orphan tags and registry collisions. Same config schema, same CLI, same Action interface. | `pip install better-semantic-release` |
+| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI — secrets without the server (AWS SSM + local YAML; OCI/Azure/GCP roadmap) | `scoop install skret` / `brew install skret` · [Docs](https://mcp.n24q02m.com/skret/) |
+| [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync CLI | `scoop install better-drive` / `brew install better-drive` · [Docs](https://mcp.n24q02m.com/tools/bdrive/overview/) |
 
 ## Archived (read-only — replaced by CLI-first tools or native APIs)
 
@@ -64,8 +68,6 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every serve
 | [better-workspace-mcp](https://github.com/n24q02m/better-workspace-mcp) | Google Workspace MCP server | Use Google Workspace APIs directly |
 | [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image/video understanding + generation MCP server | Use provider-native APIs (Gemini, OpenAI, Grok) |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) (`pip install qwen3-embed` still works) |
-| [skret](https://github.com/n24q02m/skret) | Secret-manager CLI | Use AWS SSM Parameter Store directly (store layout unchanged) |
-| [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Use [rclone](https://rclone.org) directly |
 
 ## Products
 
