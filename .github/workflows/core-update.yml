@@ -1,0 +1,98 @@
+name: core-update tracker
+
+# Records repository_dispatch events of type `core-update`, fanned out by a
+# core repo's CD (repo-bootstrap notify-downstream step) when it cuts a stable
+# release. Payload shape per .private/scripts/repo-bootstrap/templates/
+# per-language/python/.github/workflows/cd.yml.tmpl:
+#   client_payload[core] / [version] / [tag] / [release_url]
+# `repo` is accepted as a fallback for `core` (manual dispatches may use it).
+# Each (core, tag) pair opens one tracking issue; repeat notifications for an
+# already-tracked pair are appended as comments on the existing issue.
+
+on:
+  repository_dispatch:
+    types: [core-update]
+
+permissions:
+  issues: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Record core-update
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CORE: ${{ github.event.client_payload.core }}
+          REPO: ${{ github.event.client_payload.repo }}
+          VERSION: ${{ github.event.client_payload.version }}
+          TAG: ${{ github.event.client_payload.tag }}
+          RELEASE_URL: ${{ github.event.client_payload.release_url }}
+          SENDER: ${{ github.event.sender.login }}
+        run: |
+          set -euo pipefail
+          core="${CORE:-${REPO:-}}"
+          tag="${TAG:-}"
+          if [ -z "$core" ] || [ -z "$tag" ]; then
+            echo "::error::client_payload requires core (or repo) and tag; got core=${CORE:-}${REPO:+/}${REPO:-} tag=${TAG:-}" >&2
+            exit 1
+          fi
+          version="${VERSION:-$tag}"
+          received="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          title="core-update: ${core} ${tag}"
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          gh label create core-update \
+            --repo "$GITHUB_REPOSITORY" \
+            --color 1D76DB \
+            --description "Stable release of a core repo" \
+            --force >/dev/null
+
+          existing="$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --search "\"${title}\" in:title" \
+            --json number --jq '.[0].number // empty')"
+
+          lead="Tracking a stable release fanned out by \`${core}\`."
+          [ -n "$RELEASE_URL" ] && lead="Tracking a stable release fanned out by [\`${core}\`](${RELEASE_URL})."
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" \
+              --repo "$GITHUB_REPOSITORY" \
+              --body "Repeat notification for \`${core} ${tag}\` received at ${received} UTC (run ${GITHUB_RUN_ID})."
+            summary="duplicate of #${existing}"
+          else
+            issue_url="$(gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$title" \
+              --label core-update \
+              --body "$(printf '%s\n' \
+                "<!-- core-update:${core}:${tag} -->" \
+                "${lead}" \
+                "" \
+                "| field | value |" \
+                "| --- | --- |" \
+                "| core | \`${core}\` |" \
+                "| version | \`${version}\` |" \
+                "| tag | \`${tag}\` |" \
+                "| release | ${RELEASE_URL:-_(not provided)_} |" \
+                "| received_at | ${received} UTC |" \
+                "| sender | @${SENDER:-unknown} |" \
+                "| source run | [${GITHUB_RUN_ID}](${run_url}) |")")"
+            summary="created ${issue_url}"
+          fi
+
+          {
+            echo "## core-update recorded"
+            echo ""
+            echo "- core: \`${core}\`"
+            echo "- tag: \`${tag}\`"
+            echo "- outcome: ${summary}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "core-update ${core} ${tag}: ${summary}"
