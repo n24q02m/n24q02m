@@ -17,7 +17,7 @@ I'm interested in AI that stays **efficient, auditable, and reliable** — keepi
 /plugin marketplace add n24q02m/claude-plugins
 ```
 
-Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every server below plus the agent-chat plugin.
+Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 active MCP servers below.
 
 ### Active servers (CLI-first: each ships a native CLI plus an MCP server)
 
@@ -26,24 +26,22 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every serve
 | [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet-mcp/setup-with-agent.md) | `pip install wet-mcp` · CLI: `wet` · MCP: `uvx wet-mcp` |
 | [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo-mcp/setup-with-agent.md) | `pip install mnemo-mcp` · CLI: `mnemo` · MCP: `uvx mnemo-mcp` |
 | [crg](https://github.com/n24q02m/crg) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-code-review-graph/setup-with-agent.md) | `pip install better-code-review-graph` · CLI: `crg` · MCP: `uvx better-code-review-graph` |
+| [notion](https://github.com/n24q02m/notion) | Markdown-first Notion for AI agents — pages, databases, blocks & comments | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/notion/setup-with-agent.md) | `npm i -g @n24q02m/better-notion-mcp` · CLI: `notion` · MCP: `npx @n24q02m/better-notion-mcp` |
+| [email](https://github.com/n24q02m/email) | Email IMAP/SMTP — multi-account management | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/email/setup-with-agent.md) | `pip install better-email-mcp` · CLI: `email` · MCP: `uvx better-email-mcp` |
+| [telegram](https://github.com/n24q02m/telegram) | Telegram dual-mode (Bot API + MTProto) — messages, chats, media | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/telegram/setup-with-agent.md) | `npm i -g @n24q02m/better-telegram-mcp` · CLI: `telegram` · MCP: `npx @n24q02m/better-telegram-mcp` |
+| [workspace](https://github.com/n24q02m/workspace) | Google Workspace — Docs, Drive, Calendar, Gmail, Sheets, Tasks | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/workspace/setup-with-agent.md) | `npm i -g @n24q02m/better-workspace-mcp` · CLI: `workspace` · MCP: `npx @n24q02m/better-workspace-mcp` |
 
 > **Setup any server:** Copy the Agent Setup guide link and send it to your AI agent with "Please set up this MCP server for me."
 
 > **Docs hub:** [mcp.n24q02m.com](https://mcp.n24q02m.com) — unified documentation for MCP servers, skret and better-semantic-release.
 
-### Plugins
-
-| Plugin | Description | Install |
-|--------|-------------|---------|
-| [agent-chat-plugin](https://github.com/n24q02m/agent-chat-plugin) | Peer agents coordinate through markdown messages in a shared folder — no orchestrator, and waiting costs no tokens | `/plugin install agent-chat-plugin@n24q02m-plugins` |
-
 ## Libraries
 
 | Package | Description | Install |
 |---------|-------------|---------|
-| [mcp-core](https://github.com/n24q02m/mcp-core) | Streamable HTTP transport, OAuth 2.1, browser-based credential setup, lifecycle, and a shared embedding daemon | `npm i @n24q02m/mcp-core` / `pip install n24q02m-mcp-core` |
+| [hull](https://github.com/n24q02m/hull) | Shared monorepo core / framework for the MCP server fleet | `npm i @n24q02m/hull` |
 | [fastretrieval](https://github.com/n24q02m/fastretrieval) | Multi-model retrieval runtime for dense, sparse, late-interaction, image, ColPali, and reranking workloads on ONNX or GGUF | `pip install fastretrieval` |
-| [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure: SSRF-safe HTTP, SearXNG search, multi-strategy scraping, stealth browsers | `pip install n24q02m-web-core` |
+| [sillstone](https://github.com/n24q02m/sillstone) | Pure-Rust multimedia, image processing, hashing, and SIMD array suite | Cargo workspace |
 
 ## Tools
 
@@ -57,16 +55,19 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships every serve
 
 | Repository | Was | Successor / note |
 |------------|-----|------------------|
+| [mcp-core](https://github.com/n24q02m/mcp-core) | Shared MCP foundation | Replaced by [hull](https://github.com/n24q02m/hull) |
+| [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure | Inlined / replaced by modules in [wet](https://github.com/n24q02m/wet) |
+| [agent-chat-plugin](https://github.com/n24q02m/agent-chat-plugin) | Peer agent file chat plugin | Archived |
 | [wet-mcp](https://github.com/n24q02m/wet-mcp) | Web MCP server | Renamed to [wet](https://github.com/n24q02m/wet) (PyPI package stays `wet-mcp`) |
 | [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Memory MCP server | Renamed to [mnemo](https://github.com/n24q02m/mnemo) (PyPI package stays `mnemo-mcp`) |
 | [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Code-graph MCP server | Renamed to [crg](https://github.com/n24q02m/crg) (PyPI package stays `better-code-review-graph`) |
-| [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Notion MCP server | Use the official Notion API/SDK directly |
-| [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) MCP server | Use standard IMAP/SMTP tooling |
-| [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram MCP server | Use the official Telegram Bot API / MTProto clients |
-| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine MCP server | Use Godot's native scripting/CLI |
-| [better-workspace-mcp](https://github.com/n24q02m/better-workspace-mcp) | Google Workspace MCP server | Use Google Workspace APIs directly |
-| [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image/video understanding + generation MCP server | Use provider-native APIs (Gemini, OpenAI, Grok) |
-| [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) (`pip install qwen3-embed` still works) |
+| [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Notion MCP server | Renamed to [notion](https://github.com/n24q02m/notion) |
+| [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) MCP server | Renamed to [email](https://github.com/n24q02m/email) |
+| [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram MCP server | Renamed to [telegram](https://github.com/n24q02m/telegram) |
+| [better-workspace-mcp](https://github.com/n24q02m/better-workspace-mcp) | Google Workspace MCP server | Renamed to [workspace](https://github.com/n24q02m/workspace) |
+| [better-godot-mcp](https://github.com/n24q02m/better-godot-mcp) | Godot Engine MCP server | Archived |
+| [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image/video understanding + generation MCP server | Archived |
+| [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) |
 | [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Archived — use [rclone](https://rclone.org) directly |
 
 ## Products
