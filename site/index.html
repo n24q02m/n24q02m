@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>n24q02m Lab</title>
+  <meta name="description" content="n24q02m Lab is an independent, self-funded software lab building open-source tools for AI agents, retrieval runtimes and developer infrastructure.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%2338bdf8'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --border: #1f2937;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      padding: 0 1.5rem;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 4rem 0 5rem; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3.5rem;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    nav a { color: var(--muted); text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+    nav a:hover { color: var(--accent); }
+
+    h1 { font-size: 2.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.25rem; }
+    .lead { font-size: 1.15rem; color: var(--muted); max-width: 680px; }
+
+    section { margin-top: 4rem; }
+    h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    .card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.95rem; color: var(--muted); }
+
+    p.body { color: var(--muted); max-width: 680px; }
+    a.link { color: var(--accent); text-decoration: none; }
+    a.link:hover { text-decoration: underline; }
+
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.6rem 1.5rem; }
+    dt { font-family: var(--mono); color: var(--muted); font-size: 0.9rem; }
+
+    footer {
+      margin-top: 4.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.75rem;
+      color: #6b7280;
+      font-size: 0.875rem;
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.9rem; }
+      .grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      nav a { margin: 0 1.25rem 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">n24q02m Lab</a>
+      <nav>
+        <a href="#work">Work</a>
+        <a href="#open-source">Open source</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <h1>Open-source tools for AI agents and retrieval</h1>
+      <p class="lead">
+        n24q02m Lab is an independent, self-funded software lab. It builds and maintains
+        open-source tools for AI agents, retrieval and inference runtimes, and the developer
+        infrastructure around them.
+      </p>
+
+      <section id="work">
+        <h2>What we work on</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Retrieval and inference</h3>
+            <p>Embedding, reranking and multimodal retrieval runtimes that run on ordinary CPUs and GPUs.</p>
+          </div>
+          <div class="card">
+            <h3>Agent tooling</h3>
+            <p>Command-line tools with MCP servers for web search, persistent memory, code review and workspace apps.</p>
+          </div>
+          <div class="card">
+            <h3>Efficient, auditable AI</h3>
+            <p>Research on lowering the cost of model reasoning while keeping every answer checkable.</p>
+          </div>
+          <div class="card">
+            <h3>Developer infrastructure</h3>
+            <p>Release, packaging and secret-management tooling shared across the projects.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="open-source">
+        <h2>Open source</h2>
+        <p class="body">
+          Projects, releases and publications are developed in the open on
+          <a class="link" href="https://github.com/n24q02m" rel="noopener">GitHub</a>.
+        </p>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <dl>
+          <dt>Email</dt>
+          <dd><a class="link" href="mailto:contact@n24q02m.com">contact@n24q02m.com</a></dd>
+          <dt>GitHub</dt>
+          <dd><a class="link" href="https://github.com/n24q02m" rel="noopener">github.com/n24q02m</a></dd>
+        </dl>
+      </section>
+    </main>
+
+    <footer>&copy; 2026 n24q02m Lab</footer>
+  </div>
+</body>
+</html>
