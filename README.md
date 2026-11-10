@@ -1,6 +1,12 @@
 # Nguyen Quang Minh · @n24q02m
 
-> I design and ship AI systems, developer tools, and MCP infrastructure.
+[![CD](https://github.com/n24q02m/n24q02m/actions/workflows/cd.yml/badge.svg)](https://github.com/n24q02m/n24q02m/actions/workflows/cd.yml)
+[![License: Apache-2.0](https://img.shields.io/github/license/n24q02m/n24q02m)](LICENSE)
+
+[![Site](https://img.shields.io/badge/site-n24q02m.com-blue)](https://n24q02m.com)
+[![Last commit](https://img.shields.io/github/last-commit/n24q02m/n24q02m)](https://github.com/n24q02m/n24q02m/commits/main)
+
+> **I design and ship AI systems, developer tools, and MCP infrastructure.**
 > On the research side I work on making AI efficient, auditable, and well-behaved.
 
 ## Research
