@@ -47,7 +47,6 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 
 | Tool | Description | Install |
 |------|-------------|---------|
-| [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Chrome Extension to bulk-archive completed Jules tasks | [Download zip](https://github.com/n24q02m/jules-task-archiver/releases/latest) |
 | [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards for orphan tags and registry collisions. Same config schema, same CLI, same Action interface. | `pip install better-semantic-release` |
 | [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI — secrets without the server (AWS SSM + local YAML; OCI/Azure/GCP roadmap) | `scoop install skret` / `brew install skret` · [Docs](https://mcp.n24q02m.com/skret/) |
 
