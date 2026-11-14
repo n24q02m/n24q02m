@@ -29,13 +29,13 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 
 | Server | Description | Agent Setup | Install |
 |--------|-------------|-------------|---------|
-| [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet-mcp/setup-with-agent.md) | `pip install n24q02m-wet` · CLI: `wet` · MCP: `uvx n24q02m-wet` |
-| [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo-mcp/setup-with-agent.md) | `pip install n24q02m-mnemo` · CLI: `mnemo` · MCP: `uvx n24q02m-mnemo` |
-| [crg](https://github.com/n24q02m/crg) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/better-code-review-graph/setup-with-agent.md) | `pip install n24q02m-crg` · CLI: `crg` · MCP: `uvx n24q02m-crg` |
-| [notion](https://github.com/n24q02m/notion) | Markdown-first Notion for AI agents — pages, databases, blocks & comments | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/notion/setup-with-agent.md) | `npm i -g @n24q02m/better-notion-mcp` · CLI: `notion` · MCP: `npx @n24q02m/better-notion-mcp` |
-| [email](https://github.com/n24q02m/email) | Email IMAP/SMTP — multi-account management | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/email/setup-with-agent.md) | `pip install better-email-mcp` · CLI: `email` · MCP: `uvx better-email-mcp` |
-| [telegram](https://github.com/n24q02m/telegram) | Telegram dual-mode (Bot API + MTProto) — messages, chats, media | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/telegram/setup-with-agent.md) | `npm i -g @n24q02m/better-telegram-mcp` · CLI: `telegram` · MCP: `npx @n24q02m/better-telegram-mcp` |
-| [workspace](https://github.com/n24q02m/workspace) | Google Workspace — Docs, Drive, Calendar, Gmail, Sheets, Tasks | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/workspace/setup-with-agent.md) | `npm i -g @n24q02m/better-workspace-mcp` · CLI: `workspace` · MCP: `npx @n24q02m/better-workspace-mcp` |
+| [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet/setup-with-agent.md) | `pip install n24q02m-wet` · CLI: `wet` · MCP: `uvx n24q02m-wet` |
+| [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo/setup-with-agent.md) | `pip install n24q02m-mnemo` · CLI: `mnemo` · MCP: `uvx n24q02m-mnemo` |
+| [crg](https://github.com/n24q02m/crg) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/crg/setup-with-agent.md) | `pip install n24q02m-crg` · CLI: `crg` · MCP: `uvx n24q02m-crg` |
+| [notion](https://github.com/n24q02m/notion) | Markdown-first Notion for AI agents — pages, databases, blocks & comments | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/notion/setup-with-agent.md) | `npm i -g @n24q02m/notion` · CLI: `notion` · MCP: `npx @n24q02m/notion` |
+| [email](https://github.com/n24q02m/email) | Email IMAP/SMTP — multi-account management | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/email/setup-with-agent.md) | `npm i -g @n24q02m/email` · CLI: `email` · MCP: `npx @n24q02m/email` |
+| [telegram](https://github.com/n24q02m/telegram) | Telegram dual-mode (Bot API + MTProto) — messages, chats, media | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/telegram/setup-with-agent.md) | `pip install n24q02m-telegram` · CLI: `telegram` · MCP: `uvx n24q02m-telegram` |
+| [workspace](https://github.com/n24q02m/workspace) | Google Workspace — Docs, Drive, Calendar, Gmail, Sheets, Tasks | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/workspace/setup-with-agent.md) | `npm i -g @n24q02m/workspace` · CLI: `workspace` · MCP: `npx @n24q02m/workspace` |
 
 > **Setup any server:** Copy the Agent Setup guide link and send it to your AI agent with "Please set up this MCP server for me."
 
@@ -54,7 +54,7 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 | Tool | Description | Install |
 |------|-------------|---------|
 | [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards for orphan tags and registry collisions. Same config schema, same CLI, same Action interface. | `pip install better-semantic-release` |
-| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI — secrets without the server (AWS SSM + local YAML; OCI/Azure/GCP roadmap) | `scoop install skret` / `brew install skret` · [Docs](https://mcp.n24q02m.com/skret/) |
+| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI — secrets without the server (AWS SSM + local YAML; OCI/Azure/GCP roadmap) | `scoop bucket add n24q02m https://github.com/n24q02m/scoop-bucket && scoop install skret` / `brew install n24q02m/tap/skret` · [Docs](https://mcp.n24q02m.com/skret/) |
 
 ## Archived (read-only — replaced by CLI-first tools or native APIs)
 
@@ -63,9 +63,9 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 | [mcp-core](https://github.com/n24q02m/mcp-core) | Shared MCP foundation | Replaced by [hull](https://github.com/n24q02m/hull) |
 | [web-core](https://github.com/n24q02m/web-core) | Shared web infrastructure | Inlined / replaced by modules in [wet](https://github.com/n24q02m/wet) |
 | [agent-chat-plugin](https://github.com/n24q02m/agent-chat-plugin) | Peer agent file chat plugin | Archived |
-| [wet-mcp](https://github.com/n24q02m/wet-mcp) | Web MCP server | Renamed to [wet](https://github.com/n24q02m/wet) (PyPI package stays `wet-mcp`) |
-| [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Memory MCP server | Renamed to [mnemo](https://github.com/n24q02m/mnemo) (PyPI package stays `mnemo-mcp`) |
-| [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Code-graph MCP server | Renamed to [crg](https://github.com/n24q02m/crg) (PyPI package stays `better-code-review-graph`) |
+| [wet-mcp](https://github.com/n24q02m/wet-mcp) | Web MCP server | Renamed to [wet](https://github.com/n24q02m/wet) (PyPI package is now `n24q02m-wet`) |
+| [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) | Memory MCP server | Renamed to [mnemo](https://github.com/n24q02m/mnemo) (PyPI package is now `n24q02m-mnemo`) |
+| [better-code-review-graph](https://github.com/n24q02m/better-code-review-graph) | Code-graph MCP server | Renamed to [crg](https://github.com/n24q02m/crg) (PyPI package is now `n24q02m-crg`) |
 | [better-notion-mcp](https://github.com/n24q02m/better-notion-mcp) | Notion MCP server | Renamed to [notion](https://github.com/n24q02m/notion) |
 | [better-email-mcp](https://github.com/n24q02m/better-email-mcp) | Email (IMAP/SMTP) MCP server | Renamed to [email](https://github.com/n24q02m/email) |
 | [better-telegram-mcp](https://github.com/n24q02m/better-telegram-mcp) | Telegram MCP server | Renamed to [telegram](https://github.com/n24q02m/telegram) |
