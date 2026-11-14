@@ -6,7 +6,3 @@ environments:
     provider: aws
     region: ap-southeast-1
     path: /n24q02m/prod
-sync:
-  targets:
-    - type: github
-      repo: n24q02m/n24q02m
