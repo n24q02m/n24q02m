@@ -1,14 +1,39 @@
 name: CD
 on:
   workflow_dispatch:
+    inputs:
+      job:
+        description: "deploy: publish site/ to Cloudflare Pages. core-update: record a core repo's stable release"
+        type: choice
+        options: [deploy, core-update]
+        default: deploy
+      core:
+        description: "core-update: repo that cut the stable release"
+        required: false
+        default: ""
+      version:
+        description: "core-update: released version (empty = tag)"
+        required: false
+        default: ""
+      tag:
+        description: "core-update: release tag"
+        required: false
+        default: ""
+      release_url:
+        description: "core-update: release page URL"
+        required: false
+        default: ""
 permissions:
   contents: read
 # ci-policy: allow concurrency reason: serialize deploys, never cancel one mid-publish
 concurrency:
-  group: deploy
+  # A core-update run queues only behind a notification for the same (core, tag), so the
+  # repeat finds the issue the first one opened; it never waits on, or displaces, a deploy.
+  group: ${{ inputs.job == 'core-update' && format('core-update-{0}-{1}', inputs.core, inputs.tag) || 'deploy' }}
   cancel-in-progress: false
 jobs:
   deploy:
+    if: inputs.job == 'deploy'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -20,3 +45,90 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy site --project-name=n24q02m-lab --branch=main
+
+  # Records a core repo's stable release. The core repo's CD (its notify-downstream job)
+  # dispatches this workflow with job=core-update and the release's core, version, tag
+  # and release_url. Each (core, tag) pair opens one tracking issue; a repeat
+  # notification for an already-tracked pair is appended as a comment on that issue.
+  core-update:
+    if: inputs.job == 'core-update'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Record core-update
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CORE: ${{ inputs.core }}
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
+          RELEASE_URL: ${{ inputs.release_url }}
+          SENDER: ${{ github.event.sender.login }}
+        run: |
+          set -euo pipefail
+          core="${CORE:-}"
+          tag="${TAG:-}"
+          if [ -z "$core" ] || [ -z "$tag" ]; then
+            echo "::error::job=core-update requires the core and tag inputs; got core=${core} tag=${tag}" >&2
+            exit 1
+          fi
+          version="${VERSION:-$tag}"
+          received="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          title="core-update: ${core} ${tag}"
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          gh label create core-update \
+            --repo "$GITHUB_REPOSITORY" \
+            --color 1D76DB \
+            --description "Stable release of a core repo" \
+            --force >/dev/null
+
+          existing="$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --search "\"${title}\" in:title" \
+            --json number --jq '.[0].number // empty')"
+
+          lead="Tracking a stable release fanned out by \`${core}\`."
+          [ -n "$RELEASE_URL" ] && lead="Tracking a stable release fanned out by [\`${core}\`](${RELEASE_URL})."
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" \
+              --repo "$GITHUB_REPOSITORY" \
+              --body "Repeat notification for \`${core} ${tag}\` received at ${received} UTC (run ${GITHUB_RUN_ID})."
+            summary="duplicate of #${existing}"
+          else
+            issue_url="$(gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$title" \
+              --label core-update \
+              --body "$(printf '%s\n' \
+                "<!-- core-update:${core}:${tag} -->" \
+                "${lead}" \
+                "" \
+                "| field | value |" \
+                "| --- | --- |" \
+                "| core | \`${core}\` |" \
+                "| version | \`${version}\` |" \
+                "| tag | \`${tag}\` |" \
+                "| release | ${RELEASE_URL:-_(not provided)_} |" \
+                "| received_at | ${received} UTC |" \
+                "| sender | @${SENDER:-unknown} |" \
+                "| source run | [${GITHUB_RUN_ID}](${run_url}) |")")"
+            summary="created ${issue_url}"
+          fi
+
+          {
+            echo "## core-update recorded"
+            echo ""
+            echo "- core: \`${core}\`"
+            echo "- tag: \`${tag}\`"
+            echo "- outcome: ${summary}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "core-update ${core} ${tag}: ${summary}"
