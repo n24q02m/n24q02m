@@ -47,7 +47,6 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 |---------|-------------|---------|
 | [hull](https://github.com/n24q02m/hull) | Shared monorepo core / framework for the MCP server fleet | `npm i @n24q02m/hull` |
 | [fastretrieval](https://github.com/n24q02m/fastretrieval) | Multi-model retrieval runtime for dense, sparse, late-interaction, image, ColPali, and reranking workloads on ONNX or GGUF | `pip install fastretrieval` |
-| [sillstone](https://github.com/n24q02m/sillstone) | Pure-Rust multimedia, image processing, hashing, and SIMD array suite | Cargo workspace |
 
 ## Tools
 
@@ -74,6 +73,7 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 | [imagine-mcp](https://github.com/n24q02m/imagine-mcp) | Image/video understanding + generation MCP server | Archived |
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) |
 | [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Archived — use [rclone](https://rclone.org) directly |
+| [sillstone](https://github.com/n24q02m/sillstone) | Pure-Rust multimedia, image processing, hashing, and SIMD array suite | Archived, no longer maintained |
 
 ## Products
 
