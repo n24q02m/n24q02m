@@ -74,10 +74,3 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) |
 | [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Archived — use [rclone](https://rclone.org) directly |
 | [sillstone](https://github.com/n24q02m/sillstone) | Pure-Rust multimedia, image processing, hashing, and SIMD array suite | Archived, no longer maintained |
-
-## Products
-
-- **KnowledgePrism** -- Chat with your knowledge. Ingest anything (URL, PDF, EPUB, DOCX, CBZ, audio, video, image, text) into a persistent per-project knowledge graph, then produce any format (translation, brief, podcast, slide deck, mindmap, quiz, export). One chat-first agent plans compound requests as a typed capability DAG; ProjectKG is the auto-maintained spine, not a feature. [klprism.com](https://klprism.com)
-- **Aiora** -- A health and environment companion for daily wellness. [getaiora.com](https://getaiora.com)
-- **LinguaSense** -- Realtime knowledge transfer from any screen or microphone. Desktop + mobile. (coming)
-- **Akasha / GWM** *(exploratory research, not a shipped product)* -- a graph-centric world model with an LLM teacher and continuous learning; early-stage.
