@@ -23,14 +23,14 @@ I'm interested in AI that stays **efficient, auditable, and reliable** — keepi
 /plugin marketplace add n24q02m/claude-plugins
 ```
 
-Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 active MCP servers below.
+Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships 8 plugins: the 7 active MCP servers below plus [skret](https://github.com/n24q02m/skret).
 
-### Active servers (CLI-first: each ships a native CLI plus an MCP server)
+### Active servers (4-surface: in-process CLI, MCP stdio, MCP Streamable HTTP, plugin)
 
 | Server | Description | Agent Setup | Install |
 |--------|-------------|-------------|---------|
-| [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet/setup-with-agent.md) | `pip install n24q02m-wet` · CLI: `wet` · MCP: `uvx n24q02m-wet` |
-| [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and cross-machine sync | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo/setup-with-agent.md) | `pip install n24q02m-mnemo` · CLI: `mnemo` · MCP: `uvx n24q02m-mnemo` |
+| [wet](https://github.com/n24q02m/wet) | Web search, content extraction, and documentation indexing | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/wet/setup-with-agent.md) | `pip install n24q02m-wet` · CLI: `wet` · MCP: `uvx --from n24q02m-wet wet mcp` |
+| [mnemo](https://github.com/n24q02m/mnemo) | Persistent AI memory with hybrid search and knowledge graph | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/mnemo/setup-with-agent.md) | `pip install n24q02m-mnemo` · CLI: `mnemo` · MCP: `uvx --from n24q02m-mnemo n24q02m-mnemo mcp` |
 | [crg](https://github.com/n24q02m/crg) | Knowledge graph for token-efficient code reviews | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/crg/setup-with-agent.md) | `pip install n24q02m-crg` · CLI: `crg` · MCP: `uvx n24q02m-crg` |
 | [notion](https://github.com/n24q02m/notion) | Markdown-first Notion for AI agents — pages, databases, blocks & comments | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/notion/setup-with-agent.md) | `npm i -g @n24q02m/notion` · CLI: `notion` · MCP: `npx @n24q02m/notion` |
 | [email](https://github.com/n24q02m/email) | Email IMAP/SMTP — multi-account management | [Guide](https://raw.githubusercontent.com/n24q02m/claude-plugins/main/plugins/email/setup-with-agent.md) | `npm i -g @n24q02m/email` · CLI: `email` · MCP: `npx @n24q02m/email` |
@@ -39,21 +39,21 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships the 7 activ
 
 > **Setup any server:** Copy the Agent Setup guide link and send it to your AI agent with "Please set up this MCP server for me."
 
-> **Docs hub:** [mcp.n24q02m.com](https://mcp.n24q02m.com) — unified documentation for MCP servers, skret and better-semantic-release.
+> **Docs hub:** [docs.n24q02m.com](https://docs.n24q02m.com) — unified documentation for the MCP plugin stack, skret, better-semantic-release, hull, and fastretrieval. All 10 CLI/MCP packages are also available via [n24q02m/homebrew-tap](https://github.com/n24q02m/homebrew-tap) and [n24q02m/scoop-bucket](https://github.com/n24q02m/scoop-bucket).
 
 ## Libraries
 
 | Package | Description | Install |
 |---------|-------------|---------|
-| [hull](https://github.com/n24q02m/hull) | Shared monorepo core / framework for the MCP server fleet | `npm i @n24q02m/hull` |
-| [fastretrieval](https://github.com/n24q02m/fastretrieval) | Multi-model retrieval runtime for dense, sparse, late-interaction, image, ColPali, and reranking workloads on ONNX or GGUF | `pip install fastretrieval` |
+| [hull](https://github.com/n24q02m/hull) | Shared Python/TypeScript monorepo core (`hull_core`, `hull_web`, `@n24q02m/hull`) | `pip install n24q02m-hull` · `npm i @n24q02m/hull` |
+| [fastretrieval](https://github.com/n24q02m/fastretrieval) | Multi-model retrieval runtime for dense, sparse, late-interaction, image, ColPali, and reranking workloads on ONNX or GGUF | `pip install fastretrieval` · `brew install n24q02m/tap/fastretrieval` · `scoop install fastretrieval` |
 
 ## Tools
 
 | Tool | Description | Install |
 |------|-------------|---------|
-| [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards for orphan tags and registry collisions. Same config schema, same CLI, same Action interface. | `pip install better-semantic-release` |
-| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI — secrets without the server (AWS SSM + local YAML; OCI/Azure/GCP roadmap) | `scoop bucket add n24q02m https://github.com/n24q02m/scoop-bucket && scoop install skret` / `brew install n24q02m/tap/skret` · [Docs](https://mcp.n24q02m.com/skret/) |
+| [better-semantic-release](https://github.com/n24q02m/better-semantic-release) | Drop-in python-semantic-release fork with release-safety guards and `bsr` / `better-semantic-release` CLI. | `pip install better-semantic-release` · `brew install n24q02m/tap/bsr` · `scoop install bsr` |
+| [skret](https://github.com/n24q02m/skret) | Cloud-provider secret manager CLI (`AWS SSM`, Azure Key Vault, GCP Secret Manager, OCI Vault, local YAML) with `skret mcp` and Claude Code plugin | `scoop bucket add n24q02m https://github.com/n24q02m/scoop-bucket && scoop install skret` / `brew install n24q02m/tap/skret` · [Docs](https://docs.n24q02m.com/skret/) |
 
 ## Archived (read-only — replaced by CLI-first tools or native APIs)
 
