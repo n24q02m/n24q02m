@@ -74,3 +74,4 @@ Then `/plugin install <name>@n24q02m-plugins`. The marketplace ships 8 plugins: 
 | [qwen3-embed](https://github.com/n24q02m/qwen3-embed) | Qwen3 embedding/reranking package | Superseded by [fastretrieval](https://github.com/n24q02m/fastretrieval) |
 | [better-drive](https://github.com/n24q02m/better-drive) | Two-way Google Drive sync | Archived — use [rclone](https://rclone.org) directly |
 | [sillstone](https://github.com/n24q02m/sillstone) | Pure-Rust multimedia, image processing, hashing, and SIMD array suite | Archived, no longer maintained |
+| [jules-task-archiver](https://github.com/n24q02m/jules-task-archiver) | Jules async task archiver | Archived, no longer maintained |
